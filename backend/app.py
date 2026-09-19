@@ -8,7 +8,7 @@ CORS(app)
 def health_check():
     return jsonify({
         "status": "success",
-        "message": "Flask server đang chạy ngon lành!"
+        "message": "Flask server is running successfully!"
     })
 
 if __name__ == "__main__":
