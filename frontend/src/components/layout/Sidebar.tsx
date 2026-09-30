@@ -12,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { Badge, Avatar } from "@/design-system";
+import { Avatar } from "@/design-system";
 
 interface NavItem {
   label: string;
@@ -136,15 +136,6 @@ export default function Sidebar() {
                 {!isCollapsed && (
                   <div className="flex-1 flex items-center justify-between min-w-0">
                     <span className="truncate">{item.label}</span>
-                    {item.badge && (
-                      <Badge
-                        variant={item.badgeVariant || "neutral"}
-                        size="sm"
-                        mono
-                      >
-                        {item.badge}
-                      </Badge>
-                    )}
                   </div>
                 )}
               </Link>

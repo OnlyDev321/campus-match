@@ -2,7 +2,7 @@
 
 import React from "react";
 
-export type AvatarSize = "xs" | "sm" | "md" | "lg";
+export type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
 
 export interface AvatarProps {
   src?: string;
@@ -17,6 +17,7 @@ export function Avatar({ src, name = "", size = "md", className = "" }: AvatarPr
     sm: "w-7 h-7 text-xs",
     md: "w-8 h-8 text-xs",
     lg: "w-10 h-10 text-sm",
+    xl: "w-16 h-16 text-xl",
   }[size];
 
   // Derive initials from name
@@ -67,6 +68,7 @@ export function AvatarGroup({
     sm: "w-7 h-7 text-xs",
     md: "w-8 h-8 text-xs",
     lg: "w-10 h-10 text-sm",
+    xl: "w-16 h-16 text-xl",
   }[size];
 
   return (
