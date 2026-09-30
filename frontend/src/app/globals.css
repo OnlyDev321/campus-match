@@ -1,1 +1,299 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap");
 @import "tailwindcss";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
+
+/* -------------------------------------------------------------
+   CAMPUSMATCH DESIGN SYSTEM TOKENS (DESIGN.md)
+   Light & Dark Mode Architecture
+   ------------------------------------------------------------- */
+
+:root {
+  /* Canvas & Surfaces - Light Mode */
+  --background: #FAF8FF;
+  --surface: #FFFFFF;
+  --surface-dim: #D2D9F4;
+  --surface-bright: #FAF8FF;
+  --surface-hover: #F8FAFC;
+
+  --surface-container-lowest: #FFFFFF;
+  --surface-container-low: #F2F3FF;
+  --surface-container: #EAEDFF;
+  --surface-container-high: #E2E7FF;
+  --surface-container-highest: #DAE2FD;
+
+  /* Typography / Content Colors */
+  --text-primary: #131B2E;
+  --text-secondary: #434655;
+  --text-muted: #64748B;
+  --text-faint: #94A3B8;
+
+  --inverse-surface: #283044;
+  --inverse-on-surface: #EEF0FF;
+
+  /* Borders & Outlines */
+  --border: #E2E8F0;
+  --border-muted: #F1F5F9;
+  --border-strong: #C3C6D7;
+  --border-interactive: #93C5FD;
+  --outline: #737686;
+  --outline-variant: #C3C6D7;
+
+  /* Primary Interactive Accents */
+  --primary: #004AC6;
+  --primary-hover: #1D4ED8;
+  --primary-container: #2563EB;
+  --on-primary: #FFFFFF;
+  --on-primary-container: #EEEFFF;
+
+  /* Secondary */
+  --secondary: #006C49;
+  --secondary-container: #6CF8BB;
+  --on-secondary: #FFFFFF;
+  --on-secondary-container: #00714D;
+
+  /* Tertiary */
+  --tertiary: #784B00;
+  --tertiary-container: #996100;
+  --on-tertiary: #FFFFFF;
+  --on-tertiary-container: #FFEEDD;
+
+  /* Status Colors */
+  --success: #10B981;
+  --success-bg: #ECFDF5;
+  --success-text: #065F46;
+  --success-border: #A7F3D0;
+
+  --warning: #F59E0B;
+  --warning-bg: #FFFBEB;
+  --warning-text: #92400E;
+  --warning-border: #FDE68A;
+
+  --error: #EF4444;
+  --error-bg: #FEF2F2;
+  --error-text: #991B1B;
+  --error-border: #FECACA;
+
+  --badge-closed-bg: #FEF2F2;
+  --badge-closed-text: #991B1B;
+  --badge-closed-border: #FECACA;
+
+  --primary-soft: #EFF6FF;
+  --primary-soft-border: #DBEAFE;
+  --focus-ring: rgba(37, 99, 235, 0.15);
+
+  /* Typography Families */
+  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Radii - Light Theme */
+  --radius-sm: 0.25rem;
+  --radius-default: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --radius-button: 8px;
+  --radius-input: 8px;
+  --radius-card: 12px;
+  --radius-modal: 16px;
+  --radius-badge: 9999px;
+
+  /* Shadows - Light Theme */
+  --shadow-level-1: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-level-2: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-level-3: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+
+.dark,
+[data-theme="dark"] {
+  /* Canvas & Surfaces - Dark Mode */
+  --background: #000000;
+  --surface: #131313;
+  --surface-dim: #131313;
+  --surface-bright: #393939;
+  --surface-hover: #1A1A1A;
+
+  --surface-container-lowest: #0E0E0E;
+  --surface-container-low: #1B1B1B;
+  --surface-container: #1F1F1F;
+  --surface-container-high: #2A2A2A;
+  --surface-container-highest: #353535;
+
+  /* Typography / Content Colors */
+  --text-primary: #FFFFFF;
+  --text-secondary: #E4E4E7;
+  --text-muted: #A1A1AA;
+  --text-faint: #71717A;
+
+  --inverse-surface: #E2E2E2;
+  --inverse-on-surface: #303030;
+
+  /* Borders & Outlines */
+  --border: #1F1F23;
+  --border-muted: #1F1F23;
+  --border-strong: #27272A;
+  --border-interactive: #3F3F46;
+  --outline: #8D90A0;
+  --outline-variant: #434655;
+
+  /* Primary Interactive Accents */
+  --primary: #B4C5FF;
+  --primary-hover: #3B82F6;
+  --primary-container: #2563EB;
+  --on-primary: #002A78;
+  --on-primary-container: #EEEFFF;
+
+  /* Secondary */
+  --secondary: #4EDEA3;
+  --secondary-container: #00A572;
+  --on-secondary: #003824;
+  --on-secondary-container: #00311F;
+
+  /* Tertiary */
+  --tertiary: #FFB95F;
+  --tertiary-container: #996100;
+  --on-tertiary: #472A00;
+  --on-tertiary-container: #FFEEDD;
+
+  /* Status Colors */
+  --success: #10B981;
+  --success-bg: #052E16;
+  --success-text: #6EE7B7;
+  --success-border: #10B981;
+
+  --warning: #F59E0B;
+  --warning-bg: #451A03;
+  --warning-text: #FCD34D;
+  --warning-border: #F59E0B;
+
+  --error: #FFB4AB;
+  --error-bg: #93000A;
+  --error-text: #FFDAD6;
+  --error-border: #FFB4AB;
+
+  --badge-closed-bg: #18181B;
+  --badge-closed-text: #71717A;
+  --badge-closed-border: #27272A;
+
+  --primary-soft: #1B1B1B;
+  --primary-soft-border: #27272A;
+  --focus-ring: rgba(37, 99, 235, 0.25);
+
+  /* Typography Families */
+  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Radii - Dark Theme */
+  --radius-sm: 0.125rem;
+  --radius-default: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+
+  --radius-button: 6px;
+  --radius-input: 6px;
+  --radius-card: 8px;
+  --radius-modal: 10px;
+  --radius-badge: 4px;
+
+  /* Shadows - Dark Theme */
+  --shadow-level-1: none;
+  --shadow-level-2: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-level-3: 0 16px 32px -8px rgba(0, 0, 0, 0.8);
+}
+
+/* Prevent layout shift between short and long pages */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* Base Body Styles */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
+  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Scale Classes */
+.display-lg {
+  font-size: 2.25rem;
+  line-height: 2.75rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.headline-lg {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.headline-md {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.headline-sm {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.body-lg {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+}
+
+.body-md {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+}
+
+.body-sm {
+  font-size: 0.8125rem;
+  line-height: 1.125rem;
+  font-weight: 400;
+}
+
+.label-md {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
+.label-sm {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.code-sm {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 400;
+}
+
+/* Elevation utility classes */
+.elevation-1 {
+  box-shadow: var(--shadow-level-1);
+}
+
+.elevation-2 {
+  box-shadow: var(--shadow-level-2);
+}
+
+.elevation-3 {
+  box-shadow: var(--shadow-level-3);
+}

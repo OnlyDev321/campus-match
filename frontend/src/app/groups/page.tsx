@@ -1,5 +1,5 @@
-const page = () => {
+const GroupPage = () => {
   return <div>page groups</div>;
 };
 
-export default page;
+export default GroupPage;

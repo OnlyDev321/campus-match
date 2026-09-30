@@ -1,9 +1,6 @@
+import { redirect } from "next/navigation";
+
+// Redirect localhost:3000 (/) to /groups to keep the routing consistent.
 export default function Home() {
-  return (
-    <div className="bg-cyan-200">
-      <main className="">
-        <h1>Welcome to Next.js!</h1>
-      </main>
-    </div>
-  );
+  return redirect("/groups");
 }
