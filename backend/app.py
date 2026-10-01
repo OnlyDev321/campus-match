@@ -1,8 +1,15 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
+from routes.groups import bp as groups_bp
 
 app = Flask(__name__)
 CORS(app)
+
+#Register blueprints
+app.register_blueprint(
+    groups_bp,
+    url_prefix="/api/groups"
+)
 
 @app.route("/", methods=["GET"])
 def health_check():
