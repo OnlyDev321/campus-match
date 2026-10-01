@@ -1,6 +1,3 @@
-import GroupDetail from "@/components/group/GroupDetail";
-import MemberList from "@/components/group/MemberList";
-
 interface PageProps {
   params: Promise<{
     id: string;
@@ -17,10 +14,7 @@ const GroupDetailPage = async ({ params }: PageProps) => {
         <p className="text-sm text-gray-500">Route dynamic: /groups/{id}</p>
       </div>
 
-      <div className="space-y-4">
-        <GroupDetail />
-        <MemberList />
-      </div>
+      <div className="space-y-4"></div>
     </div>
   );
 };
