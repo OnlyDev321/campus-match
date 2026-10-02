@@ -1,6 +1,7 @@
 "use client";
 
 import React, { forwardRef } from "react";
+import Link from "next/link";
 import { Loader2 } from "lucide-react";
 
 export type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "destructive";
@@ -13,6 +14,8 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   fullWidth?: boolean;
+  /** Khi có href, Button render thành <Link> (điều hướng) thay vì <button>. */
+  href?: string;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -25,6 +28,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       leftIcon,
       rightIcon,
       fullWidth = false,
+      href,
       className = "",
       disabled,
       ...props
@@ -51,14 +55,27 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-(--error-bg) text-(--error-text) border border-(--error-border) hover:opacity-90 active:scale-[0.98]",
     }[variant];
 
+    const classes = `inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${
+      fullWidth ? "w-full" : ""
+    } ${sizeClasses} ${variantClasses} ${className}`;
+    const style = { borderRadius: "var(--radius-button)" };
+
+    if (href !== undefined) {
+      return (
+        <Link href={href} style={style} className={classes}>
+          {leftIcon && <span className="inline-flex shrink-0">{leftIcon}</span>}
+          <span>{children}</span>
+          {rightIcon && <span className="inline-flex shrink-0">{rightIcon}</span>}
+        </Link>
+      );
+    }
+
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        style={{ borderRadius: "var(--radius-button)" }}
-        className={`inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${
-          fullWidth ? "w-full" : ""
-        } ${sizeClasses} ${variantClasses} ${className}`}
+        style={style}
+        className={classes}
         {...props}
       >
         {isLoading ? (

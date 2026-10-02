@@ -1,55 +1,81 @@
-// Dữ liệu giả cho My Page. Khi có API thật, giữ nguyên các type bên dưới
-// và thay các biến mock... bằng dữ liệu fetch() về.
+import type {
+  User,
+  UserStats,
+  MyGroup,
+  MyApplication,
+  GroupCardData,
+  ApplicantApplication,
+} from "@/lib/types";
 
-export interface User {
-  name: string;
-  studentId: string;
-  major: string;
-  cohort: string;
-  email: string;
-  bio: string;
-  skills: string[];
-  avatarUrl?: string;
-}
+// Dữ liệu giả cho trang Groups (GroupCard) và Manage (ApplicationCard).
+// Type nằm trong lib/types.ts; khi có API thật chỉ cần thay các biến mock bên dưới.
 
-export interface UserStats {
-  activeGroups: number;
-  groupsLed: number;
-  groupsLedName: string;
-  applicationsSent: number;
-  applicationsInReview: number;
-  completionRate: number;
-}
+export const mockGroupCards: GroupCardData[] = [
+  {
+    id: "wp1",
+    course: "Web Programming",
+    title: "Web Programming Project",
+    description:
+      "Build a campus event ticketing and student club portal with Next.js and Go.",
+    tags: ["NextJS", "TypeScript", "Tailwind", "Go"],
+    leaderName: "Kim Jinho",
+    leaderMajor: "Software",
+    memberCount: 3,
+    maxMembers: 4,
+  },
+  {
+    id: "is334",
+    course: "System Design",
+    title: "Microservices Simulator",
+    description:
+      "A high-load distributed system simulating real-time course registration for 20,000 students.",
+    tags: ["Kafka", "Docker", "Go"],
+    leaderName: "Duy Anh",
+    leaderMajor: "Information Systems",
+    memberCount: 2,
+    maxMembers: 4,
+  },
+  {
+    id: "se214",
+    course: "Software Arch",
+    title: "Campus Event Ticketing WebApp",
+    description:
+      "Ticketing and QR check-in software for student clubs with a real-time dashboard.",
+    tags: ["React", "FastAPI", "PostgreSQL"],
+    leaderName: "Thao Nguyen",
+    leaderMajor: "Software",
+    memberCount: 4,
+    maxMembers: 4,
+  },
+];
 
-export type GroupStatus = "active" | "recruiting" | "closed";
+export const mockApplicants: ApplicantApplication[] = [
+  {
+    id: "ap-1",
+    name: "Park Minji",
+    department: "Software Department · 3rd Year",
+    badge: "Honors Student",
+    appliedAgo: "2 hours ago",
+    skills: ["React", "TypeScript", "Tailwind", "Zustand"],
+    scheduleMatch: 95,
+    message:
+      "I previously built the frontend for the SNU Hackathon winner project. I have 1.5 years experience with React/Next.js and can dedicate 12 hours weekly to this capstone.",
+    githubUrl: "github.com/minji-p",
+    portfolioUrl: "https://example.com/minji",
+  },
+  {
+    id: "ap-2",
+    name: "Lee Joon",
+    department: "Computer Science · 2nd Year",
+    appliedAgo: "1 day ago",
+    skills: ["Go", "PostgreSQL", "Docker"],
+    scheduleMatch: 78,
+    message: "I want to own the backend API and deployment for this project.",
+    githubUrl: "github.com/leejoon",
+  },
+];
 
-export interface MyGroup {
-  id: string;
-  courseCode: string;
-  courseName: string;
-  name: string;
-  description: string;
-  status: GroupStatus;
-  myRole: string;
-  isLeader: boolean;
-  memberCount: number;
-  maxMembers: number;
-  members: string[];
-}
-
-export type ApplicationStatus = "pending" | "accepted" | "rejected";
-
-export interface MyApplication {
-  id: string;
-  groupId: string;
-  courseCode: string;
-  courseName: string;
-  groupName: string;
-  appliedRole: string;
-  appliedAt: string;
-  status: ApplicationStatus;
-  message: string;
-}
+// Dữ liệu giả cho trang My Page.
 
 export const mockUser: User = {
   name: "Hau Tran",
@@ -57,16 +83,12 @@ export const mockUser: User = {
   major: "Software Engineering",
   cohort: "SE K21",
   email: "21520000@gm.uit.edu.vn",
+  phone: "0901 234 567",
   bio: "Frontend-leaning fullstack student. Looking for capstone teammates who like shipping early and iterating.",
   skills: ["TypeScript", "Next.js", "Tailwind CSS", "FastAPI", "PostgreSQL"],
 };
 
 export const mockStats: UserStats = {
-  activeGroups: 3,
-  groupsLed: 1,
-  groupsLedName: "AI Academic Planner",
-  applicationsSent: 4,
-  applicationsInReview: 2,
   completionRate: 92,
 };
 
@@ -83,7 +105,12 @@ export const mockGroups: MyGroup[] = [
     isLeader: true,
     memberCount: 4,
     maxMembers: 5,
-    members: ["Hau Tran", "Minh Tran", "Lan Vu", "Quoc Bao"],
+    members: [
+      { id: "hau-tran", name: "Hau Tran" },
+      { id: "minh-tran", name: "Minh Tran" },
+      { id: "lan-vu", name: "Lan Vu" },
+      { id: "quoc-bao", name: "Quoc Bao" },
+    ],
   },
   {
     id: "is334",
@@ -97,7 +124,11 @@ export const mockGroups: MyGroup[] = [
     isLeader: false,
     memberCount: 3,
     maxMembers: 4,
-    members: ["Duy Anh", "Hau Tran", "Thu Trang"],
+    members: [
+      { id: "duy-anh", name: "Duy Anh" },
+      { id: "hau-tran", name: "Hau Tran" },
+      { id: "thu-trang", name: "Thu Trang" },
+    ],
   },
   {
     id: "se214",
@@ -111,7 +142,12 @@ export const mockGroups: MyGroup[] = [
     isLeader: false,
     memberCount: 4,
     maxMembers: 4,
-    members: ["Thao Nguyen", "Khang Le", "Hau Tran", "Son Tung"],
+    members: [
+      { id: "thao-nguyen", name: "Thao Nguyen" },
+      { id: "khang-le", name: "Khang Le" },
+      { id: "hau-tran", name: "Hau Tran" },
+      { id: "son-tung", name: "Son Tung" },
+    ],
   },
 ];
 
