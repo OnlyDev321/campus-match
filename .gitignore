@@ -1,0 +1,8 @@
+# Python / backend
+venv/
+__pycache__/
+*.pyc
+.env
+
+# OS / IDE
+.DS_Store
