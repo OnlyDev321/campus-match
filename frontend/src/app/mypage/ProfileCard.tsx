@@ -3,7 +3,7 @@
 import React, { useRef, useState } from "react";
 import { Mail, Pencil, Phone, Plus, Trash2, Upload, X } from "lucide-react";
 import { Avatar, Badge, Button, Input } from "@/design-system";
-import type { User } from "./mockData";
+import type { User } from "@/lib/types";
 
 // Khung hồ sơ trên My Page. Bấm "Edit Profile" để chuyển sang chế độ sửa ngay tại chỗ.
 //

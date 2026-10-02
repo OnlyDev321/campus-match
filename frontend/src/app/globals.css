@@ -10,81 +10,84 @@
 
 :root {
   /* Canvas & Surfaces - Light Mode */
-  --background: #FAF8FF;
-  --surface: #FFFFFF;
-  --surface-dim: #D2D9F4;
-  --surface-bright: #FAF8FF;
-  --surface-hover: #F8FAFC;
+  --background: #faf8ff;
+  --surface: #ffffff;
+  --surface-dim: #d2d9f4;
+  --surface-bright: #faf8ff;
+  --surface-hover: #f8fafc;
 
-  --surface-container-lowest: #FFFFFF;
-  --surface-container-low: #F2F3FF;
-  --surface-container: #EAEDFF;
-  --surface-container-high: #E2E7FF;
-  --surface-container-highest: #DAE2FD;
+  --surface-container-lowest: #ffffff;
+  --surface-container-low: #f2f3ff;
+  --surface-container: #eaedff;
+  --surface-container-high: #e2e7ff;
+  --surface-container-highest: #dae2fd;
 
   /* Typography / Content Colors */
-  --text-primary: #131B2E;
+  --text-primary: #131b2e;
   --text-secondary: #434655;
-  --text-muted: #64748B;
-  --text-faint: #94A3B8;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
 
   --inverse-surface: #283044;
-  --inverse-on-surface: #EEF0FF;
+  --inverse-on-surface: #eef0ff;
 
   /* Borders & Outlines */
-  --border: #E2E8F0;
-  --border-muted: #F1F5F9;
-  --border-strong: #C3C6D7;
-  --border-interactive: #93C5FD;
+  --border: #e2e8f0;
+  --border-muted: #f1f5f9;
+  --border-strong: #c3c6d7;
+  --border-interactive: #93c5fd;
   --outline: #737686;
-  --outline-variant: #C3C6D7;
+  --outline-variant: #c3c6d7;
 
   /* Primary Interactive Accents */
-  --primary: #004AC6;
-  --primary-hover: #1D4ED8;
-  --primary-container: #2563EB;
-  --on-primary: #FFFFFF;
-  --on-primary-container: #EEEFFF;
+  --primary: #004ac6;
+  --primary-hover: #1d4ed8;
+  --primary-container: #2563eb;
+  --on-primary: #ffffff;
+  --on-primary-container: #eeefff;
 
   /* Secondary */
-  --secondary: #006C49;
-  --secondary-container: #6CF8BB;
-  --on-secondary: #FFFFFF;
-  --on-secondary-container: #00714D;
+  --secondary: #006c49;
+  --secondary-container: #6cf8bb;
+  --on-secondary: #ffffff;
+  --on-secondary-container: #00714d;
 
   /* Tertiary */
-  --tertiary: #784B00;
+  --tertiary: #784b00;
   --tertiary-container: #996100;
-  --on-tertiary: #FFFFFF;
-  --on-tertiary-container: #FFEEDD;
+  --on-tertiary: #ffffff;
+  --on-tertiary-container: #ffeedd;
 
   /* Status Colors */
-  --success: #10B981;
-  --success-bg: #ECFDF5;
-  --success-text: #065F46;
-  --success-border: #A7F3D0;
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --success-text: #065f46;
+  --success-border: #a7f3d0;
 
-  --warning: #F59E0B;
-  --warning-bg: #FFFBEB;
-  --warning-text: #92400E;
-  --warning-border: #FDE68A;
+  --warning: #f59e0b;
+  --warning-bg: #fffbeb;
+  --warning-text: #92400e;
+  --warning-border: #fde68a;
 
-  --error: #EF4444;
-  --error-bg: #FEF2F2;
-  --error-text: #991B1B;
-  --error-border: #FECACA;
+  --error: #ef4444;
+  --error-bg: #fef2f2;
+  --error-text: #991b1b;
+  --error-border: #fecaca;
 
-  --badge-closed-bg: #FEF2F2;
-  --badge-closed-text: #991B1B;
-  --badge-closed-border: #FECACA;
+  --badge-closed-bg: #fef2f2;
+  --badge-closed-text: #991b1b;
+  --badge-closed-border: #fecaca;
 
-  --primary-soft: #EFF6FF;
-  --primary-soft-border: #DBEAFE;
+  --primary-soft: #eff6ff;
+  --primary-soft-border: #dbeafe;
   --focus-ring: rgba(37, 99, 235, 0.15);
 
   /* Typography Families */
-  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-primary:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
 
   /* Radii - Light Theme */
   --radius-sm: 0.25rem;
@@ -101,8 +104,11 @@
 
   /* Shadows - Light Theme */
   --shadow-level-1: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-level-2: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-level-3: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-level-2:
+    0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-level-3:
+    0 20px 25px -5px rgba(15, 23, 42, 0.1),
+    0 8px 10px -6px rgba(15, 23, 42, 0.04);
 }
 
 .dark,
@@ -112,77 +118,80 @@
   --surface: #131313;
   --surface-dim: #131313;
   --surface-bright: #393939;
-  --surface-hover: #1A1A1A;
+  --surface-hover: #1a1a1a;
 
-  --surface-container-lowest: #0E0E0E;
-  --surface-container-low: #1B1B1B;
-  --surface-container: #1F1F1F;
-  --surface-container-high: #2A2A2A;
+  --surface-container-lowest: #0e0e0e;
+  --surface-container-low: #1b1b1b;
+  --surface-container: #1f1f1f;
+  --surface-container-high: #2a2a2a;
   --surface-container-highest: #353535;
 
   /* Typography / Content Colors */
-  --text-primary: #FFFFFF;
-  --text-secondary: #E4E4E7;
-  --text-muted: #A1A1AA;
-  --text-faint: #71717A;
+  --text-primary: #ffffff;
+  --text-secondary: #e4e4e7;
+  --text-muted: #a1a1aa;
+  --text-faint: #71717a;
 
-  --inverse-surface: #E2E2E2;
+  --inverse-surface: #e2e2e2;
   --inverse-on-surface: #303030;
 
   /* Borders & Outlines */
-  --border: #1F1F23;
-  --border-muted: #1F1F23;
-  --border-strong: #27272A;
-  --border-interactive: #3F3F46;
-  --outline: #8D90A0;
+  --border: #1f1f23;
+  --border-muted: #1f1f23;
+  --border-strong: #27272a;
+  --border-interactive: #3f3f46;
+  --outline: #8d90a0;
   --outline-variant: #434655;
 
   /* Primary Interactive Accents */
-  --primary: #B4C5FF;
-  --primary-hover: #3B82F6;
-  --primary-container: #2563EB;
-  --on-primary: #002A78;
-  --on-primary-container: #EEEFFF;
+  --primary: #b4c5ff;
+  --primary-hover: #3b82f6;
+  --primary-container: #2563eb;
+  --on-primary: #002a78;
+  --on-primary-container: #eeefff;
 
   /* Secondary */
-  --secondary: #4EDEA3;
-  --secondary-container: #00A572;
+  --secondary: #4edea3;
+  --secondary-container: #00a572;
   --on-secondary: #003824;
-  --on-secondary-container: #00311F;
+  --on-secondary-container: #00311f;
 
   /* Tertiary */
-  --tertiary: #FFB95F;
+  --tertiary: #ffb95f;
   --tertiary-container: #996100;
-  --on-tertiary: #472A00;
-  --on-tertiary-container: #FFEEDD;
+  --on-tertiary: #472a00;
+  --on-tertiary-container: #ffeedd;
 
   /* Status Colors */
-  --success: #10B981;
-  --success-bg: #052E16;
-  --success-text: #6EE7B7;
-  --success-border: #10B981;
+  --success: #10b981;
+  --success-bg: #052e16;
+  --success-text: #6ee7b7;
+  --success-border: #10b981;
 
-  --warning: #F59E0B;
-  --warning-bg: #451A03;
-  --warning-text: #FCD34D;
-  --warning-border: #F59E0B;
+  --warning: #f59e0b;
+  --warning-bg: #451a03;
+  --warning-text: #fcd34d;
+  --warning-border: #f59e0b;
 
-  --error: #FFB4AB;
-  --error-bg: #93000A;
-  --error-text: #FFDAD6;
-  --error-border: #FFB4AB;
+  --error: #ffb4ab;
+  --error-bg: #93000a;
+  --error-text: #ffdad6;
+  --error-border: #ffb4ab;
 
-  --badge-closed-bg: #18181B;
-  --badge-closed-text: #71717A;
-  --badge-closed-border: #27272A;
+  --badge-closed-bg: #18181b;
+  --badge-closed-text: #71717a;
+  --badge-closed-border: #27272a;
 
-  --primary-soft: #1B1B1B;
-  --primary-soft-border: #27272A;
+  --primary-soft: #1b1b1b;
+  --primary-soft-border: #27272a;
   --focus-ring: rgba(37, 99, 235, 0.25);
 
   /* Typography Families */
-  --font-primary: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-primary:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono:
+    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    monospace;
 
   /* Radii - Dark Theme */
   --radius-sm: 0.125rem;
@@ -213,7 +222,10 @@ body {
   background-color: var(--background);
   color: var(--text-primary);
   font-family: var(--font-primary);
-  transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

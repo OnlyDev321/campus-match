@@ -20,13 +20,11 @@ import {
 import ProfileCard from "./ProfileCard";
 import {
   mockUser,
-  type User,
   mockStats,
   mockGroups,
   mockApplications,
-  type GroupStatus,
-  type ApplicationStatus,
-} from "./mockData";
+} from "@/lib/mockData";
+import type { User, GroupStatus, ApplicationStatus } from "@/lib/types";
 
 // Trang My Page. Toàn bộ phần hiển thị nằm trong file này.
 // Khi có API thật, chỉ cần đổi 4 biến mock... thành fetch(), phần dưới giữ nguyên.
