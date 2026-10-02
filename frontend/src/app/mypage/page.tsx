@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
-import { Mail, PlusCircle, Users, Send, ArrowRight } from "lucide-react";
+import { PlusCircle, Users, Send, ArrowRight } from "lucide-react";
 import {
   Avatar,
   AvatarGroup,
   Badge,
+  Button,
   Card,
   CardHeader,
   CardTitle,
@@ -16,17 +17,21 @@ import {
   RoleQuota,
   type BadgeVariant,
 } from "@/design-system";
+import ProfileCard from "./ProfileCard";
 import {
   mockUser,
+  type User,
   mockStats,
   mockGroups,
   mockApplications,
   type GroupStatus,
   type ApplicationStatus,
-} from "@/lib/mockData";
+} from "./mockData";
 
 // Trang My Page. Toàn bộ phần hiển thị nằm trong file này.
 // Khi có API thật, chỉ cần đổi 4 biến mock... thành fetch(), phần dưới giữ nguyên.
+// Các số thống kê (active groups, applications sent...) được tính từ danh sách,
+// không lưu riêng, để số liệu luôn khớp với những gì hiển thị bên dưới.
 
 type TabKey = "groups" | "applications";
 
@@ -45,29 +50,49 @@ const applicationStatusBadge: Record<
   rejected: { variant: "closed", label: "REJECTED" },
 };
 
+// "2026-09-27" -> "Sep 27, 2026". Giữ nguyên chuỗi nếu không parse được.
+const formatDate = (iso: string) => {
+  const date = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return iso;
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+};
+
 const MyPage = () => {
-  const user = mockUser;
+  // Chỉ lưu trong state: tải lại trang sẽ về dữ liệu mock. Khi có API, nối ở onSave của ProfileCard.
+  const [user, setUser] = useState<User>(mockUser);
   const stats = mockStats;
   const groups = mockGroups;
   const applications = mockApplications;
 
   const [activeTab, setActiveTab] = useState<TabKey>("groups");
+  const tabRefs = useRef<Record<TabKey, HTMLButtonElement | null>>({
+    groups: null,
+    applications: null,
+  });
+
+  const activeGroups = groups.filter((g) => g.status !== "closed").length;
+  const ledGroups = groups.filter((g) => g.isLeader);
+  const inReviewCount = applications.filter((a) => a.status === "pending").length;
 
   const statCards: { label: string; value: number | string; sublabel: string }[] = [
     {
       label: "Active Groups",
-      value: stats.activeGroups,
-      sublabel: `${stats.groupsLed} Led`,
+      value: activeGroups,
+      sublabel: `${ledGroups.length} Led`,
     },
     {
       label: "Applications Sent",
-      value: stats.applicationsSent,
-      sublabel: `${stats.applicationsInReview} in review`,
+      value: applications.length,
+      sublabel: `${inReviewCount} in review`,
     },
     {
       label: "Group Led",
-      value: stats.groupsLed,
-      sublabel: stats.groupsLedName,
+      value: ledGroups.length,
+      sublabel: ledGroups.map((g) => g.name).join(", ") || "None",
     },
     {
       label: "Completion Rate",
@@ -91,64 +116,28 @@ const MyPage = () => {
     },
   ];
 
+  // Điều hướng tab bằng phím mũi tên / Home / End (WAI-ARIA tablist).
+  const handleTabKeyDown = (event: React.KeyboardEvent, index: number) => {
+    let next = index;
+    if (event.key === "ArrowRight") next = (index + 1) % tabs.length;
+    else if (event.key === "ArrowLeft") next = (index - 1 + tabs.length) % tabs.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = tabs.length - 1;
+    else return;
+
+    event.preventDefault();
+    const nextKey = tabs[next].key;
+    setActiveTab(nextKey);
+    tabRefs.current[nextKey]?.focus();
+  };
+
   const isEmpty =
     activeTab === "groups" ? groups.length === 0 : applications.length === 0;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-8">
       {/* Profile */}
-      <section className="relative rounded-2xl p-6 sm:p-8 border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-1)] overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start gap-5">
-          <Avatar src={user.avatarUrl} name={user.name} size="xl" />
-
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-                  {user.name}
-                </h1>
-                <Badge variant="primary" size="sm" mono>
-                  {user.cohort}
-                </Badge>
-              </div>
-              <p className="text-xs font-mono text-[var(--text-muted)]">
-                {user.studentId} • {user.major}
-              </p>
-            </div>
-
-            <p className="max-w-2xl text-sm text-[var(--text-secondary)] leading-relaxed">
-              {user.bio}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-1.5">
-              {user.skills.map((skill) => (
-                <Badge key={skill} variant="neutral" size="sm">
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-
-            <a
-              href={`mailto:${user.email}`}
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" />
-              {user.email}
-            </a>
-          </div>
-
-          <Link
-            href="/create-group"
-            style={{ borderRadius: "var(--radius-button)" }}
-            className="inline-flex items-center justify-center shrink-0 h-8 px-3 gap-1.5 text-xs font-medium bg-(--primary-container) text-white hover:bg-(--primary-hover) active:scale-[0.98] shadow-sm transition-all duration-150"
-          >
-            <PlusCircle className="w-3.5 h-3.5" />
-            Create Group
-          </Link>
-        </div>
-      </section>
+      <ProfileCard user={user} onSave={setUser} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
@@ -175,21 +164,26 @@ const MyPage = () => {
         <div
           role="tablist"
           aria-label="My Page sections"
-          className="inline-flex items-center p-1 rounded-lg border border-[var(--border)] bg-[var(--surface-container-low)] text-xs font-medium text-[var(--text-secondary)]"
+          className="inline-flex items-center p-1 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-container-low)] text-xs font-medium text-[var(--text-secondary)]"
         >
-          {tabs.map((tab) => {
+          {tabs.map((tab, index) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.key;
 
             return (
               <button
                 key={tab.key}
+                ref={(el) => {
+                  tabRefs.current[tab.key] = el;
+                }}
                 type="button"
                 role="tab"
                 id={`mypage-tab-${tab.key}`}
                 aria-selected={isActive}
+                tabIndex={isActive ? 0 : -1}
                 aria-controls="mypage-tabpanel"
                 onClick={() => setActiveTab(tab.key)}
+                onKeyDown={(event) => handleTabKeyDown(event, index)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-button)] transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] ${
                   isActive
                     ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
@@ -212,19 +206,30 @@ const MyPage = () => {
           aria-labelledby={`mypage-tab-${activeTab}`}
         >
           {isEmpty ? (
-            <div className="p-10 rounded-xl border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-center space-y-2">
+            <div className="p-10 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-center space-y-2">
               <p className="text-sm text-[var(--text-secondary)]">
                 {activeTab === "groups"
                   ? "You haven't joined any groups yet."
                   : "You haven't applied to any groups yet."}
               </p>
-              <Link
-                href="/groups"
-                className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
-              >
-                Browse groups
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                <Link
+                  href="/groups"
+                  className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+                >
+                  Browse groups
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                {activeTab === "groups" && (
+                  <Button
+                    href="/create-group"
+                    size="sm"
+                    leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
+                  >
+                    Create a group
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -240,7 +245,7 @@ const MyPage = () => {
                     >
                       <Card isInteractive className="h-full flex flex-col">
                         <CardHeader>
-                          <span className="font-mono text-xs font-semibold text-(--primary) tracking-wide uppercase">
+                          <span className="font-mono text-xs font-semibold text-[var(--primary)] tracking-wide uppercase">
                             {group.courseCode} • {group.courseName}
                           </span>
                           <Badge
@@ -281,7 +286,7 @@ const MyPage = () => {
                         <CardFooter>
                           <AvatarGroup max={3} total={group.memberCount} size="sm">
                             {group.members.map((member) => (
-                              <Avatar key={member} name={member} size="sm" />
+                              <Avatar key={member.id} name={member.name} size="sm" />
                             ))}
                           </AvatarGroup>
 
@@ -323,7 +328,7 @@ const MyPage = () => {
 
                       <CardFooter>
                         <span className="text-xs font-mono text-[var(--text-muted)]">
-                          Applied {application.appliedAt}
+                          Applied {formatDate(application.appliedAt)}
                         </span>
                         <Link
                           href={`/groups/${application.groupId}`}
