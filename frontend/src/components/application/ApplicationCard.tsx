@@ -2,28 +2,9 @@
 
 import { Check, Clock, Eye, Link2, X } from "lucide-react";
 import { Avatar, Badge, Button, Card, CompatibilityTag } from "@/design-system";
+import type { ApplicationCardProps } from "@/lib/types";
 
 // Card đơn ứng tuyển dành cho leader duyệt (Accept / Reject).
-
-export interface ApplicantApplication {
-  id: string;
-  name: string;
-  avatarUrl?: string;
-  department: string;
-  badge?: string;
-  appliedAgo: string;
-  skills: string[];
-  scheduleMatch?: number;
-  message: string;
-  githubUrl?: string;
-  portfolioUrl?: string;
-}
-
-export interface ApplicationCardProps {
-  application: ApplicantApplication;
-  onAccept?: (id: string) => void;
-  onReject?: (id: string) => void;
-}
 
 const linkClass =
   "inline-flex items-center gap-1.5 text-sm font-mono text-[var(--primary)] hover:underline";

@@ -1,4 +1,4 @@
-// Type dùng chung cho My Page. Khi có API thật, giữ nguyên các type này
+// Type dùng chung cho các trang (My Page, Groups, Manage). Khi có API thật, giữ nguyên các type này
 // và thay các biến mock... trong mockData.ts bằng dữ liệu fetch() về.
 
 export interface User {
@@ -54,4 +54,44 @@ export interface MyApplication {
   appliedAt: string;
   status: ApplicationStatus;
   message: string;
+}
+
+// Group Card (trang Groups)
+export interface GroupCardData {
+  id: string;
+  course: string;
+  title: string;
+  description: string;
+  tags: string[];
+  leaderName: string;
+  leaderAvatarUrl?: string;
+  leaderMajor: string;
+  memberCount: number;
+  maxMembers: number;
+}
+
+export interface GroupCardProps {
+  group: GroupCardData;
+  onJoin?: (id: string) => void;
+}
+
+// Application Card (trang Manage, leader duyệt đơn)
+export interface ApplicantApplication {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  department: string;
+  badge?: string;
+  appliedAgo: string;
+  skills: string[];
+  scheduleMatch?: number;
+  message: string;
+  githubUrl?: string;
+  portfolioUrl?: string;
+}
+
+export interface ApplicationCardProps {
+  application: ApplicantApplication;
+  onAccept?: (id: string) => void;
+  onReject?: (id: string) => void;
 }

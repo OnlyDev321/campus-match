@@ -10,24 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/design-system";
-
-export interface GroupCardData {
-  id: string;
-  course: string;
-  title: string;
-  description: string;
-  tags: string[];
-  leaderName: string;
-  leaderAvatarUrl?: string;
-  leaderMajor: string;
-  memberCount: number;
-  maxMembers: number;
-}
-
-export interface GroupCardProps {
-  group: GroupCardData;
-  onJoin?: (id: string) => void;
-}
+import type { GroupCardProps } from "@/lib/types";
 
 const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const {

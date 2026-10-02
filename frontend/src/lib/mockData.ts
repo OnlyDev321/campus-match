@@ -3,12 +3,12 @@ import type {
   UserStats,
   MyGroup,
   MyApplication,
+  GroupCardData,
+  ApplicantApplication,
 } from "@/lib/types";
-import type { GroupCardData } from "@/components/group/GroupCard";
-import type { ApplicantApplication } from "@/components/application/ApplicationCard";
 
 // Dữ liệu giả cho trang Groups (GroupCard) và Manage (ApplicationCard).
-// Type nằm cạnh component; khi có API thật chỉ cần thay các biến mock bên dưới.
+// Type nằm trong lib/types.ts; khi có API thật chỉ cần thay các biến mock bên dưới.
 
 export const mockGroupCards: GroupCardData[] = [
   {
