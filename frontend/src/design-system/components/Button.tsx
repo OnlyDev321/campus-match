@@ -44,7 +44,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       primary:
-        "bg-(--primary-container) text-white hover:bg-(--primary-hover) active:scale-[0.98] shadow-sm",
+        "bg-(--primary-container) text-white hover:bg-(--primary-hover) active:scale-[0.98] shadow-xs hover:shadow-sm",
       secondary:
         "bg-(--surface-container-low) text-(--text-primary) border border-(--border) hover:bg-(--surface-container) hover:border-(--border-strong) active:scale-[0.98]",
       outline:
@@ -55,7 +55,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-(--error-bg) text-(--error-text) border border-(--error-border) hover:opacity-90 active:scale-[0.98]",
     }[variant];
 
-    const classes = `inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${
+    const classes = `inline-flex items-center justify-center font-medium transition-all duration-150 select-none cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] focus-visible:ring-offset-2 disabled:opacity-40 disabled:grayscale disabled:cursor-not-allowed disabled:pointer-events-none ${
       fullWidth ? "w-full" : ""
     } ${sizeClasses} ${variantClasses} ${className}`;
     const style = { borderRadius: "var(--radius-button)" };
