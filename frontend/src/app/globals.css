@@ -338,3 +338,215 @@ body {
   }
 }
 
+/* -------------------------------------------------------------
+   Responsive App Navigation (Bottom Bar on Mobile, Sidebar on Desktop)
+   ------------------------------------------------------------- */
+
+.app-nav-sidebar {
+  background-color: var(--surface);
+  color: var(--text-primary);
+  user-select: none;
+  transition: width 0.2s ease-in-out;
+  z-index: 40;
+}
+
+/* Mobile: Bottom Navigation Bar (< 768px) */
+@media (max-width: 767px) {
+  .app-nav-sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100% !important;
+    height: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    padding: 0 0.5rem;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-top: 1px solid var(--border);
+    border-right: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background-color: color-mix(in srgb, var(--surface) 92%, transparent);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Ẩn các phần chỉ dành cho desktop */
+  .app-nav-desktop-only {
+    display: none !important;
+  }
+
+  .app-nav-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .app-nav-list {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    gap: 0.25rem;
+  }
+
+  .app-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    height: 100%;
+    padding: 0.35rem 0.25rem;
+    border-radius: 0.75rem;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+  }
+
+  .app-nav-item-active {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .app-nav-item-inactive {
+    color: var(--text-muted);
+  }
+
+  .app-nav-item-inactive:hover {
+    color: var(--text-primary);
+  }
+
+  .app-nav-label-desktop {
+    display: none !important;
+  }
+
+  .app-nav-label-mobile {
+    display: block !important;
+    font-size: 0.6875rem;
+    line-height: 0.875rem;
+    margin-top: 0.2rem;
+    letter-spacing: -0.01em;
+  }
+
+  .app-nav-indicator-desktop {
+    display: none !important;
+  }
+
+  .app-nav-indicator-mobile {
+    display: block;
+    position: absolute;
+    top: 0;
+    width: 20px;
+    height: 3px;
+    border-radius: 0 0 9999px 9999px;
+    background-color: var(--primary);
+  }
+
+  /* Đệm đáy để Footer và nội dung không bị che bởi Bottom Bar trên mobile */
+  footer,
+  .app-footer {
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .app-main-content {
+    padding-bottom: 1.5rem;
+  }
+}
+
+/* Tablet & Desktop (>= 768px): Cột dọc Sidebar */
+@media (min-width: 768px) {
+  footer,
+  .app-footer {
+    padding-bottom: 2rem;
+  }
+  .app-nav-sidebar {
+    position: sticky;
+    top: 3.5rem;
+    height: calc(100vh - 3.5rem);
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+  }
+
+  .app-nav-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0.75rem 0.75rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .app-nav-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .app-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.875rem;
+    padding: 0.625rem 0.875rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+    position: relative;
+  }
+
+  .app-nav-item-active {
+    background-color: color-mix(in srgb, var(--primary) 8%, var(--surface));
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .app-nav-item-inactive {
+    color: var(--text-secondary);
+  }
+
+  .app-nav-item-inactive:hover {
+    color: var(--text-primary);
+    background-color: var(--surface-container-low);
+  }
+
+  .app-nav-label-desktop {
+    display: block;
+  }
+
+  .app-nav-label-mobile {
+    display: none !important;
+  }
+
+  .app-nav-indicator-desktop {
+    position: absolute;
+    left: 0;
+    top: 0.375rem;
+    bottom: 0.375rem;
+    width: 3.5px;
+    border-radius: 0 9999px 9999px 0;
+    background-color: var(--primary);
+  }
+
+  .app-nav-indicator-mobile {
+    display: none !important;
+  }
+
+  .app-main-content {
+    padding-bottom: 0;
+  }
+}
+
+

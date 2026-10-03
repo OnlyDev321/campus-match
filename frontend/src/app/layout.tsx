@@ -48,7 +48,7 @@ export default function RootLayout({
           <Header />
           <div className="flex flex-1 w-full max-w-[1600px] mx-auto">
             <Sidebar />
-            <main className="flex-1 min-w-0 @container">{children}</main>
+            <main className="flex-1 min-w-0 @container app-main-content">{children}</main>
           </div>
           <Footer />
         </ThemeProvider>

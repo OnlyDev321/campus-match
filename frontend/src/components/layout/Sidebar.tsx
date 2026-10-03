@@ -16,6 +16,7 @@ import { Avatar } from "@/design-system";
 
 interface NavItem {
   label: string;
+  shortLabel?: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
@@ -23,26 +24,31 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   {
     label: "Groups",
+    shortLabel: "Groups",
     href: "/groups",
     icon: Compass,
   },
   {
     label: "My Page",
+    shortLabel: "My Page",
     href: "/mypage",
     icon: LayoutGrid,
   },
   {
     label: "Manage",
+    shortLabel: "Manage",
     href: "/manage",
     icon: Users,
   },
   {
     label: "Create Group",
+    shortLabel: "Create",
     href: "/create-group",
     icon: PlusCircle,
   },
   {
     label: "Design System",
+    shortLabel: "Design",
     href: "/design",
     icon: Layers,
   },
@@ -92,14 +98,14 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`hidden md:flex sticky top-14 h-[calc(100vh-3.5rem)] flex-col border-r border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] transition-all duration-200 ease-in-out z-30 select-none ${
-        isCollapsed ? "w-16" : "w-64"
+      className={`app-nav-sidebar ${
+        isCollapsed ? "md:w-16" : "md:w-64"
       }`}
       aria-label="Sidebar Navigation"
     >
-      {/* Main Navigation Links */}
-      <div className="flex-1 overflow-y-auto px-3 pt-4 pb-3 space-y-6">
-        <nav className="space-y-1">
+      {/* Navigation Content Area */}
+      <div className="app-nav-content">
+        <nav className="app-nav-list">
           {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -111,18 +117,22 @@ export default function Sidebar() {
                 key={item.href}
                 href={item.href}
                 title={isCollapsed ? item.label : undefined}
-                className={`group relative flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? "bg-blue-50/90 dark:bg-blue-950/40 text-[var(--primary)] font-semibold shadow-xs"
-                    : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)]"
-                } ${isCollapsed ? "justify-center px-0" : ""}`}
+                className={`group app-nav-item ${
+                  isActive ? "app-nav-item-active" : "app-nav-item-inactive"
+                } ${isCollapsed ? "md:justify-center md:px-0" : ""}`}
               >
-                {/* Left vertical accent indicator for active state */}
+                {/* Active Indicator: Desktop left accent / Mobile top bar */}
                 {isActive && (
-                  <span
-                    className="absolute left-0 top-1.5 bottom-1.5 w-[3.5px] rounded-r-full bg-[var(--primary)]"
-                    aria-hidden="true"
-                  />
+                  <>
+                    <span
+                      className="app-nav-indicator-desktop"
+                      aria-hidden="true"
+                    />
+                    <span
+                      className="app-nav-indicator-mobile"
+                      aria-hidden="true"
+                    />
+                  </>
                 )}
 
                 <Icon
@@ -133,57 +143,65 @@ export default function Sidebar() {
                   }`}
                 />
 
+                {/* Desktop Label (hidden when sidebar collapsed) */}
                 {!isCollapsed && (
-                  <div className="flex-1 flex items-center justify-between min-w-0">
-                    <span className="truncate">{item.label}</span>
-                  </div>
+                  <span className="app-nav-label-desktop truncate flex-1 min-w-0">
+                    {item.label}
+                  </span>
                 )}
+
+                {/* Mobile Label (always visible below icon) */}
+                <span className="app-nav-label-mobile truncate">
+                  {item.shortLabel || item.label}
+                </span>
               </Link>
             );
           })}
         </nav>
 
-        {/* Section: My Active Study Groups */}
-        {!isCollapsed && (
-          <div className="space-y-1.5 pt-4 border-t border-[var(--border-muted)]">
-            <div className="px-3.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] font-mono flex items-center justify-between">
-              <span>My Groups</span>
-              <span className="text-[10px] text-[var(--text-faint)]">
-                {pinnedGroups.length}
-              </span>
-            </div>
+        {/* Desktop Only: Pinned / Active Study Groups */}
+        <div className="app-nav-desktop-only">
+          {!isCollapsed && (
+            <div className="space-y-1.5 pt-4 border-t border-[var(--border-muted)]">
+              <div className="px-3.5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-[var(--text-muted)] font-mono flex items-center justify-between">
+                <span>My Groups</span>
+                <span className="text-[10px] text-[var(--text-faint)]">
+                  {pinnedGroups.length}
+                </span>
+              </div>
 
-            <div className="space-y-1">
-              {pinnedGroups.map((group) => (
-                <Link
-                  key={group.id}
-                  href={`/groups/${group.id}`}
-                  className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] transition-colors group"
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${
-                      group.status === "active"
-                        ? "bg-[var(--success)] shadow-[0_0_8px_var(--success)]"
-                        : "bg-[var(--warning)]"
-                    }`}
-                  />
-                  <div className="flex-1 min-w-0 flex flex-col">
-                    <span className="font-mono text-[10px] font-semibold text-[var(--primary)] truncate">
-                      {group.code}
-                    </span>
-                    <span className="truncate text-[11px] text-[var(--text-primary)] group-hover:underline">
-                      {group.name}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              <div className="space-y-1">
+                {pinnedGroups.map((group) => (
+                  <Link
+                    key={group.id}
+                    href={`/groups/${group.id}`}
+                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] transition-colors group"
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full shrink-0 ${
+                        group.status === "active"
+                          ? "bg-[var(--success)] shadow-[0_0_8px_var(--success)]"
+                          : "bg-[var(--warning)]"
+                      }`}
+                    />
+                    <div className="flex-1 min-w-0 flex flex-col">
+                      <span className="font-mono text-[10px] font-semibold text-[var(--primary)] truncate">
+                        {group.code}
+                      </span>
+                      <span className="truncate text-[11px] text-[var(--text-primary)] group-hover:underline">
+                        {group.name}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      {/* Footer / User Profile & Collapse Toggle */}
-      <div className="p-2 border-t border-[var(--border)] bg-[var(--surface-container-lowest)] flex flex-col gap-2">
+      {/* Desktop Only: Footer User Profile & Collapse Toggle */}
+      <div className="app-nav-desktop-only p-2 border-t border-[var(--border)] bg-[var(--surface-container-lowest)] flex flex-col gap-2">
         {/* User Card */}
         <div
           className={`flex items-center gap-3 p-1.5 rounded-xl hover:bg-[var(--surface-container-low)] transition-colors ${
