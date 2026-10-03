@@ -37,32 +37,32 @@ export function Badge({
     recruiting: {
       container:
         "bg-(--success-bg) text-(--success-text) border border-(--success-border)",
-      dot: "bg-emerald-500",
+      dot: "bg-(--success)",
     },
     active: {
       container:
         "bg-(--success-bg) text-(--success-text) border border-(--success-border)",
-      dot: "bg-emerald-500",
+      dot: "bg-(--success)",
     },
     pending: {
       container:
         "bg-(--warning-bg) text-(--warning-text) border border-(--warning-border)",
-      dot: "bg-amber-500",
+      dot: "bg-(--warning)",
     },
     applying: {
       container:
         "bg-(--warning-bg) text-(--warning-text) border border-(--warning-border)",
-      dot: "bg-amber-500",
+      dot: "bg-(--warning)",
     },
     closed: {
       container:
         "bg-(--badge-closed-bg) text-(--badge-closed-text) border border-(--badge-closed-border)",
-      dot: "bg-zinc-400",
+      dot: "bg-(--badge-closed-text)",
     },
     archived: {
       container:
         "bg-(--badge-closed-bg) text-(--badge-closed-text) border border-(--badge-closed-border)",
-      dot: "bg-zinc-400",
+      dot: "bg-(--badge-closed-text)",
     },
     neutral: {
       container:
