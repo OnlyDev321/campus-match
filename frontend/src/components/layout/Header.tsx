@@ -14,7 +14,7 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full h-14 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur-md transition-colors duration-150">
-        <div className="max-w-[1600px] mx-auto h-full px-4 sm:px-6 flex items-center justify-between gap-4">
+        <div className="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
           {/* Logo & Brand */}
           <div className="flex items-center gap-6">
             <Link

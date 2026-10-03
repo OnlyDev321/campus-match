@@ -46,7 +46,7 @@ export default function RootLayout({
       <body className="min-h-screen flex flex-col bg-(--background) text-(--text-primary) antialiased transition-colors duration-150">
         <ThemeProvider>
           <Header />
-          <div className="flex flex-1 w-full max-w-[1600px] mx-auto">
+          <div className="flex flex-1 w-full">
             <Sidebar />
             <main className="flex-1 min-w-0 @container app-main-content">{children}</main>
           </div>
