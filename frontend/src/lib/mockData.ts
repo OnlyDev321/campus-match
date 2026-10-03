@@ -47,6 +47,42 @@ export const mockGroupCards: GroupCardData[] = [
     memberCount: 4,
     maxMembers: 4,
   },
+  {
+    id: "cs490",
+    course: "Machine Learning",
+    title: "AI Academic Planner & Study Bot",
+    description:
+      "Smart course recommendation and schedule optimization platform using LLMs and vector search.",
+    tags: ["Python", "PyTorch", "NextJS", "Qdrant"],
+    leaderName: "Hau Tran",
+    leaderMajor: "Software Engineering",
+    memberCount: 2,
+    maxMembers: 5,
+  },
+  {
+    id: "cs301",
+    course: "Cloud Computing",
+    title: "Kubernetes Cluster Management Lab",
+    description:
+      "Deploy and benchmark multi-tenant microservices clusters on AWS with automated CI/CD pipelines.",
+    tags: ["Kubernetes", "Terraform", "AWS", "Go"],
+    leaderName: "Minh Tri",
+    leaderMajor: "Computer Networks",
+    memberCount: 1,
+    maxMembers: 3,
+  },
+  {
+    id: "ds202",
+    course: "Data Science",
+    title: "University Analytics Dashboard",
+    description:
+      "Interactive data exploration and student grade prediction model using BigQuery and Streamlit.",
+    tags: ["Python", "Pandas", "BigQuery", "Tailwind"],
+    leaderName: "Bao Chau",
+    leaderMajor: "Data Science",
+    memberCount: 3,
+    maxMembers: 4,
+  },
 ];
 
 export const mockApplicants: ApplicantApplication[] = [
