@@ -7,11 +7,13 @@ const GroupPage = () => {
   const groups = mockGroupCards;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-6">
-      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-        Groups
-      </h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+    <div className="@container w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+          Groups
+        </h1>
+      </div>
+      <div className="responsive-card-grid">
         {groups.map((group) => (
           <GroupCard key={group.id} group={group} />
         ))}

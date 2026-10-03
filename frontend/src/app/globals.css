@@ -309,3 +309,32 @@ body {
 .elevation-3 {
   box-shadow: var(--shadow-level-3);
 }
+
+/* -------------------------------------------------------------
+   Container Query Responsive Card Grid
+   Tự động tính toán số cột theo độ rộng thực tế của vùng chứa
+   ------------------------------------------------------------- */
+.responsive-card-grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@container (min-width: 600px) {
+  .responsive-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 920px) {
+  .responsive-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (min-width: 1240px) {
+  .responsive-card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
