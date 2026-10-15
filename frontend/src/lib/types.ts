@@ -62,7 +62,9 @@ export interface GroupCardData {
   course: string;
   title: string;
   description: string;
-  tags: string[];
+  college: string;
+  department: string;
+  postYear: number;
   leaderName: string;
   leaderAvatarUrl?: string;
   leaderMajor: string;
