@@ -28,7 +28,7 @@ export default function LandingPage() {
 
         <div className="max-w-5xl mx-auto text-center space-y-6">
           {/* Top Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-semibold text-[var(--text-secondary)]">
               {t.landing.badge}
