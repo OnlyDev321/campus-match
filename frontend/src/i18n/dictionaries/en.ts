@@ -30,16 +30,15 @@ export const en = {
     feature1Title: "100% u-SAINT SSO Verified",
     feature1Desc:
       "Sign in instantly with your student credentials. Real name, department, and academic year are automatically synchronized.",
-    feature1Sub:
-      "Automatic categorization for Computer Science, AI, Software, etc.",
+    feature1Sub: "Verified department & major sync",
     feature2Title: "Zero Password Retention",
     feature2Desc:
       "Portal passwords exist only in transient memory during university handshake. Never stored in any database.",
-    feature2Sub: "Secure stateless JWT token session management",
+    feature2Sub: "Stateless JWT session security",
     feature3Title: "Smart Major & Tech Stack Matching",
     feature3Desc:
       "Discover teammates for Capstone Design, coding tests, or hackathons with role quotas (Frontend, Backend, Design).",
-    feature3Sub: "Strict role quota and member limits",
+    feature3Sub: "Structured role & member quotas",
     statsStudents: "Verified Students",
     statsGroups: "Active Groups",
     statsCompletion: "Project Completion Rate",
