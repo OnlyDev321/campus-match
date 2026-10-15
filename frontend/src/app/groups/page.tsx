@@ -5,6 +5,8 @@ import {
   Network,
   UserPlus,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   X,
   SlidersHorizontal,
   Search,
@@ -34,6 +36,10 @@ const GroupPage = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
   const [selectedYear, setSelectedYear] = useState("All Years");
   const [sortBy, setSortBy] = useState("Most Recent");
+
+  // Pagination State (6 items per page)
+  const ITEMS_PER_PAGE = 6;
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Applied filter states (triggered on Search button click or Enter)
   const [appliedQuery, setAppliedQuery] = useState("");
@@ -89,6 +95,7 @@ const GroupPage = () => {
     setAppliedCollege(selectedCollege);
     setAppliedDepartment(selectedDepartment);
     setAppliedYear(selectedYear);
+    setCurrentPage(1);
   };
 
   // Filter groups
@@ -161,6 +168,13 @@ const GroupPage = () => {
     sortBy,
   ]);
 
+  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / ITEMS_PER_PAGE));
+
+  const paginatedGroups = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredGroups.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredGroups, currentPage]);
+
   const activeGroupsCount = mockGroupCards.length;
   const teamsRecruitingCount = mockGroupCards.filter(
     (g) => g.maxMembers > g.memberCount,
@@ -181,6 +195,7 @@ const GroupPage = () => {
     setAppliedCollege("All Colleges");
     setAppliedDepartment("All Departments");
     setAppliedYear("All Years");
+    setCurrentPage(1);
   };
 
   return (
@@ -540,10 +555,69 @@ const GroupPage = () => {
 
       {/* 5. Group Card Grid - Uses .responsive-card-grid from globals.css */}
       {filteredGroups.length > 0 ? (
-        <div className="responsive-card-grid">
-          {filteredGroups.map((group) => (
-            <GroupCard key={group.id} group={group} />
-          ))}
+        <div className="space-y-6">
+          <div className="responsive-card-grid">
+            {paginatedGroups.map((group) => (
+              <GroupCard key={group.id} group={group} />
+            ))}
+          </div>
+
+          {/* Pagination Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[var(--border-muted)]">
+            <p className="text-xs sm:text-sm text-[var(--text-muted)]">
+              Showing{" "}
+              <span className="font-semibold text-[var(--text-primary)]">
+                {paginatedGroups.length}
+              </span>{" "}
+              of{" "}
+              <span className="font-semibold text-[var(--text-primary)]">
+                {filteredGroups.length}
+              </span>{" "}
+              groups
+            </p>
+
+            <div className="flex items-center gap-1.5">
+              {/* Previous Page Button */}
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                aria-label="Previous Page"
+                className="w-8 h-8 rounded-md flex items-center justify-center border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-container-low)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              {/* Numbered Page Buttons */}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`w-8 h-8 rounded-md text-xs font-semibold flex items-center justify-center transition-colors cursor-pointer ${
+                    currentPage === page
+                      ? "bg-[var(--primary)] text-white shadow-sm"
+                      : "border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-container-low)]"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              {/* Next Page Button */}
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                className="h-8 px-3 rounded-md text-xs font-medium flex items-center gap-1 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-container-low)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+              >
+                <span>Next</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
       ) : (
         <Card className="text-center py-16 px-4 border-dashed bg-[var(--surface-container-low)]">
