@@ -30,16 +30,15 @@ export const ko: TranslationDict = {
     feature1Title: "100% u-SAINT SSO 인증",
     feature1Desc:
       "별도의 회원가입 없이 학교 포털 아이디로 즉시 로그인하며, 학번과 학과가 자동 연동되어 허위 계정을 원천 차단합니다.",
-    feature1Sub:
-      "컴퓨터학부 · 소프트웨어학부 · AI융합학부 등 단과대학 자동 분류",
+    feature1Sub: "단과대학 및 학과 자동 연동",
     feature2Title: "Zero Password Retention",
     feature2Desc:
       "학생들의 포털 비밀번호는 서버 메모리에서 학교 SSO 서버와 검증하는 찰나에만 사용되며, DB에 0.1초도 저장되지 않습니다.",
-    feature2Sub: "안전한 JWT Stateless 토큰 기반 세션 관리",
+    feature2Sub: "안전한 무상태 JWT 세션 관리",
     feature3Title: "과목 & 기술 스택 매칭",
     feature3Desc:
       "캡스톤 디자인, 알고리즘 코딩 테스트, Spring Boot, React 등 원하는 목표와 기술 태그로 팀원을 빠르게 구하세요.",
-    feature3Sub: "역할별 모집 인원(Frontend/Backend/Designer) 정원 관리",
+    feature3Sub: "역할별 모집 인원 정원 관리",
     statsStudents: "인증된 숭실대 학우",
     statsGroups: "개설된 스터디 & 팀",
     statsCompletion: "프로젝트 완주율",

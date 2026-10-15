@@ -30,15 +30,15 @@ export const vi: TranslationDict = {
     feature1Title: "100% Xác thực u-SAINT SSO",
     feature1Desc:
       "Đăng nhập ngay bằng mã số sinh viên. Tên thật, khoa và năm học được tự động đồng bộ từ hệ thống trường.",
-    feature1Sub: "Tự động phân loại Khoa Máy tính, AI, Kỹ thuật Phần mềm...",
+    feature1Sub: "Tự động đồng bộ ngành & khoa",
     feature2Title: "Zero Password Retention",
     feature2Desc:
       "Mật khẩu chỉ lưu tạm thời trong bộ nhớ đệm khi kết nối với trường. Tuyệt đối không lưu vào Database.",
-    feature2Sub: "Quản lý phiên bảo mật bằng chuẩn JWT Stateless",
+    feature2Sub: "Bảo mật phiên chuẩn JWT Stateless",
     feature3Title: "Khớp môn học & Công nghệ",
     feature3Desc:
       "Tìm bạn làm Đồ án tốt nghiệp (Capstone), luyện code, Spring Boot, React theo đúng chỉ tiêu (Frontend, Backend, Designer).",
-    feature3Sub: "Kiểm soát số lượng thành viên và vai trò chặt chẽ",
+    feature3Sub: "Kiểm soát chỉ tiêu từng vai trò",
     statsStudents: "Sinh viên đã xác thực",
     statsGroups: "Nhóm & Đồ án mở",
     statsCompletion: "Tỷ lệ hoàn thành đồ án",
