@@ -23,7 +23,10 @@ export default function Header() {
   // Close user dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
         setIsUserMenuOpen(false);
       }
     };
@@ -75,7 +78,7 @@ export default function Header() {
                   <button
                     type="button"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full hover:bg-[var(--surface-container-low)] border border-transparent hover:border-[var(--border)] transition-all cursor-pointer group"
+                    className="flex items-center gap-2 p-1 pl-1.5 pr-2.5 rounded-full hover:bg-[var(--surface-container-low)] border border-transparent hover:border-[var(--border)] cursor-pointer group"
                     aria-expanded={isUserMenuOpen}
                   >
                     <Avatar
@@ -83,7 +86,7 @@ export default function Header() {
                       size="sm"
                       className="ring-1 ring-[var(--border)]"
                     />
-                    <span className="hidden sm:inline text-xs font-semibold text-[var(--text-primary)] group-hover:text-[var(--primary)] transition-colors">
+                    <span className="hidden sm:inline text-xs font-semibold text-[var(--text-primary)] group-hover:text-[var(--primary)]">
                       {user?.name || "학우"}
                     </span>
                     <ChevronDown
@@ -102,7 +105,8 @@ export default function Header() {
                           {user?.name || "홍길동"}
                         </div>
                         <div className="text-[11px] text-[var(--text-muted)] truncate mt-0.5">
-                          {user?.department || "컴퓨터학부"} · {user?.studentId || "20211234"}
+                          {user?.department || "컴퓨터학부"} ·{" "}
+                          {user?.studentId || "20211234"}
                         </div>
                       </div>
 
