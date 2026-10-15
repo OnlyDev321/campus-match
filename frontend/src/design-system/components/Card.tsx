@@ -15,9 +15,9 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
           borderRadius: "var(--radius-card)",
           ...style,
         }}
-        className={`bg-(--surface) text-(--text-primary) border border-(--border) p-5 transition-all duration-150 ${
+        className={`bg-(--surface) text-(--text-primary) border border-(--border) p-5 ${
           isInteractive
-            ? "cursor-pointer hover:border-(--border-interactive) hover:-translate-y-0.5 hover:shadow-(--shadow-level-2) hover:bg-(--surface-hover)"
+            ? "cursor-pointer hover:border-(--border-interactive) hover:-translate-y-0.5 hover:shadow-(--shadow-level-2) hover:bg-(--surface-hover) transition-transform duration-150"
             : "shadow-(--shadow-level-1)"
         } ${className}`}
         {...props}

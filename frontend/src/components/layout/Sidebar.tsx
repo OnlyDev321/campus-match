@@ -96,6 +96,10 @@ export default function Sidebar() {
     });
   };
 
+  if (pathname === "/") {
+    return null;
+  }
+
   return (
     <aside
       className={`app-nav-sidebar ${
@@ -136,7 +140,7 @@ export default function Sidebar() {
                 )}
 
                 <Icon
-                  className={`w-5 h-5 shrink-0 transition-colors ${
+                  className={`w-5 h-5 shrink-0 ${
                     isActive
                       ? "text-[var(--primary)]"
                       : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"
@@ -175,7 +179,7 @@ export default function Sidebar() {
                   <Link
                     key={group.id}
                     href={`/groups/${group.id}`}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] transition-colors group"
+                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] group"
                   >
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
@@ -204,7 +208,7 @@ export default function Sidebar() {
       <div className="app-nav-desktop-only p-2 border-t border-[var(--border)] bg-[var(--surface-container-lowest)] flex flex-col gap-2">
         {/* User Card */}
         <div
-          className={`flex items-center gap-3 p-1.5 rounded-xl hover:bg-[var(--surface-container-low)] transition-colors ${
+          className={`flex items-center gap-3 p-1.5 rounded-xl hover:bg-[var(--surface-container-low)] ${
             isCollapsed ? "justify-center" : ""
           }`}
         >
@@ -225,7 +229,7 @@ export default function Sidebar() {
         <button
           onClick={toggleCollapse}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex items-center justify-center gap-2 w-full py-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] rounded-xl transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full py-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] rounded-xl cursor-pointer"
         >
           {isCollapsed ? (
             <ChevronRight className="w-4 h-4" />

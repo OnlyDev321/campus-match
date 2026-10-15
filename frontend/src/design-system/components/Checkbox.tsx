@@ -32,7 +32,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             {...props}
           />
           <div
-            className={`w-4 h-4 rounded-[4px] border transition-all duration-150 flex items-center justify-center border-(--border-strong) bg-(--surface) peer-checked:bg-(--primary-container) peer-checked:border-(--primary-container) peer-focus-visible:ring-2 peer-focus-visible:ring-(--focus-ring) peer-focus-visible:ring-offset-1 ${className}`}
+            className={`w-4 h-4 rounded-[4px] border flex items-center justify-center border-(--border-strong) bg-(--surface) peer-checked:bg-(--primary-container) peer-checked:border-(--primary-container) ${className}`}
           >
             <Check className="w-3 h-3 text-white stroke-[2.5] opacity-0 peer-checked:opacity-100 transition-opacity" />
           </div>
