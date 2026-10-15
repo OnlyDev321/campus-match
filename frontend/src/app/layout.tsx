@@ -32,6 +32,8 @@ export const metadata = {
 import { AuthProvider } from "@/context/AuthContext";
 import LoginModal from "@/components/auth/LoginModal";
 
+import { LanguageProvider } from "@/context/LanguageContext";
+
 export default function RootLayout({
   children,
 }: {
@@ -48,15 +50,17 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen flex flex-col bg-(--background) text-(--text-primary) antialiased">
         <ThemeProvider>
-          <AuthProvider>
-            <Header />
-            <div className="flex flex-1 w-full">
-              <Sidebar />
-              <main className="flex-1 min-w-0 @container app-main-content">{children}</main>
-            </div>
-            <Footer />
-            <LoginModal />
-          </AuthProvider>
+          <LanguageProvider>
+            <AuthProvider>
+              <Header />
+              <div className="flex flex-1 w-full">
+                <Sidebar />
+                <main className="flex-1 min-w-0 @container app-main-content">{children}</main>
+              </div>
+              <Footer />
+              <LoginModal />
+            </AuthProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

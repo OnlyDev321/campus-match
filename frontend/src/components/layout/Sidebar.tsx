@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Avatar } from "@/design-system";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface NavItem {
   label: string;
@@ -20,39 +21,6 @@ interface NavItem {
   href: string;
   icon: React.ComponentType<{ className?: string }>;
 }
-
-const mainNavItems: NavItem[] = [
-  {
-    label: "Groups",
-    shortLabel: "Groups",
-    href: "/groups",
-    icon: Compass,
-  },
-  {
-    label: "My Page",
-    shortLabel: "My Page",
-    href: "/mypage",
-    icon: LayoutGrid,
-  },
-  {
-    label: "Manage",
-    shortLabel: "Manage",
-    href: "/manage",
-    icon: Users,
-  },
-  {
-    label: "Create Group",
-    shortLabel: "Create",
-    href: "/create-group",
-    icon: PlusCircle,
-  },
-  {
-    label: "Design System",
-    shortLabel: "Design",
-    href: "/design",
-    icon: Layers,
-  },
-];
 
 // Pinned / Active groups for students
 const pinnedGroups = [
@@ -74,6 +42,40 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { t } = useLanguage();
+
+  const mainNavItems: NavItem[] = [
+    {
+      label: t.nav.groups,
+      shortLabel: t.nav.groups,
+      href: "/groups",
+      icon: Compass,
+    },
+    {
+      label: t.nav.myPage,
+      shortLabel: t.nav.myPage,
+      href: "/mypage",
+      icon: LayoutGrid,
+    },
+    {
+      label: t.nav.manage,
+      shortLabel: t.nav.manage,
+      href: "/manage",
+      icon: Users,
+    },
+    {
+      label: t.nav.createGroup,
+      shortLabel: t.nav.createGroup,
+      href: "/create-group",
+      icon: PlusCircle,
+    },
+    {
+      label: t.nav.designSystem,
+      shortLabel: t.nav.designSystem,
+      href: "/design",
+      icon: Layers,
+    },
+  ];
 
   // Load collapse state from localStorage if available
   useEffect(() => {
