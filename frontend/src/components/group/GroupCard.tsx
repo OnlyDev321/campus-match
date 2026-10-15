@@ -12,6 +12,9 @@ import {
 } from "@/design-system";
 import type { GroupCardProps } from "@/lib/types";
 
+import { useState } from "react";
+import TranslateButton from "@/components/common/TranslateButton";
+
 const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const {
     id,
@@ -25,6 +28,9 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
     memberCount,
     maxMembers,
   } = group;
+
+  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
+  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
 
   const spotsLeft = Math.max(maxMembers - memberCount, 0);
   const isFull = spotsLeft === 0;
@@ -43,11 +49,26 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
       </CardHeader>
 
       <div className="space-y-1.5">
-        <CardTitle className="text-base font-semibold leading-snug">
-          {title}
-        </CardTitle>
+        <div className="flex items-start justify-between gap-2">
+          <CardTitle className="text-base font-semibold leading-snug">
+            {translatedTitle || title}
+          </CardTitle>
+          <TranslateButton
+            originalText={`${title}\n${description}`}
+            onTranslated={(translated) => {
+              if (translated) {
+                const parts = translated.split("\n");
+                setTranslatedTitle(parts[0]);
+                setTranslatedDesc(parts.slice(1).join(" "));
+              } else {
+                setTranslatedTitle(null);
+                setTranslatedDesc(null);
+              }
+            }}
+          />
+        </div>
         <CardDescription className="text-xs text-[var(--text-secondary)] line-clamp-2 leading-relaxed">
-          {description}
+          {translatedDesc || description}
         </CardDescription>
       </div>
 

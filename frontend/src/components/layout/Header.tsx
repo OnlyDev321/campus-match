@@ -12,9 +12,13 @@ import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/design-system";
 import { LogOut } from "lucide-react";
 
+import { useLanguage } from "@/context/LanguageContext";
+import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+
 export default function Header() {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
   const { user, isLoggedIn, openLoginModal, logout } = useAuth();
+  const { t } = useLanguage();
 
   return (
     <>
@@ -37,6 +41,9 @@ export default function Header() {
 
           {/* Right Action Cluster */}
           <div className="flex items-center gap-2">
+            {/* Language Switcher (EN / KO / VI) */}
+            <LanguageSwitcher />
+
             {/* Theme Toggle (Light / Dark) */}
             <ThemeToggle />
 
@@ -68,7 +75,7 @@ export default function Header() {
                 <button
                   type="button"
                   onClick={logout}
-                  title="로그아웃 (Đăng xuất)"
+                  title={t.nav.logout}
                   className="p-1.5 rounded-lg text-[var(--text-faint)] hover:text-[var(--error)] hover:bg-[var(--surface-container-low)] transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
@@ -81,7 +88,7 @@ export default function Header() {
                 onClick={() => openLoginModal()}
                 className="text-xs"
               >
-                u-SAINT 로그인
+                {t.nav.login}
               </Button>
             )}
           </div>

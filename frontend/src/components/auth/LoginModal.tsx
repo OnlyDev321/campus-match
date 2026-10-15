@@ -3,10 +3,12 @@
 import React, { useState } from "react";
 import { Modal, Input, Button, Badge } from "@/design-system";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { ShieldCheck, User, Lock, AlertCircle, Sparkles } from "lucide-react";
 
 export default function LoginModal() {
   const { isLoginModalOpen, closeLoginModal, login } = useAuth();
+  const { t } = useLanguage();
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -21,7 +23,7 @@ export default function LoginModal() {
     setIsSubmitting(false);
 
     if (!res.success) {
-      setErrorMessage(res.error || "로그인에 실패했습니다.");
+      setErrorMessage(res.error || t.loginModal.errorMissing);
     } else {
       // Clear form on success
       setStudentId("");
@@ -47,10 +49,10 @@ export default function LoginModal() {
           </div>
           <div>
             <h3 className="text-base font-bold text-(--text-primary) tracking-tight">
-              숭실대학교 u-SAINT 로그인
+              {t.loginModal.title}
             </h3>
             <p className="text-xs text-(--text-muted) font-normal">
-              포털 계정으로 1초 만에 안전하게 시작하세요
+              {t.loginModal.subtitle}
             </p>
           </div>
         </div>
@@ -68,8 +70,8 @@ export default function LoginModal() {
         {/* Student ID input */}
         <div>
           <Input
-            label="학번 (Student ID)"
-            placeholder="예: 20211234"
+            label={t.loginModal.studentIdLabel}
+            placeholder={t.loginModal.studentIdPlaceholder}
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             leftIcon={<User className="w-4 h-4" />}
@@ -82,9 +84,9 @@ export default function LoginModal() {
         {/* Portal password input */}
         <div>
           <Input
-            label="u-SAINT 비밀번호"
+            label={t.loginModal.passwordLabel}
             type="password"
-            placeholder="포털 비밀번호를 입력하세요"
+            placeholder={t.loginModal.passwordPlaceholder}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             leftIcon={<Lock className="w-4 h-4" />}
@@ -101,9 +103,9 @@ export default function LoginModal() {
             className="inline-flex items-center gap-1.5 text-xs text-(--primary) hover:underline font-medium cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span>데모 계정 자동 입력 (홍길동 학우)</span>
+            <span>{t.loginModal.demoFillBtn}</span>
           </button>
-          <span className="text-(--text-faint)">컴퓨터학부 3학년</span>
+          <span className="text-(--text-faint)">{t.loginModal.demoDept}</span>
         </div>
 
         {/* Submit button */}
@@ -115,7 +117,7 @@ export default function LoginModal() {
             fullWidth
             isLoading={isSubmitting}
           >
-            {isSubmitting ? "u-SAINT 포털 인증 중..." : "인증 및 로그인"}
+            {isSubmitting ? t.loginModal.submittingBtn : t.loginModal.submitBtn}
           </Button>
         </div>
 
@@ -124,11 +126,10 @@ export default function LoginModal() {
           <ShieldCheck className="w-5 h-5 text-(--success) shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-semibold text-(--text-primary)">
-              100% 무저장 보안 원칙 (Zero Password Retention)
+              {t.loginModal.securityGuaranteeTitle}
             </p>
             <p className="text-(--text-secondary) leading-relaxed">
-              입력하신 비밀번호는 숭실대학교 포털 실시간 인증에만 일회성으로 사용되며, 
-              CampusMatch 데이터베이스에 절대 저장되지 않습니다.
+              {t.loginModal.securityGuaranteeDesc}
             </p>
           </div>
         </div>
