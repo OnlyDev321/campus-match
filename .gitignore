@@ -6,3 +6,10 @@ __pycache__/
 
 # OS / IDE
 .DS_Store
+
+#Agents & skill
+.agents
+skills-lock.json
+
+#reference folder 
+ssuonepage

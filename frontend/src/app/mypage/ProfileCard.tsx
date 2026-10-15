@@ -304,7 +304,7 @@ const ProfileEditor = ({
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               style={{ borderRadius: "var(--radius-input)" }}
-              className={`w-full px-3 py-2 text-sm leading-relaxed resize-none bg-(--surface) text-(--text-primary) border transition-all duration-150 placeholder:text-(--text-faint) focus:outline-none focus:border-(--primary-container) focus:ring-2 focus:ring-(--focus-ring) ${
+              className={`w-full px-3 py-2 text-sm leading-relaxed resize-none bg-(--surface) text-(--text-primary) border placeholder:text-(--text-faint) focus:outline-none focus:border-(--primary-container) ${
                 errors.bio
                   ? "border-(--error) focus:border-(--error) focus:ring-(--error-border)"
                   : "border-(--border) hover:border-(--border-strong)"

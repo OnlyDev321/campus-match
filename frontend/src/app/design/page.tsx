@@ -565,7 +565,7 @@ const { theme, resolvedTheme, toggleTheme } = useTheme();
               rows={3}
               placeholder="Giới thiệu về kỹ năng, kinh nghiệm và mong muốn đóng góp cho dự án..."
               style={{ borderRadius: "var(--radius-input)" }}
-              className="w-full p-3 text-xs bg-(--surface) text-(--text-primary) border border-(--border) focus:outline-none focus:border-(--primary-container) focus:ring-2 focus:ring-(--focus-ring) placeholder:text-(--text-faint)"
+              className="w-full p-3 text-xs bg-(--surface) text-(--text-primary) border border-(--border) focus:outline-none focus:border-(--primary-container) placeholder:text-(--text-faint)"
             />
           </div>
         </div>

@@ -30,7 +30,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const isFull = spotsLeft === 0;
 
   return (
-    <Card className="h-full flex flex-col gap-4 p-6 transition-all duration-200 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
+    <Card className="h-full flex flex-col gap-4 p-6 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
       <CardHeader className="mb-0 flex-wrap items-center">
         <Badge variant="primary" className="font-medium">
           {course}
@@ -55,7 +55,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)] transition-colors hover:border-[var(--border-strong)]"
+            className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)] hover:border-[var(--border-strong)]"
           >
             #{tag}
           </span>

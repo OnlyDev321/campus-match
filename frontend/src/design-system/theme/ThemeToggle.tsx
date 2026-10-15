@@ -40,7 +40,7 @@ export function ThemeToggle({
         <button
           type="button"
           onClick={() => setTheme("light")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "light"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
               : "hover:text-[var(--text-primary)] hover:bg-[var(--surface-container)]"
@@ -55,7 +55,7 @@ export function ThemeToggle({
         <button
           type="button"
           onClick={() => setTheme("dark")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "dark"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
               : "hover:text-[var(--text-primary)] hover:bg-[var(--surface-container)]"
@@ -70,7 +70,7 @@ export function ThemeToggle({
         <button
           type="button"
           onClick={() => setTheme("system")}
-          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "system"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
               : "hover:text-[var(--text-primary)] hover:bg-[var(--surface-container)]"
@@ -89,7 +89,7 @@ export function ThemeToggle({
     <button
       type="button"
       onClick={toggleTheme}
-      className={`relative inline-flex items-center justify-center w-9 h-9 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-container-low)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] active:scale-95 ${className}`}
+      className={`relative inline-flex items-center justify-center w-9 h-9 rounded-[var(--radius-button)] border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--surface-container-low)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary)] active:scale-95 ${className}`}
       aria-label={`Switch to ${resolvedTheme === "dark" ? "light" : "dark"} mode`}
       title={`Current: ${resolvedTheme === "dark" ? "Dark Mode" : "Light Mode"} (click to toggle)`}
     >

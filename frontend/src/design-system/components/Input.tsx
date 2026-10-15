@@ -54,7 +54,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               borderRadius: "var(--radius-input)",
               ...style,
             }}
-            className={`w-full h-[38px] text-sm bg-(--surface) text-(--text-primary) border transition-all duration-150 placeholder:text-(--text-faint) focus:outline-none focus:border-(--primary-container) focus:ring-2 focus:ring-(--focus-ring) disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full h-[38px] text-sm bg-(--surface) text-(--text-primary) border placeholder:text-(--text-faint) focus:outline-none focus:border-(--primary-container) disabled:opacity-50 disabled:cursor-not-allowed ${
               leftIcon ? "pl-9" : "pl-3"
             } ${rightIcon ? "pr-9" : "pr-3"} ${
               error
