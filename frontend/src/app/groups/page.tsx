@@ -7,6 +7,7 @@ import {
   ChevronDown,
   X,
   SlidersHorizontal,
+  Search,
 } from "lucide-react";
 import GroupCard from "@/components/group/GroupCard";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
@@ -29,70 +30,136 @@ const GroupPage = () => {
   }, [isLoggedIn, isLoading, openLoginModal, router]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
-  const [selectedSkill, setSelectedSkill] = useState("All Skills");
-  const [isRecruitingOnly, setIsRecruitingOnly] = useState(true);
+  const [selectedCollege, setSelectedCollege] = useState("All Colleges");
+  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
+  const [selectedYear, setSelectedYear] = useState("All Years");
   const [sortBy, setSortBy] = useState("Most Recent");
 
+  // Applied filter states (triggered on Search button click or Enter)
+  const [appliedQuery, setAppliedQuery] = useState("");
+  const [appliedCollege, setAppliedCollege] = useState("All Colleges");
+  const [appliedDepartment, setAppliedDepartment] = useState("All Departments");
+  const [appliedYear, setAppliedYear] = useState("All Years");
+
   // Dropdown open states
-  const [isSubjectOpen, setIsSubjectOpen] = useState(false);
-  const [isSkillOpen, setIsSkillOpen] = useState(false);
+  const [isCollegeOpen, setIsCollegeOpen] = useState(false);
+  const [isDeptOpen, setIsDeptOpen] = useState(false);
+  const [isYearOpen, setIsYearOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Available subjects and skills extracted from mock data
-  const subjects = useMemo(() => {
-    const list = Array.from(new Set(mockGroupCards.map((g) => g.course)));
-    return ["All Subjects", ...list];
+  // Available colleges (단과대)
+  const colleges = useMemo(() => {
+    const list = Array.from(new Set(mockGroupCards.map((g) => g.college)));
+    return ["All Colleges", ...list];
   }, []);
 
-  const skills = useMemo(() => {
-    const set = new Set<string>();
-    mockGroupCards.forEach((g) => g.tags.forEach((t) => set.add(t)));
-    return ["All Skills", ...Array.from(set)];
+  // Available departments (학부/학과 - cascaded by selected college)
+  const departments = useMemo(() => {
+    const pool =
+      selectedCollege === "All Colleges"
+        ? mockGroupCards
+        : mockGroupCards.filter((g) => g.college === selectedCollege);
+    const list = Array.from(new Set(pool.map((g) => g.department)));
+    return ["All Departments", ...list];
+  }, [selectedCollege]);
+
+  // Available years (연도 / Năm đăng bài)
+  const years = useMemo(() => {
+    const list = Array.from(new Set(mockGroupCards.map((g) => g.postYear))).sort(
+      (a, b) => b - a,
+    );
+    return ["All Years", ...list.map(String)];
   }, []);
+
+  const handleSelectCollege = (col: string) => {
+    setSelectedCollege(col);
+    setIsCollegeOpen(false);
+    if (col !== "All Colleges") {
+      const deptsInCollege = mockGroupCards
+        .filter((g) => g.college === col)
+        .map((g) => g.department);
+      if (!deptsInCollege.includes(selectedDepartment)) {
+        setSelectedDepartment("All Departments");
+      }
+    }
+  };
+
+  const handleSearch = () => {
+    setAppliedQuery(searchQuery);
+    setAppliedCollege(selectedCollege);
+    setAppliedDepartment(selectedDepartment);
+    setAppliedYear(selectedYear);
+  };
 
   // Filter groups
   const filteredGroups = useMemo(() => {
-    return mockGroupCards.filter((group) => {
-      // Search keyword filter
-      if (searchQuery.trim()) {
-        const query = searchQuery.toLowerCase();
-        const matchesTitle = group.title.toLowerCase().includes(query);
-        const matchesDesc = group.description.toLowerCase().includes(query);
-        const matchesCourse = group.course.toLowerCase().includes(query);
-        const matchesTags = group.tags.some((t) =>
-          t.toLowerCase().includes(query),
-        );
-        if (!matchesTitle && !matchesDesc && !matchesCourse && !matchesTags) {
+    return mockGroupCards
+      .filter((group) => {
+        // Search keyword filter
+        if (appliedQuery.trim()) {
+          const query = appliedQuery.toLowerCase();
+          const matchesTitle = group.title.toLowerCase().includes(query);
+          const matchesDesc = group.description.toLowerCase().includes(query);
+          const matchesCourse = group.course.toLowerCase().includes(query);
+          const matchesCollege = group.college.toLowerCase().includes(query);
+          const matchesDept = group.department.toLowerCase().includes(query);
+          const matchesYear = String(group.postYear).includes(query);
+          if (
+            !matchesTitle &&
+            !matchesDesc &&
+            !matchesCourse &&
+            !matchesCollege &&
+            !matchesDept &&
+            !matchesYear
+          ) {
+            return false;
+          }
+        }
+
+        // College filter (단과대)
+        if (
+          appliedCollege !== "All Colleges" &&
+          group.college !== appliedCollege
+        ) {
           return false;
         }
-      }
 
-      // Subject filter
-      if (
-        selectedSubject !== "All Subjects" &&
-        group.course !== selectedSubject
-      ) {
-        return false;
-      }
+        // Department filter (학부/학과)
+        if (
+          appliedDepartment !== "All Departments" &&
+          group.department !== appliedDepartment
+        ) {
+          return false;
+        }
 
-      // Skill filter
-      if (
-        selectedSkill !== "All Skills" &&
-        !group.tags.includes(selectedSkill)
-      ) {
-        return false;
-      }
+        // Post Year filter (Năm đăng bài)
+        if (
+          appliedYear !== "All Years" &&
+          String(group.postYear) !== appliedYear
+        ) {
+          return false;
+        }
 
-      // Recruiting only filter
-      if (isRecruitingOnly) {
-        const spotsLeft = group.maxMembers - group.memberCount;
-        if (spotsLeft <= 0) return false;
-      }
-
-      return true;
-    });
-  }, [searchQuery, selectedSubject, selectedSkill, isRecruitingOnly]);
+        return true;
+      })
+      .sort((a, b) => {
+        if (sortBy === "Most Recent") {
+          return b.postYear - a.postYear;
+        }
+        if (sortBy === "Spots Left") {
+          const spotsA = a.maxMembers - a.memberCount;
+          const spotsB = b.maxMembers - b.memberCount;
+          return spotsB - spotsA;
+        }
+        return 0;
+      });
+  }, [
+    appliedQuery,
+    appliedCollege,
+    appliedDepartment,
+    appliedYear,
+    sortBy,
+  ]);
 
   const activeGroupsCount = mockGroupCards.length;
   const teamsRecruitingCount = mockGroupCards.filter(
@@ -100,16 +167,20 @@ const GroupPage = () => {
   ).length;
 
   const hasActiveFilters =
-    isRecruitingOnly ||
-    selectedSubject !== "All Subjects" ||
-    selectedSkill !== "All Skills" ||
-    searchQuery.trim() !== "";
+    appliedCollege !== "All Colleges" ||
+    appliedDepartment !== "All Departments" ||
+    appliedYear !== "All Years" ||
+    appliedQuery.trim() !== "";
 
   const handleClearAll = () => {
     setSearchQuery("");
-    setSelectedSubject("All Subjects");
-    setSelectedSkill("All Skills");
-    setIsRecruitingOnly(false);
+    setSelectedCollege("All Colleges");
+    setSelectedDepartment("All Departments");
+    setSelectedYear("All Years");
+    setAppliedQuery("");
+    setAppliedCollege("All Colleges");
+    setAppliedDepartment("All Departments");
+    setAppliedYear("All Years");
   };
 
   return (
@@ -176,21 +247,28 @@ const GroupPage = () => {
           placeholder="Search by group name, topic, or keyword..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              handleSearch();
+            }
+          }}
           shortcut=""
         />
 
         {/* Filters and Sort Controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
           <div className="flex flex-wrap items-center gap-2.5">
-            {/* Subject Dropdown */}
+            {/* College Dropdown (단과대) */}
             <div className="relative">
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
                 onClick={() => {
-                  setIsSubjectOpen(!isSubjectOpen);
-                  setIsSkillOpen(false);
+                  setIsCollegeOpen(!isCollegeOpen);
+                  setIsDeptOpen(false);
+                  setIsYearOpen(false);
                   setIsSortOpen(false);
                 }}
                 rightIcon={
@@ -198,43 +276,41 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  Subject:
+                  대학:
                 </span>
-                <span>{selectedSubject}</span>
+                <span>{selectedCollege}</span>
               </Button>
 
-              {isSubjectOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-48 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
-                  {subjects.map((sub) => (
+              {isCollegeOpen && (
+                <div className="absolute top-full left-0 mt-1.5 w-44 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                  {colleges.map((col) => (
                     <button
-                      key={sub}
+                      key={col}
                       type="button"
-                      onClick={() => {
-                        setSelectedSubject(sub);
-                        setIsSubjectOpen(false);
-                      }}
+                      onClick={() => handleSelectCollege(col)}
                       className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
-                        selectedSubject === sub
+                        selectedCollege === col
                           ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
                           : "text-[var(--text-secondary)]"
                       }`}
                     >
-                      {sub}
+                      {col}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Skills Dropdown */}
+            {/* Department Dropdown (학부/학과) */}
             <div className="relative">
               <Button
                 variant="outline"
                 size="sm"
                 type="button"
                 onClick={() => {
-                  setIsSkillOpen(!isSkillOpen);
-                  setIsSubjectOpen(false);
+                  setIsDeptOpen(!isDeptOpen);
+                  setIsCollegeOpen(false);
+                  setIsYearOpen(false);
                   setIsSortOpen(false);
                 }}
                 rightIcon={
@@ -242,59 +318,91 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  Skills:
+                  학과:
                 </span>
-                <span>{selectedSkill}</span>
+                <span>{selectedDepartment}</span>
               </Button>
 
-              {isSkillOpen && (
+              {isDeptOpen && (
                 <div className="absolute top-full left-0 mt-1.5 w-48 max-h-56 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
-                  {skills.map((skill) => (
+                  {departments.map((dept) => (
                     <button
-                      key={skill}
+                      key={dept}
                       type="button"
                       onClick={() => {
-                        setSelectedSkill(skill);
-                        setIsSkillOpen(false);
+                        setSelectedDepartment(dept);
+                        setIsDeptOpen(false);
                       }}
                       className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
-                        selectedSkill === skill
+                        selectedDepartment === dept
                           ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
                           : "text-[var(--text-secondary)]"
                       }`}
                     >
-                      {skill}
+                      {dept}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Status Button (Recruiting Pill) using Button */}
+            {/* Year Dropdown (연도 / Năm đăng) */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => {
+                  setIsYearOpen(!isYearOpen);
+                  setIsCollegeOpen(false);
+                  setIsDeptOpen(false);
+                  setIsSortOpen(false);
+                }}
+                rightIcon={
+                  <ChevronDown className="w-3.5 h-3.5 text-[var(--text-faint)]" />
+                }
+              >
+                <span className="text-[var(--text-muted)] font-normal mr-1">
+                  연도:
+                </span>
+                <span>
+                  {selectedYear === "All Years" ? "All Years" : `${selectedYear}년`}
+                </span>
+              </Button>
+
+              {isYearOpen && (
+                <div className="absolute top-full left-0 mt-1.5 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                  {years.map((yr) => (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => {
+                        setSelectedYear(yr);
+                        setIsYearOpen(false);
+                      }}
+                      className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                        selectedYear === yr
+                          ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                          : "text-[var(--text-secondary)]"
+                      }`}
+                    >
+                      {yr === "All Years" ? yr : `${yr}년`}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Search Action Button */}
             <Button
-              variant={isRecruitingOnly ? "secondary" : "outline"}
+              variant="primary"
               size="sm"
               type="button"
-              onClick={() => setIsRecruitingOnly(!isRecruitingOnly)}
-              leftIcon={
-                <span className="w-2 h-2 rounded-full bg-[var(--success)] shrink-0" />
-              }
-              rightIcon={
-                <ChevronDown
-                  className={`w-3.5 h-3.5 ${
-                    isRecruitingOnly
-                      ? "text-[var(--primary)]"
-                      : "text-[var(--text-faint)]"
-                  }`}
-                />
-              }
-              className={
-                isRecruitingOnly
-                  ? "!border-[var(--primary-soft-border)] !bg-[var(--primary-soft)] !text-[var(--primary)]"
-                  : ""
-              }
+              onClick={handleSearch}
+              leftIcon={<Search className="w-3.5 h-3.5" />}
+              className="px-4 font-semibold shadow-sm"
             >
-              Recruiting
+              Search
             </Button>
           </div>
 
@@ -309,8 +417,9 @@ const GroupPage = () => {
               type="button"
               onClick={() => {
                 setIsSortOpen(!isSortOpen);
-                setIsSubjectOpen(false);
-                setIsSkillOpen(false);
+                setIsCollegeOpen(false);
+                setIsDeptOpen(false);
+                setIsYearOpen(false);
               }}
               rightIcon={
                 <ChevronDown className="w-3.5 h-3.5 text-[var(--text-faint)]" />
@@ -321,7 +430,7 @@ const GroupPage = () => {
 
             {isSortOpen && (
               <div className="absolute top-full right-0 mt-1.5 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
-                {["Most Recent", "Most Popular", "Spots Left"].map((item) => (
+                {["Most Recent", "Spots Left"].map((item) => (
                   <button
                     key={item}
                     type="button"
@@ -350,54 +459,66 @@ const GroupPage = () => {
               Active Filters:
             </span>
 
-            {isRecruitingOnly && (
+            {appliedCollege !== "All Colleges" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>Status: Recruiting</span>
+                <span>대학: {appliedCollege}</span>
                 <button
                   type="button"
-                  onClick={() => setIsRecruitingOnly(false)}
+                  onClick={() => {
+                    setAppliedCollege("All Colleges");
+                    setSelectedCollege("All Colleges");
+                  }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
-                  aria-label="Remove recruiting filter"
+                  aria-label="Remove college filter"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </Badge>
             )}
 
-            {selectedSubject !== "All Subjects" && (
+            {appliedDepartment !== "All Departments" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>Subject: {selectedSubject}</span>
+                <span>학과: {appliedDepartment}</span>
                 <button
                   type="button"
-                  onClick={() => setSelectedSubject("All Subjects")}
+                  onClick={() => {
+                    setAppliedDepartment("All Departments");
+                    setSelectedDepartment("All Departments");
+                  }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
-                  aria-label="Remove subject filter"
+                  aria-label="Remove department filter"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </Badge>
             )}
 
-            {selectedSkill !== "All Skills" && (
+            {appliedYear !== "All Years" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>Skill: {selectedSkill}</span>
+                <span>연도: {appliedYear}년</span>
                 <button
                   type="button"
-                  onClick={() => setSelectedSkill("All Skills")}
+                  onClick={() => {
+                    setAppliedYear("All Years");
+                    setSelectedYear("All Years");
+                  }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
-                  aria-label="Remove skill filter"
+                  aria-label="Remove year filter"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </Badge>
             )}
 
-            {searchQuery.trim() !== "" && (
+            {appliedQuery.trim() !== "" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>Search: &quot;{searchQuery}&quot;</span>
+                <span>Search: &quot;{appliedQuery}&quot;</span>
                 <button
                   type="button"
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => {
+                    setAppliedQuery("");
+                    setSearchQuery("");
+                  }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
                   aria-label="Clear search query"
                 >

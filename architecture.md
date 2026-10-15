@@ -130,14 +130,12 @@ campus-match/
 │   │   ├── repository/
 │   │   │   ├── UserRepository.java         # Spring Data JPA cho User
 │   │   │   ├── GroupRepository.java        # Spring Data JPA cho StudyGroup
-│   │   │   ├── ApplicationRepository.java  # Spring Data JPA cho Application
-│   │   │   └── TagRepository.java          # Spring Data JPA cho Tag
+│   │   │   └── ApplicationRepository.java  # Spring Data JPA cho Application
 │   │   ├── entity/
 │   │   │   ├── User.java                   # Table: users
 │   │   │   ├── StudyGroup.java             # Table: study_groups
 │   │   │   ├── Application.java            # Table: applications
-│   │   │   ├── GroupMember.java            # Table: group_members
-│   │   │   └── Tag.java                    # Table: tags
+│   │   │   └── GroupMember.java            # Table: group_members
 │   │   ├── dto/
 │   │   │   ├── request/                    # SSORequest, CreateGroupRequest, ApplyRequest...
 │   │   │   └── response/                   # AuthResponse, GroupResponse, MemberResponse...
@@ -158,29 +156,30 @@ campus-match/
 Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chuẩn mực:
 
 ```text
-┌──────────────────────┐             ┌──────────────────────┐
-│        users         │             │     study_groups     │
-├──────────────────────┤             ├──────────────────────┤
-│ id (PK, UUID/BIGINT) │1           *│ id (PK)              │
-│ student_id (UNIQUE)  │────────────▶│ leader_id (FK)       │
-│ name                 │             │ title                │
-│ department           │             │ description          │
-│ faculty              │             │ max_members          │
-│ email                │             │ status               │
-│ academic_year        │             │ created_at           │
-│ avatar_url           │             └──────────┬───────────┘
-│ created_at           │                        │
-└──────────┬───────────┘                        │
-           │                                    │
-           │ 1                                  │ 1
-           ▼ *                                  ▼ *
-┌──────────────────────┐             ┌──────────────────────┐
-│     applications     │             │    group_members     │
-├──────────────────────┤             ├──────────────────────┤
-│ id (PK)              │             │ group_id (PK, FK)    │
-│ group_id (FK)        │             │ user_id  (PK, FK)    │
-│ applicant_id (FK)    │             │ joined_at            │
-│ statement            │             └──────────────────────┘
+┌──────────────────────┐             ┌───────────────────────────┐
+│        users         │             │       study_groups        │
+├──────────────────────┤             ├───────────────────────────┤
+│ id (PK, UUID/BIGINT) │1           *│ id (PK)                   │
+│ student_id (UNIQUE)  │────────────▶│ leader_id (FK)            │
+│ name                 │             │ title                     │
+│ department           │             │ description               │
+│ faculty              │             │ college    (단과대, IT대학)  │
+│ email                │             │ department (학과, 소프트...) │
+│ academic_year        │             │ post_year  (Năm đăng, 2024)│
+│ avatar_url           │             │ max_members               │
+│ created_at           │             │ status                    │
+└──────────┬───────────┘             │ created_at                │
+           │                         └─────────────┬─────────────┘
+           │                                       │
+           │ 1                                     │ 1
+           ▼ *                                     ▼ *
+┌──────────────────────┐             ┌───────────────────────────┐
+│     applications     │             │       group_members       │
+├──────────────────────┤             ├───────────────────────────┤
+│ id (PK)              │             │ group_id (PK, FK)         │
+│ group_id (FK)        │             │ user_id  (PK, FK)         │
+│ applicant_id (FK)    │             │ joined_at                 │
+│ statement            │             └───────────────────────────┘
 │ status (PENDING...)  │
 │ created_at           │
 └──────────────────────┘
@@ -198,21 +197,20 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
    - `academic_year`: Năm học (1, 2, 3, 4).
    - `created_at`: Thời gian tạo.
 
-2. **`study_groups` (Nhóm học tập & Đồ án):**
+2. **`study_groups` (Nhóm học tập & Đồ án - Lọc theo 3 tiêu chí u-SAINT):**
    - `id`: Khóa chính.
    - `leader_id`: FK liên kết tới `users(id)`.
    - `title`: Tên nhóm / đề tài.
    - `description`: Mô tả chi tiết mục tiêu, yêu cầu.
-   - `course_code` / `course_name`: Mã môn học (e.g. `CS490 - Capstone`).
+   - `college`: Đơn vị trường/viện (단과대학, VD: `IT대학`). Kế thừa trực tiếp từ profile u-SAINT của người tạo.
+   - `department`: Đơn vị khoa/ngành (학부/학과, VD: `소프트웨어학부`, `컴퓨터학부`). Kế thừa trực tiếp từ profile u-SAINT của người tạo.
+   - `post_year`: Năm đăng bài (Integer, VD: `2024`). Được hệ thống tự động trích xuất từ năm của `created_at` để đánh B-Tree Index phục vụ lọc siêu tốc.
+   - `course_code` / `course_name`: Mã môn học (e.g. `CS490 - Capstone`, tùy chọn).
    - `max_members`: Số lượng thành viên tối đa (VD: 4 - 6).
    - `status`: Enum (`RECRUITING`, `COMPLETED`, `CLOSED`).
    - `created_at`, `updated_at`: Timestamps.
 
-3. **`tags` & `group_tags` (Hệ thống thẻ kỹ năng/môn học):**
-   - `tags`: `id`, `name` (Unique, VD: `Spring Boot`, `React`, `Java`, `AI`).
-   - `group_tags`: Bảng liên kết N-N, Composite PK `(group_id, tag_id)`.
-
-4. **`applications` (Đơn xin gia nhập nhóm):**
+3. **`applications` (Đơn xin gia nhập nhóm):**
    - `id`: Khóa chính.
    - `group_id`: FK liên kết tới `study_groups(id)`.
    - `applicant_id`: FK liên kết tới `users(id)`.
@@ -220,7 +218,7 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
    - `status`: Enum (`PENDING`, `ACCEPTED`, `REJECTED`).
    - **Ràng buộc:** `UNIQUE(group_id, applicant_id)` (Mỗi sinh viên chỉ nộp 1 đơn vào 1 nhóm).
 
-5. **`group_members` (Thành viên chính thức của nhóm):**
+4. **`group_members` (Thành viên chính thức của nhóm):**
    - Composite PK: `(group_id, user_id)`.
    - `role`: Trưởng nhóm (`LEADER`) hoặc Thành viên (`MEMBER`).
    - `joined_at`: Ngày gia nhập.
@@ -273,7 +271,7 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 | Method   | Endpoint       | Mô tả                                                     | Quyền truy cập  |
 | :------- | :------------- | :-------------------------------------------------------- | :-------------- |
-| `GET`    | `/groups`      | Tìm kiếm & lọc nhóm (`search`, `course`, `tag`, `status`) | Public / Bearer |
+| `GET`    | `/groups`      | Tìm kiếm & lọc nhóm (`search`, `college`, `department`, `year`, `status`) | Public / Bearer |
 | `GET`    | `/groups/{id}` | Xem chi tiết nhóm, danh sách thành viên hiện tại          | Public / Bearer |
 | `POST`   | `/groups`      | Tạo một nhóm học tập mới (Người tạo tự động là Leader)    | Bearer Token    |
 | `PUT`    | `/groups/{id}` | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)            | Chỉ Leader nhóm |
@@ -326,10 +324,9 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Đã cấu hình kết nối Neon PostgreSQL trong `application.yaml`.
 - [x] Đã thiết lập `SecurityConfig` và kiểm tra `HealthController`.
 - [ ] Tạo file Entity `User.java`.
-- [ ] Tạo file Entity `StudyGroup.java` và Enum `GroupStatus`.
+- [ ] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
 - [ ] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
 - [ ] Tạo file Entity `GroupMember.java`.
-- [ ] Tạo file Entity `Tag.java`.
 - [ ] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
 
 ### 📍 Giai đoạn 2: Cơ chế Xác thực & Cấp phát JWT (Backend + Frontend)
@@ -342,8 +339,8 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 
 ### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
 
-- [ ] Viết `GroupRepository.java` hỗ trợ tìm kiếm theo từ khóa và lọc theo môn học/tag.
-- [ ] Viết `GroupService.java` xử lý nghiệp vụ tạo nhóm, giới hạn số lượng thành viên.
+- [ ] Viết `GroupRepository.java` hỗ trợ tìm kiếm theo từ khóa và lọc theo 3 mục chuẩn u-SAINT: 단과대 (`college`), 학부/학과 (`department`), năm đăng bài (`post_year`).
+- [ ] Viết `GroupService.java` xử lý nghiệp vụ tạo nhóm (tự động gắn `college`, `department` của user và `post_year` từ thời điểm tạo), giới hạn số lượng thành viên.
 - [ ] Viết `GroupController.java` cho các endpoint `GET /api/groups`, `GET /api/groups/{id}`, `POST /api/groups`.
 
 ### 📍 Giai đoạn 4: Ứng tuyển & Duyệt thành viên (Backend Application Module)
