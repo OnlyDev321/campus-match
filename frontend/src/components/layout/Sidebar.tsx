@@ -14,13 +14,7 @@ import {
 } from "lucide-react";
 import { Avatar } from "@/design-system";
 import { useLanguage } from "@/context/LanguageContext";
-
-interface NavItem {
-  label: string;
-  shortLabel?: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
+import type { NavItem } from "@/lib/types";
 
 // Pinned / Active groups for students
 const pinnedGroups = [

@@ -24,14 +24,14 @@ import {
   mockGroups,
   mockApplications,
 } from "@/lib/mockData";
-import type { User, GroupStatus, ApplicationStatus } from "@/lib/types";
+import type { User, GroupStatus, ApplicationStatus, MyPageTabKey } from "@/lib/types";
 
 // Trang My Page. Toàn bộ phần hiển thị nằm trong file này.
 // Khi có API thật, chỉ cần đổi 4 biến mock... thành fetch(), phần dưới giữ nguyên.
 // Các số thống kê (active groups, applications sent...) được tính từ danh sách,
 // không lưu riêng, để số liệu luôn khớp với những gì hiển thị bên dưới.
 
-type TabKey = "groups" | "applications";
+type TabKey = MyPageTabKey;
 
 const groupStatusBadge: Record<GroupStatus, { variant: BadgeVariant; label: string }> = {
   active: { variant: "active", label: "ACTIVE" },
@@ -60,8 +60,8 @@ const formatDate = (iso: string) => {
 };
 
 const MyPage = () => {
-  // Chỉ lưu trong state: tải lại trang sẽ về dữ liệu mock. Khi có API, nối ở onSave của ProfileCard.
-  const [user, setUser] = useState<User>(mockUser);
+  // Thông tin sinh viên đọc trực tiếp từ hồ sơ SSO u-SAINT của trường
+  const user = mockUser;
   const stats = mockStats;
   const groups = mockGroups;
   const applications = mockApplications;
@@ -134,8 +134,8 @@ const MyPage = () => {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-8">
-      {/* Profile */}
-      <ProfileCard user={user} onSave={setUser} />
+      {/* Profile (Read-only u-SAINT verified) */}
+      <ProfileCard user={user} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
