@@ -26,14 +26,9 @@ import ApplyModal from "@/components/application/ApplyModal";
 import TranslateButton from "@/components/common/TranslateButton";
 import { getGroupDetail } from "@/lib/mockData";
 import { useAuth } from "@/context/AuthContext";
+import type { GroupDetailPageProps } from "@/lib/types";
 
-interface PageProps {
-  params: Promise<{
-    id: string;
-  }>;
-}
-
-export default function GroupDetailPage({ params }: PageProps) {
+export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
   const { user, isLoggedIn, openLoginModal } = useAuth();

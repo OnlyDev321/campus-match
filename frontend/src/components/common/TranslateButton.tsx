@@ -3,12 +3,7 @@
 import React, { useState } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Globe, RefreshCw, Undo2, Sparkles } from "lucide-react";
-
-interface TranslateButtonProps {
-  originalText: string;
-  onTranslated: (translated: string | null) => void;
-  className?: string;
-}
+import type { TranslateButtonProps } from "@/lib/types";
 
 export default function TranslateButton({
   originalText,

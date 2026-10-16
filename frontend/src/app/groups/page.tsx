@@ -14,8 +14,8 @@ import {
 import GroupCard from "@/components/group/GroupCard";
 import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
-import { mockGroupCards } from "@/lib/mockData";
-import type { GroupCardData } from "@/lib/types";
+import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
+import type { GroupCardData, GroupDetailData } from "@/lib/types";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -44,7 +44,9 @@ const GroupPage = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // Quick Apply Modal State
-  const [selectedGroupForApply, setSelectedGroupForApply] = useState<GroupCardData | null>(null);
+  const [selectedGroupForApply, setSelectedGroupForApply] = useState<
+    GroupDetailData | GroupCardData | null
+  >(null);
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   // Applied filter states (triggered on Search button click or Enter)
@@ -568,7 +570,8 @@ const GroupPage = () => {
                 key={group.id}
                 group={group}
                 onJoin={() => {
-                  setSelectedGroupForApply(group);
+                  const detailedGroup = getGroupDetail(group.id);
+                  setSelectedGroupForApply(detailedGroup || group);
                   setIsApplyModalOpen(true);
                 }}
               />

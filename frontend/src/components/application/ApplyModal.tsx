@@ -13,14 +13,7 @@ import {
 } from "lucide-react";
 import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
 import { useAuth } from "@/context/AuthContext";
-import type { GroupCardData, GroupRoleQuota } from "@/lib/types";
-
-export interface ApplyModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  group: (GroupCardData & { rolesQuota?: GroupRoleQuota[] }) | null;
-  onSuccess?: (groupId: string) => void;
-}
+import type { ApplyModalProps } from "@/lib/types";
 
 export default function ApplyModal({
   isOpen,

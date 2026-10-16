@@ -4,8 +4,8 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { en, TranslationDict } from "@/i18n/dictionaries/en";
 import { ko } from "@/i18n/dictionaries/ko";
 import { vi } from "@/i18n/dictionaries/vi";
-
-export type SupportedLanguage = "en" | "ko" | "vi";
+import type { SupportedLanguage } from "@/lib/types";
+export type { SupportedLanguage };
 
 interface LanguageContextType {
   language: SupportedLanguage;

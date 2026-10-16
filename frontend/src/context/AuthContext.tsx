@@ -3,26 +3,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export interface StudentProfile {
-  studentId: string;
-  name: string;
-  department: string;
-  faculty: string;
-  email: string;
-  academicYear: string;
-}
-
-interface AuthContextType {
-  user: StudentProfile | null;
-  token: string | null;
-  isLoggedIn: boolean;
-  isLoading: boolean;
-  isLoginModalOpen: boolean;
-  openLoginModal: (redirectTo?: string) => void;
-  closeLoginModal: () => void;
-  login: (studentId: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-}
+import type { StudentProfile, AuthContextType } from "@/lib/types";
+export type { StudentProfile, AuthContextType };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
