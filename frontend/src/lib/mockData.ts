@@ -4,6 +4,9 @@ import type {
   MyGroup,
   MyApplication,
   GroupCardData,
+  GroupDetailData,
+  GroupRoleQuota,
+  GroupMemberDetail,
   ApplicantApplication,
 } from "@/lib/types";
 
@@ -413,3 +416,167 @@ export const mockApplications: MyApplication[] = [
     message: "I would like to learn Flutter through this project.",
   },
 ];
+
+// Chi tiết mở rộng cho trang /groups/[id]
+const detailedGroupPresets: Record<string, Partial<GroupDetailData>> = {
+  wp1: {
+    courseCode: "CSE408",
+    semester: "2025 Spring (Semester 1)",
+    longDescription:
+      "We are building a comprehensive web platform for university student clubs, event ticketing, and seat reservations. The system focuses on high responsiveness, clean component architecture, and frictionless QR pass validation during on-campus festivals. We use Next.js App Router for frontend and Go / Fiber for high-performance microservices, along with PostgreSQL on Neon.",
+    objectives: [
+      "Targeting A+ grade with completed capstone demonstration before finals.",
+      "Ship a production-grade MVP tested with at least 2 campus clubs.",
+      "Bi-weekly sprint demos and clean Git Flow branching standards.",
+    ],
+    meetingSchedule: "Every Tuesday 19:00 (Discord) & Saturday 14:00 (IT Hall 402)",
+    meetingFormat: "Hybrid",
+    requiredSkills: ["Next.js", "TypeScript", "Tailwind CSS", "Go", "PostgreSQL", "Docker", "Git"],
+    rolesQuota: [
+      { role: "Frontend Developer", current: 2, max: 2, description: "Next.js 15, UI tokens, responsive design" },
+      { role: "Backend Developer", current: 1, max: 1, description: "Go REST API, DB schema, JWT Auth" },
+      { role: "Fullstack / DevOps", current: 0, max: 1, description: "Docker, CI/CD, Neon Postgres setup" },
+    ],
+    leaderEmail: "jinho.kim@soongsil.ac.kr",
+    leaderStudentId: "20211842",
+    membersList: [
+      {
+        id: "m-1",
+        name: "Kim Jinho",
+        role: "Leader & Frontend Lead",
+        major: "소프트웨어학부 (3rd Year)",
+        isLeader: true,
+      },
+      {
+        id: "m-2",
+        name: "Lee Minwoo",
+        role: "Backend Developer",
+        major: "컴퓨터학부 (3rd Year)",
+      },
+      {
+        id: "m-3",
+        name: "Park Seoyun",
+        role: "UI/UX & Frontend",
+        major: "글로벌미디어학부 (2nd Year)",
+      },
+    ],
+  },
+  nlp01: {
+    courseCode: "AI502",
+    semester: "2025 Spring (Semester 1)",
+    longDescription:
+      "Weekly reading group and practical implementations focusing on recent Large Language Model reasoning architectures (DeepSeek-R1, Qwen2.5, Llama 3) and advanced Retrieval-Augmented Generation (GraphRAG, Hybrid dense/sparse indexing). We build practical benchmarking scripts using PyTorch and Hugging Face Transformers.",
+    objectives: [
+      "Present 1 top-tier NLP conference paper (ACL/EMNLP) every two weeks.",
+      "Build a working Korean/English multi-turn retrieval QA agent.",
+      "Submit an experimental workshop paper or technical tech blog series.",
+    ],
+    meetingSchedule: "Thursdays 18:30 (Online Zoom / Google Meet)",
+    meetingFormat: "Online",
+    requiredSkills: ["Python", "PyTorch", "Hugging Face", "LangChain / LlamaIndex", "Vector DB"],
+    rolesQuota: [
+      { role: "Paper Presenter & Lead", current: 2, max: 2 },
+      { role: "ML Engineer (Fine-tuning)", current: 2, max: 2 },
+      { role: "Data Pipeline & Eval", current: 0, max: 1 },
+    ],
+    leaderEmail: "cw.lee@soongsil.ac.kr",
+    leaderStudentId: "20220914",
+    membersList: [
+      { id: "m-10", name: "Lee Chaewon", role: "Leader & Research Lead", major: "AI융합학부", isLeader: true },
+      { id: "m-11", name: "Kang Donghyuk", role: "RAG Pipeline", major: "AI융합학부" },
+      { id: "m-12", name: "Song Jiwon", role: "Benchmark & Evaluation", major: "소프트웨어학부" },
+      { id: "m-13", name: "Hwang Subin", role: "Model Fine-tuning", major: "컴퓨터학부" },
+    ],
+  },
+  cap01: {
+    courseCode: "CSE499",
+    semester: "2025 Spring (Senior Capstone)",
+    longDescription:
+      "Developing a peer-to-peer campus ride sharing & commute matching app with real-time route optimization for Soongsil students commuting from Incheon, Suwon, and Gyeonggi. Integrates Kakao Map API, real-time WebSockets, and student identity verification via SSO.",
+    objectives: [
+      "Complete Senior Capstone Project with potential patent / conference demo.",
+      "Deploy cross-platform mobile app on TestFlight & Google Play Beta.",
+      "Achieve sub-200ms real-time chat & location ping latency.",
+    ],
+    meetingSchedule: "Mondays & Fridays 15:00 (Student Union Hall B1)",
+    meetingFormat: "Hybrid",
+    requiredSkills: ["Flutter / React Native", "Spring Boot", "Redis", "WebSocket", "Figma"],
+    rolesQuota: [
+      { role: "Team Lead & Architecture", current: 1, max: 1 },
+      { role: "Mobile Developer", current: 1, max: 2 },
+      { role: "Backend Developer", current: 0, max: 1 },
+    ],
+    leaderEmail: "sm.park@soongsil.ac.kr",
+    leaderStudentId: "20201452",
+    membersList: [
+      { id: "m-21", name: "Park Sungmin", role: "Team Lead & Mobile", major: "소프트웨어학부", isLeader: true },
+      { id: "m-22", name: "Yoon Jinwoo", role: "Mobile Developer", major: "소프트웨어학부" },
+    ],
+  },
+};
+
+export function getGroupDetail(id: string): GroupDetailData | null {
+  const baseCard = mockGroupCards.find((g) => g.id === id);
+  if (!baseCard) return null;
+
+  const preset = detailedGroupPresets[id] || {};
+
+  // Default values generated if not explicitly present in preset
+  const defaultObjectives = [
+    "Targeting an A+ grade in this semester's group evaluation.",
+    "Active participation in weekly sync-ups and code reviews.",
+    "Collaborative and supportive team dynamic with transparent progress tracking.",
+  ];
+
+  const defaultRolesQuota: GroupRoleQuota[] = [
+    {
+      role: "Core Developer",
+      current: Math.min(baseCard.memberCount, 2),
+      max: 2,
+      description: "Feature development & code delivery",
+    },
+    {
+      role: "Collaborator / Researcher",
+      current: Math.max(0, baseCard.memberCount - 2),
+      max: Math.max(1, baseCard.maxMembers - 2),
+      description: "Testing, documentation & implementation",
+    },
+  ];
+
+  const defaultMembers: GroupMemberDetail[] = [
+    {
+      id: `m-leader-${baseCard.id}`,
+      name: baseCard.leaderName,
+      role: "Team Leader",
+      major: baseCard.leaderMajor,
+      isLeader: true,
+    },
+  ];
+
+  // Fill in other mock members up to memberCount
+  for (let i = 2; i <= baseCard.memberCount; i++) {
+    defaultMembers.push({
+      id: `m-${baseCard.id}-${i}`,
+      name: `Member ${i}`,
+      role: i === 2 ? "Frontend / UI" : "Backend / Logic",
+      major: baseCard.department,
+      isLeader: false,
+    });
+  }
+
+  return {
+    ...baseCard,
+    courseCode: preset.courseCode || `${baseCard.college.slice(0, 2).toUpperCase()}${baseCard.postYear % 100}`,
+    semester: preset.semester || `${baseCard.postYear} Spring Semester`,
+    longDescription: preset.longDescription || `${baseCard.description} We are seeking active and motivated students to join our team for this course. Every member will take ownership of specific modules with mentorship from the leader.`,
+    objectives: preset.objectives || defaultObjectives,
+    meetingSchedule: preset.meetingSchedule || "Weekly on Wednesday 18:00 (Hybrid / Discord)",
+    meetingFormat: preset.meetingFormat || "Hybrid",
+    requiredSkills: preset.requiredSkills || ["Git / GitHub", "Team Communication", baseCard.course],
+    rolesQuota: preset.rolesQuota || defaultRolesQuota,
+    leaderEmail: preset.leaderEmail || `${baseCard.leaderName.toLowerCase().replace(/\s+/g, ".")}@soongsil.ac.kr`,
+    leaderStudentId: preset.leaderStudentId || `202${baseCard.postYear % 10}00${(baseCard.id.charCodeAt(0) % 90) + 10}`,
+    membersList: preset.membersList || defaultMembers,
+    createdAt: preset.createdAt || `${baseCard.postYear}-03-01`,
+  };
+}

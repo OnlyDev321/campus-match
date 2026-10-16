@@ -77,6 +77,38 @@ export interface GroupCardProps {
   onJoin?: (id: string) => void;
 }
 
+// Group Detail (trang Groups/[id])
+export interface GroupMemberDetail {
+  id: string;
+  name: string;
+  role: string;
+  major: string;
+  avatarUrl?: string;
+  isLeader?: boolean;
+}
+
+export interface GroupRoleQuota {
+  role: string;
+  current: number;
+  max: number;
+  description?: string;
+}
+
+export interface GroupDetailData extends GroupCardData {
+  courseCode?: string;
+  semester?: string;
+  longDescription?: string;
+  objectives?: string[];
+  meetingSchedule?: string;
+  meetingFormat?: "Online" | "Offline" | "Hybrid";
+  requiredSkills?: string[];
+  rolesQuota?: GroupRoleQuota[];
+  leaderEmail?: string;
+  leaderStudentId?: string;
+  membersList?: GroupMemberDetail[];
+  createdAt?: string;
+}
+
 // Application Card (trang Manage, leader duyệt đơn)
 export interface ApplicantApplication {
   id: string;

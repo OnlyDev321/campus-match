@@ -12,8 +12,10 @@ import {
   Search,
 } from "lucide-react";
 import GroupCard from "@/components/group/GroupCard";
+import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
 import { mockGroupCards } from "@/lib/mockData";
+import type { GroupCardData } from "@/lib/types";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -40,6 +42,10 @@ const GroupPage = () => {
   // Pagination State (6 items per page)
   const ITEMS_PER_PAGE = 6;
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Quick Apply Modal State
+  const [selectedGroupForApply, setSelectedGroupForApply] = useState<GroupCardData | null>(null);
+  const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   // Applied filter states (triggered on Search button click or Enter)
   const [appliedQuery, setAppliedQuery] = useState("");
@@ -558,7 +564,14 @@ const GroupPage = () => {
         <div className="space-y-6">
           <div className="responsive-card-grid">
             {paginatedGroups.map((group) => (
-              <GroupCard key={group.id} group={group} />
+              <GroupCard
+                key={group.id}
+                group={group}
+                onJoin={() => {
+                  setSelectedGroupForApply(group);
+                  setIsApplyModalOpen(true);
+                }}
+              />
             ))}
           </div>
 
@@ -639,6 +652,13 @@ const GroupPage = () => {
           </Button>
         </Card>
       )}
+
+      {/* Quick Application Modal */}
+      <ApplyModal
+        isOpen={isApplyModalOpen}
+        onClose={() => setIsApplyModalOpen(false)}
+        group={selectedGroupForApply}
+      />
     </div>
   );
 };
