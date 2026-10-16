@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/stores/authStore";
+import { useLanguage } from "@/stores/languageStore";
 import { Button, Badge } from "@/design-system";
 import {
   ShieldCheck,

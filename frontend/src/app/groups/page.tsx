@@ -19,7 +19,7 @@ import type { GroupCardData, GroupDetailData } from "@/lib/types";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/stores/authStore";
 
 const GroupPage = () => {
   const router = useRouter();

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage } from "@/stores/languageStore";
 import { Globe, RefreshCw, Undo2, Sparkles } from "lucide-react";
 import type { TranslateButtonProps } from "@/lib/types";
 

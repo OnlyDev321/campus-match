@@ -25,7 +25,7 @@ import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
 import TranslateButton from "@/components/common/TranslateButton";
 import { getGroupDetail } from "@/lib/mockData";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/stores/authStore";
 import type { GroupDetailPageProps } from "@/lib/types";
 
 export default function GroupDetailPage({ params }: GroupDetailPageProps) {

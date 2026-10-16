@@ -13,11 +13,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Avatar } from "@/design-system";
-import { useLanguage } from "@/context/LanguageContext";
-import type { NavItem } from "@/lib/types";
+import { useLanguage } from "@/stores/languageStore";
+import type { NavItem, PinnedGroup } from "@/lib/types";
 
 // Pinned / Active groups for students
-const pinnedGroups = [
+const pinnedGroups: PinnedGroup[] = [
   {
     id: "cs490",
     code: "CS490",
