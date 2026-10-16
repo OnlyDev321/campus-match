@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useLanguage, SupportedLanguage } from "@/context/LanguageContext";
+import { useLanguage } from "@/stores/languageStore";
+import type { LanguageOption } from "@/lib/types";
 import { Globe, Check, ChevronDown } from "lucide-react";
 
-const languages: { code: SupportedLanguage; label: string; flag: string; native: string }[] = [
+const languages: LanguageOption[] = [
   { code: "en", label: "English", flag: "🇺🇸", native: "English" },
   { code: "ko", label: "Korean", flag: "🇰🇷", native: "한국어" },
   { code: "vi", label: "Vietnamese", flag: "🇻🇳", native: "Tiếng Việt" },

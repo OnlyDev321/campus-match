@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import { Modal, Input, Button, Badge } from "@/design-system";
-import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/stores/authStore";
+import { useLanguage } from "@/stores/languageStore";
 import { ShieldCheck, User, Lock, AlertCircle, Sparkles } from "lucide-react";
 
 export default function LoginModal() {

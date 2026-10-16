@@ -1,13 +1,15 @@
 import React from "react";
+import type { TranslationDict } from "@/i18n/dictionaries/en";
 
 /* ==========================================================================
    CAMPUSMATCH — CENTRAL TYPE DEFINITIONS (lib/types.ts)
    Tập trung toàn bộ interface và type của ứng dụng tại một file duy nhất
-   giúp dễ dàng quản lý, tái sử dụng và đồng bộ dữ liệu với Backend Spring Boot.
+   giúp dễ dàng quản lý, tái sử dụng, đồng bộ dữ liệu với Backend Spring Boot
+   và hỗ trợ mở rộng các module frontend (Stores, Services, Components).
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. USER & AUTHENTICATION TYPES (Người dùng & Xác thực u-SAINT SSO)
+   1. USER & PROFILE (Người dùng & Hồ sơ sinh viên)
    -------------------------------------------------------------------------- */
 
 /**
@@ -29,7 +31,7 @@ export interface User {
 
 /**
  * Thông tin sinh viên nhận về từ hệ thống SSO u-SAINT của trường Soongsil.
- * Được lưu trong AuthContext & localStorage sau khi đăng nhập thành công.
+ * Được lưu trong Zustand Store (authStore) & localStorage sau khi đăng nhập thành công.
  */
 export interface StudentProfile {
   studentId: string;        // Mã số sinh viên u-SAINT
@@ -48,33 +50,137 @@ export interface UserStats {
 }
 
 /**
- * Context quản lý trạng thái phiên đăng nhập toàn ứng dụng (AuthContext).
- */
-export interface AuthContextType {
-  user: StudentProfile | null;                                    // Thông tin sinh viên đang đăng nhập
-  token: string | null;                                           // JWT Bearer Token gửi kèm Header API
-  isLoggedIn: boolean;                                            // Trạng thái đã đăng nhập hay chưa
-  isLoading: boolean;                                             // Trạng thái đang khôi phục phiên từ storage
-  isLoginModalOpen: boolean;                                      // Trạng thái mở modal đăng nhập SSO
-  openLoginModal: (redirectTo?: string) => void;                  // Mở modal đăng nhập (hỗ trợ chuyển hướng tiếp)
-  closeLoginModal: () => void;                                    // Đóng modal đăng nhập
-  login: (studentId: string, password: string) => Promise<{       // Hàm xử lý đăng nhập qua SSO
-    success: boolean;
-    error?: string;
-  }>;
-  logout: () => void;                                             // Đăng xuất và xóa session
-}
-
-/**
  * Props cho component ProfileCard tại trang My Page (Chế độ chỉ đọc từ u-SAINT SSO).
  */
 export interface ProfileCardProps {
-  user: User;                                                     // Dữ liệu người dùng hiển thị
+  user: User;               // Dữ liệu người dùng hiển thị
 }
 
 
 /* --------------------------------------------------------------------------
-   2. GROUP CORE & LISTING TYPES (Nhóm học tập & Danh sách nhóm)
+   2. ZUSTAND STORES (Quản lý trạng thái toàn cục - State & Actions)
+   -------------------------------------------------------------------------- */
+
+/**
+ * Kết quả trả về sau khi thực thi hàm login trong AuthStore.
+ */
+export interface AuthLoginResult {
+  success: boolean;         // Đăng nhập thành công hay thất bại
+  error?: string;           // Thông báo lỗi chi tiết khi thất bại
+}
+
+/**
+ * Interface định nghĩa toàn bộ State và Actions cho AuthStore (Zustand).
+ * Quản lý phiên làm việc sinh viên, JWT token và điều khiển Modal đăng nhập.
+ */
+export interface AuthState {
+  user: StudentProfile | null;                                    // Dữ liệu sinh viên đang đăng nhập
+  token: string | null;                                           // JWT Bearer Token gửi kèm Header API
+  isLoggedIn: boolean;                                            // Trạng thái đã đăng nhập
+  isLoading: boolean;                                             // Trạng thái đang khôi phục phiên từ storage
+  isLoginModalOpen: boolean;                                      // Trạng thái đóng/mở modal đăng nhập SSO
+  redirectAfterLogin: string | null;                              // Đường dẫn cần chuyển đến sau khi đăng nhập
+
+  // Actions
+  setUser: (user: StudentProfile | null) => void;                 // Cập nhật thông tin sinh viên
+  setToken: (token: string | null) => void;                       // Cập nhật chuỗi token
+  openLoginModal: (redirectTo?: string) => void;                  // Mở modal đăng nhập kèm link chuyển tiếp
+  closeLoginModal: () => void;                                    // Đóng modal đăng nhập
+  login: (studentId: string, password: string) => Promise<AuthLoginResult>; // Xác thực đăng nhập qua SSO
+  logout: () => void;                                             // Đăng xuất và dọn sạch session
+}
+
+/**
+ * Interface định nghĩa State và Actions cho LanguageStore (Zustand).
+ * Hỗ trợ chuyển đổi đa ngữ (Tiếng Anh, Tiếng Hàn, Tiếng Việt) kèm từ điển t.
+ */
+export interface LanguageState {
+  language: SupportedLanguage;                                    // Mã ngôn ngữ hiện tại
+  t: TranslationDict;                                             // Từ điển đối chiếu chuỗi văn bản
+  setLanguage: (lang: SupportedLanguage) => void;                 // Hành động thay đổi ngôn ngữ giao diện
+}
+
+
+/* --------------------------------------------------------------------------
+   3. U-SAINT SSO & AUTHENTICATION (Xác thực cổng trường Soongsil u-SAINT)
+   -------------------------------------------------------------------------- */
+
+/**
+ * Cặp thông tin đăng nhập sinh viên cổng u-SAINT.
+ */
+export interface UsaintLoginCredentials {
+  studentId: string;        // Mã số sinh viên
+  password: string;         // Mật khẩu cổng trường u-SAINT
+}
+
+/**
+ * Kết quả trả về từ hàm xác thực u-SAINT backend helper (`lib/usaint.ts`).
+ */
+export interface UsaintLoginResult {
+  success: boolean;         // Xác thực thành công hay không
+  sessionCookies?: string;  // Chuỗi cookie phiên trường chứa token MYSAPSSO2
+  error?: string;           // Lỗi trả về từ thư viện / cổng trường
+}
+
+/**
+ * Dữ liệu phản hồi từ Next.js API Route BFF `/api/auth/usaint`.
+ */
+export interface UsaintLoginApiResponse {
+  success: boolean;         // Trạng thái phản hồi
+  profile?: StudentProfile; // Hồ sơ sinh viên đã bóc tách từ u-SAINT
+  token?: string;           // Token phiên làm việc
+  error?: string;           // Thông báo lỗi nếu thất bại
+}
+
+
+/* --------------------------------------------------------------------------
+   4. API CLIENT & HTTP SERVICE TYPES (Giao thức mạng & Phản hồi Backend Spring Boot)
+   -------------------------------------------------------------------------- */
+
+/**
+ * Cấu trúc Response chuẩn hóa từ Backend Spring Boot API (`/api/*`).
+ */
+export interface ApiResponse<T = unknown> {
+  success: boolean;         // Trạng thái nghiệp vụ thành công
+  data?: T;                 // Dữ liệu trả về (payload)
+  message?: string;         // Thông điệp từ server
+  statusCode?: number;      // HTTP Status code
+  timestamp?: string;       // Thời gian phản hồi ISO-8601
+}
+
+/**
+ * Cấu trúc lỗi trả về từ API Backend.
+ */
+export interface ApiErrorResponse {
+  success: false;           // Luôn là false khi gặp lỗi
+  error: string;            // Tên mã lỗi hoặc tóm tắt lỗi
+  message: string;          // Chi tiết lỗi thân thiện cho người dùng
+  statusCode: number;       // Mã HTTP (400, 401, 403, 404, 500...)
+  fieldErrors?: Record<string, string>; // Chi tiết lỗi validation theo từng trường
+}
+
+/**
+ * Dữ liệu phân trang kèm theo danh sách dữ liệu từ Backend.
+ */
+export interface PaginationMeta {
+  page: number;             // Trang hiện tại (1-indexed hoặc 0-indexed)
+  size: number;             // Số lượng phần tử mỗi trang
+  totalElements: number;    // Tổng số phần tử
+  totalPages: number;       // Tổng số trang
+  hasMore: boolean;         // Còn trang tiếp theo hay không
+}
+
+/**
+ * Cấu trúc danh sách dữ liệu có hỗ trợ phân trang.
+ */
+export interface PaginatedResponse<T> {
+  items: T[];               // Danh sách dữ liệu của trang hiện tại
+  pagination: PaginationMeta; // Metadata phân trang
+}
+
+
+/* --------------------------------------------------------------------------
+   5. GROUP CORE & LISTING TYPES (Nhóm học tập & Danh sách nhóm)
    -------------------------------------------------------------------------- */
 
 /**
@@ -84,6 +190,11 @@ export interface ProfileCardProps {
  * - closed: Nhóm đã đủ người hoặc đã đóng đợt tuyển
  */
 export type GroupStatus = "active" | "recruiting" | "closed";
+
+/**
+ * Hình thức sinh hoạt và làm việc của nhóm.
+ */
+export type MeetingFormat = "Online" | "Offline" | "Hybrid";
 
 /**
  * Thông tin thành viên cơ bản trong nhóm (danh sách tóm tắt).
@@ -136,9 +247,22 @@ export interface GroupCardProps {
   onJoin?: (id: string) => void;    // Sự kiện khi bấm nút "Join" (mở Quick Apply Modal)
 }
 
+/**
+ * Tham số truy vấn / bộ lọc tìm kiếm nhóm học tập (`src/services/groupService.ts`).
+ */
+export interface GroupFilterParams {
+  keyword?: string;         // Từ khóa tìm kiếm (tên môn, đề tài, kỹ năng...)
+  college?: string;         // Lọc theo Trường / Viện (VD: "IT대학")
+  department?: string;      // Lọc theo Khoa / Ngành (VD: "소프트웨어학부")
+  postYear?: number;        // Lọc theo năm đăng
+  status?: GroupStatus;     // Lọc theo trạng thái tuyển
+  page?: number;            // Số trang yêu cầu
+  limit?: number;           // Số phần tử mỗi trang
+}
+
 
 /* --------------------------------------------------------------------------
-   3. GROUP DETAIL & PAGE PROPS (Trang chi tiết nhóm `/groups/[id]`)
+   6. GROUP DETAIL & PAGE PROPS (Trang chi tiết nhóm `/groups/[id]`)
    -------------------------------------------------------------------------- */
 
 /**
@@ -182,7 +306,7 @@ export interface GroupDetailData extends GroupCardData {
   longDescription?: string;             // Bài giới thiệu đề tài chi tiết
   objectives?: string[];                // Danh sách mục tiêu & cam kết của nhóm
   meetingSchedule?: string;             // Lịch sinh hoạt / họp nhóm hàng tuần
-  meetingFormat?: "Online" | "Offline" | "Hybrid"; // Hình thức họp
+  meetingFormat?: MeetingFormat;        // Hình thức họp (Online/Offline/Hybrid)
   requiredSkills?: string[];            // Danh sách kỹ năng / công nghệ yêu cầu
   rolesQuota?: GroupRoleQuota[];        // Phân bổ chỉ tiêu các vị trí cần tuyển
   leaderEmail?: string;                 // Email liên hệ của trưởng nhóm
@@ -193,7 +317,7 @@ export interface GroupDetailData extends GroupCardData {
 
 
 /* --------------------------------------------------------------------------
-   4. APPLICATION & MODAL TYPES (Đơn ứng tuyển & Modal nộp đơn)
+   7. APPLICATION & MODAL TYPES (Đơn ứng tuyển & Modal nộp đơn)
    -------------------------------------------------------------------------- */
 
 /**
@@ -237,6 +361,20 @@ export interface ApplicantApplication {
 }
 
 /**
+ * Payload gửi lên Server khi sinh viên nộp đơn ứng tuyển qua modal.
+ */
+export interface ApplyGroupPayload {
+  groupId: string;              // ID nhóm cần ứng tuyển
+  appliedRole: string;          // Vị trí mong muốn
+  relevantSkills?: string;      // Kỹ năng liên quan nhập tự do
+  message: string;              // Giới thiệu & lý do ứng tuyển
+  contactEmail?: string;        // Email liên hệ
+  contactPhone?: string;        // Số điện thoại liên hệ
+  githubUrl?: string;           // Link GitHub
+  portfolioUrl?: string;        // Link Portfolio
+}
+
+/**
  * Props cho component ApplicationCard (dành cho Leader duyệt đơn).
  */
 export interface ApplicationCardProps {
@@ -259,7 +397,7 @@ export interface ApplyModalProps {
 
 
 /* --------------------------------------------------------------------------
-   5. NAVIGATION & COMMON UI TYPES (Thanh điều hướng & Thành phần giao diện chung)
+   8. NAVIGATION, UI & I18N TYPES (Thanh điều hướng, Giao diện & Đa ngôn ngữ)
    -------------------------------------------------------------------------- */
 
 /**
@@ -270,6 +408,16 @@ export interface NavItem {
   shortLabel?: string;                          // Tiêu đề rút gọn khi thu hẹp thanh bên
   href: string;                                 // Đường dẫn chuyển trang
   icon: React.ComponentType<{ className?: string }>; // Component biểu tượng Lucide
+}
+
+/**
+ * Thông tin nhóm đồ án được ghim trong thanh bên Sidebar.
+ */
+export interface PinnedGroup {
+  id: string;                                   // ID nhóm
+  code: string;                                 // Mã môn viết gọn (VD: "CS490")
+  name: string;                                 // Tên nhóm đồ án
+  status: string;                               // Trạng thái hoạt động
 }
 
 /**
@@ -294,3 +442,15 @@ export interface TranslateButtonProps {
  */
 export type SupportedLanguage = "en" | "ko" | "vi";
 
+/**
+ * Cấu trúc tùy chọn ngôn ngữ hiển thị trong LanguageSwitcher.
+ */
+export interface LanguageOption {
+  code: SupportedLanguage;                      // Mã ngôn ngữ
+  label: string;                                // Tên tiếng Anh
+  flag: string;                                 // Emoji cờ quốc gia
+  native: string;                               // Tên bản địa (VD: "한국어", "Tiếng Việt")
+}
+
+// Re-export type từ điển đa ngữ để tiện dùng toàn ứng dụng
+export type { TranslationDict };

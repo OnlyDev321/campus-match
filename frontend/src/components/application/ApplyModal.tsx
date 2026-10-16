@@ -12,7 +12,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/stores/authStore";
 import type { ApplyModalProps } from "@/lib/types";
 
 export default function ApplyModal({

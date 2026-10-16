@@ -7,9 +7,9 @@ import { CommandBar } from "@/design-system";
 import { Avatar } from "@/design-system";
 import { Bell, ChevronDown, User, LogOut } from "lucide-react";
 
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/stores/authStore";
 import { Button } from "@/design-system";
-import { useLanguage } from "@/context/LanguageContext";
+import { useLanguage } from "@/stores/languageStore";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 export default function Header() {
