@@ -37,7 +37,3 @@ export const useLanguageStore = create<LanguageState>()(
   )
 );
 
-// Hook tiện ích tương thích với code cũ
-export const useLanguage = () => useLanguageStore();
-export type { SupportedLanguage };
-

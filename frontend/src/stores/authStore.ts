@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { StudentProfile, AuthState } from "@/lib/types";
-
+import { useLanguageStore } from "@/stores/languageStore";
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -30,28 +30,47 @@ export const useAuthStore = create<AuthState>()(
       login: async (studentId: string, password: string) => {
         try {
           if (!studentId || !password) {
-            return { success: false, error: "학번과 비밀번호를 모두 입력해주세요." };
+            return {
+              success: false,
+              errorCode: "MISSING_FIELDS",
+            };
           }
 
           set({ isLoading: true });
 
-          // Mô phỏng / Gọi API xác thực u-SAINT SSO
-          await new Promise((resolve) => setTimeout(resolve, 800));
+          const currentLang = useLanguageStore.getState().language || "ko";
 
-          const mockProfile: StudentProfile = {
-            studentId: studentId.trim(),
-            name: studentId === "20211234" ? "홍길동" : `숭실학우 (${studentId.slice(-4)})`,
-            department: "컴퓨터학부",
-            faculty: "IT대학",
-            email: `${studentId}@soongsil.ac.kr`,
-            academicYear: "3",
-          };
+          // Gọi API Route BFF /api/auth/usaint (Xác thực SSO và trích xuất hồ sơ SAP)
+          const response = await fetch("/api/auth/usaint", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept-Language": currentLang,
+            },
+            body: JSON.stringify({
+              studentId: studentId.trim(),
+              password: password,
+              language: currentLang,
+            }),
+          });
 
-          const mockToken = `mock_jwt_token_${studentId}_${Date.now()}`;
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            set({ isLoading: false });
+            return {
+              success: false,
+              errorCode: data.errorCode || "INVALID_CREDENTIALS",
+              error: data.error,
+            };
+          }
+
+          const studentProfile: StudentProfile = data.profile;
+          const token = `jwt_usaint_${studentId.trim()}_${Date.now()}`;
 
           set({
-            user: mockProfile,
-            token: mockToken,
+            user: studentProfile,
+            token: token,
             isLoggedIn: true,
             isLoginModalOpen: false,
             isLoading: false,
@@ -62,7 +81,7 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           return {
             success: false,
-            error: "u-SAINT 포털 인증에 실패했습니다. 학번과 비밀번호를 확인해주세요.",
+            errorCode: "NETWORK_ERROR",
           };
         }
       },
@@ -90,5 +109,3 @@ export const useAuthStore = create<AuthState>()(
   )
 );
 
-// Hook tiện ích tương thích với code cũ
-export const useAuth = () => useAuthStore();

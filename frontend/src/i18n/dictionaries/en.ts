@@ -63,6 +63,9 @@ export const en = {
     securityGuaranteeDesc:
       "Your password is used strictly for in-flight verification with Soongsil University's portal and is never stored in CampusMatch databases.",
     errorMissing: "Please enter both student ID and password.",
+    errorInvalidCredentials: "Invalid student ID or u-SAINT password.",
+    errorServer: "Failed to connect to the u-SAINT portal server. Please try again.",
+    errorNetwork: "Network communication error. Please check your internet connection.",
   },
   // Translate on Demand
   translate: {

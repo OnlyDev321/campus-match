@@ -19,11 +19,11 @@ import type { GroupCardData, GroupDetailData } from "@/lib/types";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const GroupPage = () => {
   const router = useRouter();
-  const { isLoggedIn, isLoading, openLoginModal } = useAuth();
+  const { isLoggedIn, isLoading, openLoginModal } = useAuthStore();
 
   // Yêu cầu đăng nhập trước khi vào xem trang Groups
   useEffect(() => {

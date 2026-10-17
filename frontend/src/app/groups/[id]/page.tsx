@@ -1,6 +1,6 @@
 "use client";
 
-import React, { use, useState } from "react";
+import React, { use, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -25,15 +25,15 @@ import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
 import TranslateButton from "@/components/common/TranslateButton";
 import { getGroupDetail } from "@/lib/mockData";
-import { useAuth } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import type { GroupDetailPageProps } from "@/lib/types";
 
 export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const { id } = use(params);
   const router = useRouter();
-  const { user, isLoggedIn, openLoginModal } = useAuth();
+  const { user, isLoggedIn, openLoginModal } = useAuthStore();
 
-  const group = getGroupDetail(id);
+  const group = useMemo(() => getGroupDetail(id), [id]);
 
   // Modal and Interactive States
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);

@@ -12,7 +12,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
-import { useAuth } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import type { ApplyModalProps } from "@/lib/types";
 
 export default function ApplyModal({
@@ -21,11 +21,11 @@ export default function ApplyModal({
   group,
   onSuccess,
 }: ApplyModalProps) {
-  const { user, isLoggedIn, openLoginModal } = useAuth();
+  const { user, isLoggedIn, openLoginModal } = useAuthStore();
 
   const [selectedRole, setSelectedRole] = useState<string>("");
   const [statement, setStatement] = useState<string>("");
-  const [skills, setSkills] = useState<string>();
+  const [skills, setSkills] = useState<string>("");
   const [githubUrl, setGithubUrl] = useState<string>("");
   const [portfolioUrl, setPortfolioUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -48,16 +48,18 @@ export default function ApplyModal({
     ];
   }, [group]);
 
-  // Set default role when opened
+  // Set default role and reset state only when modal opens
   React.useEffect(() => {
     if (isOpen) {
       setIsSuccess(false);
       setErrorMsg(null);
-      if (availableRoles.length > 0 && !selectedRole) {
-        setSelectedRole(availableRoles[0]);
+      if (group?.rolesQuota && group.rolesQuota.length > 0) {
+        setSelectedRole(group.rolesQuota[0].role);
+      } else {
+        setSelectedRole("Core Developer");
       }
     }
-  }, [isOpen, availableRoles, selectedRole]);
+  }, [isOpen, group?.id]);
 
   if (!group) return null;
 

@@ -2,8 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { useAuth } from "@/stores/authStore";
-import { useLanguage } from "@/stores/languageStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import { Button, Badge } from "@/design-system";
 import {
   ShieldCheck,
@@ -19,8 +19,8 @@ import {
 } from "lucide-react";
 
 export default function LandingPage() {
-  const { isLoggedIn, openLoginModal } = useAuth();
-  const { t } = useLanguage();
+  const { isLoggedIn, openLoginModal } = useAuthStore();
+  const { t } = useLanguageStore();
 
   return (
     <div className="w-full flex flex-col min-h-screen">
