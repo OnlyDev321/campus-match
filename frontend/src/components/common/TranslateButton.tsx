@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useLanguage } from "@/stores/languageStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import { Globe, RefreshCw, Undo2, Sparkles } from "lucide-react";
 import type { TranslateButtonProps } from "@/lib/types";
 
@@ -10,7 +10,7 @@ export default function TranslateButton({
   onTranslated,
   className = "",
 }: TranslateButtonProps) {
-  const { language, t } = useLanguage();
+  const { language, t } = useLanguageStore();
   const [isTranslating, setIsTranslating] = useState(false);
   const [isTranslated, setIsTranslated] = useState(false);
   const [cachedTranslations, setCachedTranslations] = useState<Record<string, string>>({});

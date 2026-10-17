@@ -7,9 +7,9 @@ import { CommandBar } from "@/design-system";
 import { Avatar } from "@/design-system";
 import { Bell, ChevronDown, User, LogOut } from "lucide-react";
 
-import { useAuth } from "@/stores/authStore";
+import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/design-system";
-import { useLanguage } from "@/stores/languageStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
 
 export default function Header() {
@@ -17,8 +17,8 @@ export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const { user, isLoggedIn, openLoginModal, logout } = useAuth();
-  const { t } = useLanguage();
+  const { user, isLoggedIn, openLoginModal, logout } = useAuthStore();
+  const { t } = useLanguageStore();
 
   // Close user dropdown when clicking outside
   useEffect(() => {

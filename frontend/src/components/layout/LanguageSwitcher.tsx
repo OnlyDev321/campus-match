@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useLanguage } from "@/stores/languageStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import type { LanguageOption } from "@/lib/types";
 import { Globe, Check, ChevronDown } from "lucide-react";
 
@@ -12,7 +12,7 @@ const languages: LanguageOption[] = [
 ];
 
 export default function LanguageSwitcher() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage } = useLanguageStore();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 

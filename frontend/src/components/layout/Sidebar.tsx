@@ -13,7 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Avatar } from "@/design-system";
-import { useLanguage } from "@/stores/languageStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import type { NavItem, PinnedGroup } from "@/lib/types";
 
 // Pinned / Active groups for students
@@ -36,7 +36,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const { t } = useLanguage();
+  const { t } = useLanguageStore();
 
   const mainNavItems: NavItem[] = [
     {

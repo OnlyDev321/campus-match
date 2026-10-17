@@ -40,6 +40,10 @@ export interface StudentProfile {
   faculty: string;          // Trường / Viện chủ quản (단과대학, VD: "IT대학")
   email: string;            // Email sinh viên Soongsil
   academicYear: string;     // Năm học hiện tại (1, 2, 3, 4)
+  phone?: string;           // Số điện thoại liên lạc
+  status?: string;          // Trạng thái học vụ (재학, 휴학, 졸업...)
+  semester?: string;        // Học kỳ hiện tại (1학기, 2학기...)
+  avatarUrl?: string;       // Ảnh đại diện / ảnh thẻ sinh viên (Base64 data URL)
 }
 
 /**
@@ -66,6 +70,7 @@ export interface ProfileCardProps {
  */
 export interface AuthLoginResult {
   success: boolean;         // Đăng nhập thành công hay thất bại
+  errorCode?: "MISSING_FIELDS" | "INVALID_CREDENTIALS" | "SERVER_ERROR" | "NETWORK_ERROR" | string; // Mã lỗi phân loại cho i18n
   error?: string;           // Thông báo lỗi chi tiết khi thất bại
 }
 
@@ -119,6 +124,7 @@ export interface UsaintLoginCredentials {
 export interface UsaintLoginResult {
   success: boolean;         // Xác thực thành công hay không
   sessionCookies?: string;  // Chuỗi cookie phiên trường chứa token MYSAPSSO2
+  errorCode?: string;       // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
   error?: string;           // Lỗi trả về từ thư viện / cổng trường
 }
 
@@ -129,6 +135,7 @@ export interface UsaintLoginApiResponse {
   success: boolean;         // Trạng thái phản hồi
   profile?: StudentProfile; // Hồ sơ sinh viên đã bóc tách từ u-SAINT
   token?: string;           // Token phiên làm việc
+  errorCode?: string;       // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
   error?: string;           // Thông báo lỗi nếu thất bại
 }
 

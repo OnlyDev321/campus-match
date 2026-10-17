@@ -62,6 +62,9 @@ export const ko: TranslationDict = {
     securityGuaranteeDesc:
       "입력하신 비밀번호는 숭실대학교 포털 실시간 인증에만 일회성으로 사용되며, CampusMatch 데이터베이스에 절대 저장되지 않습니다.",
     errorMissing: "학번과 비밀번호를 모두 입력해주세요.",
+    errorInvalidCredentials: "학번 또는 u-SAINT 비밀번호가 올바르지 않습니다.",
+    errorServer: "u-SAINT 포털 서버와 통신 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.",
+    errorNetwork: "서버와의 통신에 실패했습니다. 네트워크 상태를 확인해주세요.",
   },
   translate: {
     btn: "한국어로 번역",

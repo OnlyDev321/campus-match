@@ -2,28 +2,66 @@
 
 import React, { useState } from "react";
 import { Modal, Input, Button, Badge } from "@/design-system";
-import { useAuth } from "@/stores/authStore";
-import { useLanguage } from "@/stores/languageStore";
+import { useAuthStore } from "@/stores/authStore";
+import { useLanguageStore } from "@/stores/languageStore";
 import { ShieldCheck, User, Lock, AlertCircle, Sparkles } from "lucide-react";
 
 export default function LoginModal() {
-  const { isLoginModalOpen, closeLoginModal, login } = useAuth();
-  const { t } = useLanguage();
+  const { isLoginModalOpen, closeLoginModal, login } = useAuthStore();
+  const { t } = useLanguageStore();
   const [studentId, setStudentId] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [customError, setCustomError] = useState<string | null>(null);
+
+  const getDisplayedError = (): string | null => {
+    if (!errorCode && !customError) return null;
+    switch (errorCode) {
+      case "MISSING_FIELDS":
+        return t.loginModal.errorMissing;
+      case "INVALID_CREDENTIALS":
+        return t.loginModal.errorInvalidCredentials;
+      case "SERVER_ERROR":
+        return t.loginModal.errorServer;
+      case "NETWORK_ERROR":
+        return t.loginModal.errorNetwork;
+      default:
+        return customError || t.loginModal.errorInvalidCredentials;
+    }
+  };
+
+  const displayedError = getDisplayedError();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErrorMessage(null);
+    setErrorCode(null);
+    setCustomError(null);
     setIsSubmitting(true);
 
     const res = await login(studentId, password);
     setIsSubmitting(false);
 
     if (!res.success) {
-      setErrorMessage(res.error || t.loginModal.errorMissing);
+      if (res.errorCode) {
+        setErrorCode(res.errorCode);
+      } else if (res.error) {
+        // Ánh xạ chuỗi lỗi cũ nếu backend trả về message thô
+        if (
+          res.error.includes("Sai") ||
+          res.error.includes("비밀번호") ||
+          res.error.includes("Invalid") ||
+          res.error.includes("올바르지")
+        ) {
+          setErrorCode("INVALID_CREDENTIALS");
+        } else if (res.error.includes("bắt buộc") || res.error.includes("입력")) {
+          setErrorCode("MISSING_FIELDS");
+        } else {
+          setCustomError(res.error);
+        }
+      } else {
+        setErrorCode("INVALID_CREDENTIALS");
+      }
     } else {
       // Clear form on success
       setStudentId("");
@@ -34,13 +72,18 @@ export default function LoginModal() {
   const handleFillDemo = () => {
     setStudentId("20211234");
     setPassword("soongsil2026!");
-    setErrorMessage(null);
+    setErrorCode(null);
+    setCustomError(null);
   };
 
   return (
     <Modal
       isOpen={isLoginModalOpen}
-      onClose={closeLoginModal}
+      onClose={() => {
+        setErrorCode(null);
+        setCustomError(null);
+        closeLoginModal();
+      }}
       maxWidth="md"
       title={
         <div className="flex items-center gap-2.5">
@@ -60,10 +103,10 @@ export default function LoginModal() {
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
         {/* Error banner */}
-        {errorMessage && (
+        {displayedError && (
           <div className="p-3 rounded-lg bg-(--error-bg) border border-(--error-border) flex items-start gap-2.5 text-(--error-text) text-xs">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span>{errorMessage}</span>
+            <span>{displayedError}</span>
           </div>
         )}
 
@@ -73,7 +116,13 @@ export default function LoginModal() {
             label={t.loginModal.studentIdLabel}
             placeholder={t.loginModal.studentIdPlaceholder}
             value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
+            onChange={(e) => {
+              setStudentId(e.target.value);
+              if (errorCode || customError) {
+                setErrorCode(null);
+                setCustomError(null);
+              }
+            }}
             leftIcon={<User className="w-4 h-4" />}
             autoFocus
             disabled={isSubmitting}
@@ -88,7 +137,13 @@ export default function LoginModal() {
             type="password"
             placeholder={t.loginModal.passwordPlaceholder}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (errorCode || customError) {
+                setErrorCode(null);
+                setCustomError(null);
+              }
+            }}
             leftIcon={<Lock className="w-4 h-4" />}
             disabled={isSubmitting}
             required

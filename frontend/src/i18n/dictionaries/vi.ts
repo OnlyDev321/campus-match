@@ -62,6 +62,9 @@ export const vi: TranslationDict = {
     securityGuaranteeDesc:
       "Mật khẩu của bạn chỉ dùng để xác thực tức thời với cổng trường và tuyệt đối không bao giờ được lưu trong cơ sở dữ liệu CampusMatch.",
     errorMissing: "Vui lòng nhập đầy đủ mã sinh viên và mật khẩu.",
+    errorInvalidCredentials: "Sai mã số sinh viên hoặc mật khẩu u-SAINT.",
+    errorServer: "Đã xảy ra lỗi khi kết nối tới máy chủ u-SAINT. Vui lòng thử lại sau.",
+    errorNetwork: "Lỗi kết nối mạng. Vui lòng kiểm tra lại đường truyền internet.",
   },
   translate: {
     btn: "Dịch sang Tiếng Việt",
