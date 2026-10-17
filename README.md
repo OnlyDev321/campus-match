@@ -3,6 +3,7 @@
 # 🎓 CampusMatch (캠퍼스매치)
 
 ### Soongsil University Study Group & Project Team Matching Platform
+
 **숭실대학교 전용 스터디 및 프로젝트 팀원 매칭 서비스**
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js)](https://nextjs.org/)
@@ -29,11 +30,13 @@ To eliminate fake accounts and ghosting, CampusMatch integrates directly with **
 ## 💡 Why CampusMatch?
 
 When searching for project teammates on open social media, KakaoTalk open chats, or anonymous campus forums (Everytime / 에브리타임), students frequently face severe pain points:
+
 - ❌ **Anonymous & Unverified Profiles:** Uncertainty regarding who teammates truly are, their actual majors, and their real accountability.
 - ❌ **Free-Riders & Disappearances:** Members accepting tasks only to abandon them midway, leaving a single student to carry the entire project.
 - ❌ **Mismatched Skill Sets:** Projects requiring backend developers often attract only frontend learners, with no structured role quotas.
 
 ### 👉 The CampusMatch Solution:
+
 1. **100% Real Student Verification:** Only authenticated Soongsil students can join via direct u-SAINT SSO.
 2. **Transparent Academic Standing:** Automatically synchronizes and displays genuine department details (e.g., School of Computer Science, AI Convergence, Software).
 3. **Role-Based Quota Management:** Group leaders set explicit member quotas (e.g., 2 Backend, 1 Frontend, 1 UI/UX Designer).
@@ -43,17 +46,17 @@ When searching for project teammates on open social media, KakaoTalk open chats,
 
 ## 🚀 Key Features
 
-| Feature | Description |
-| :--- | :--- |
-| 🔐 **1-Click u-SAINT SSO** | Instant authentication using official student portal credentials. Zero extra accounts to create or passwords to remember. |
-| 🔍 **Smart Group Discovery** | Search and filter study groups by course codes (e.g., CS490, Web Programming), tech stack (Spring Boot, React, Python), and recruitment status. |
-| 👥 **Team Recruitment Workspace** | Group leaders can publish recruitment goals, define skill requirements, and set maximum member limits within seconds. |
-| 📨 **Application & Member Lifecycle** | Students submit personalized statements when applying. Leaders review applications with one-click Accept or Reject actions. |
-| 🌓 **Adaptive Light & Dark Themes** | Polished, accessible UI following contemporary Korean tech aesthetics, designed to prevent eye strain during late-night study sessions. |
+| Feature                               | Description                                                                                                                                     |
+| :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔐 **1-Click u-SAINT SSO**            | Instant authentication using official student portal credentials. Zero extra accounts to create or passwords to remember.                       |
+| 🔍 **Smart Group Discovery**          | Search and filter study groups by course codes (e.g., CS490, Web Programming), tech stack (Spring Boot, React, Python), and recruitment status. |
+| 👥 **Team Recruitment Workspace**     | Group leaders can publish recruitment goals, define skill requirements, and set maximum member limits within seconds.                           |
+| 📨 **Application & Member Lifecycle** | Students submit personalized statements when applying. Leaders review applications with one-click Accept or Reject actions.                     |
+| 🌓 **Adaptive Light & Dark Themes**   | Polished, accessible UI following contemporary Korean tech aesthetics, designed to prevent eye strain during late-night study sessions.         |
 
 ---
 
-## 🛠️ Tech Stack
+<!-- ## 🛠️ Tech Stack
 
 - **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide Icons
 - **Backend:** Java 17/21, Spring Boot 3, Spring Data JPA (Hibernate), Spring Security, JWT (Stateless)
@@ -69,7 +72,7 @@ For developers looking for deep-dive technical specifications — including data
 
 👉 **[architecture.md — System Architecture & Implementation Roadmap](architecture.md)**
 
----
+--- -->
 
 <div align="center">
   <sub>Built by Soongsilians for the Soongsil University community 숭실대학교 💙</sub>
