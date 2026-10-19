@@ -5,7 +5,6 @@ export const en = {
     myPage: "My Page",
     manage: "Manage",
     createGroup: "Create Group",
-    designSystem: "Design System",
     login: "u-SAINT Login",
     logout: "Logout",
     notifications: "Notifications",

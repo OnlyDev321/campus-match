@@ -224,12 +224,14 @@
     0 24px 38px -8px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-/* Prevent layout shift between short and long pages */
+/* Prevent layout shift between short and long pages & eliminate horizontal overflow */
 html {
   scrollbar-gutter: stable;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Base Body Styles */
@@ -239,6 +241,8 @@ body {
   font-family: var(--font-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Card inner reflection in dark mode for tactile depth */
@@ -571,4 +575,16 @@ body {
   .app-main-content {
     padding-bottom: 0;
   }
+}
+
+/* -------------------------------------------------------------
+   Group Detail Responsive Utilities
+   ------------------------------------------------------------- */
+.group-detail-sticky-bar {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 25;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
 }

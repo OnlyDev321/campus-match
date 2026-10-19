@@ -8,7 +8,6 @@ import {
   LayoutGrid,
   Users,
   PlusCircle,
-  Layers,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -62,12 +61,6 @@ export default function Sidebar() {
       shortLabel: t.nav.createGroup,
       href: "/create-group",
       icon: PlusCircle,
-    },
-    {
-      label: t.nav.designSystem,
-      shortLabel: t.nav.designSystem,
-      href: "/design",
-      icon: Layers,
     },
   ];
 
