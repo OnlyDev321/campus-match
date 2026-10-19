@@ -25,7 +25,10 @@ const MESSAGES = {
   },
 };
 
-function getLanguage(req: NextRequest, bodyLanguage?: string): SupportedLanguage {
+function getLanguage(
+  req: NextRequest,
+  bodyLanguage?: string,
+): SupportedLanguage {
   if (bodyLanguage === "vi" || bodyLanguage === "en" || bodyLanguage === "ko") {
     return bodyLanguage;
   }
@@ -55,17 +58,24 @@ export async function POST(req: NextRequest) {
           errorCode: "MISSING_FIELDS",
           error: MESSAGES.MISSING_FIELDS[lang],
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     // 3. Gọi hàm xác thực qua usaint-lib
-    const authResult = await authenticateUsaint(String(studentId).trim(), String(password));
+    const authResult = await authenticateUsaint(
+      String(studentId).trim(),
+      String(password),
+    );
 
     // 4. Kiểm tra kết quả (Nếu không có vé MYSAPSSO2 hoặc sai thông tin)
     if (!authResult.success) {
-      const code = (authResult.errorCode as keyof typeof MESSAGES) || "INVALID_CREDENTIALS";
-      const message = MESSAGES[code] ? MESSAGES[code][lang] : MESSAGES.INVALID_CREDENTIALS[lang];
+      const code =
+        (authResult.errorCode as keyof typeof MESSAGES) ||
+        "INVALID_CREDENTIALS";
+      const message = MESSAGES[code]
+        ? MESSAGES[code][lang]
+        : MESSAGES.INVALID_CREDENTIALS[lang];
 
       return NextResponse.json(
         {
@@ -73,14 +83,17 @@ export async function POST(req: NextRequest) {
           errorCode: code,
           error: message,
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // 5. Xác thực thành công: Lấy thông tin sinh viên từ SAP WDA
     let profile: StudentProfile | null = null;
     if (authResult.sessionCookies) {
-      profile = await fetchStudentProfileFromSap(authResult.sessionCookies, String(studentId).trim());
+      profile = await fetchStudentProfileFromSap(
+        authResult.sessionCookies,
+        String(studentId).trim(),
+      );
     }
 
     // Fallback profile nếu WDA không lấy được thông tin chi tiết
@@ -95,11 +108,46 @@ export async function POST(req: NextRequest) {
       };
     }
 
+    // BÀN GIAO THÔNG TIN SANG SPRING BOOT BACKEND ĐỂ LƯU VÀ LẤY JWT ---
+    let backendToken: string | null = null;
+    try {
+      const backendUrl =
+        process.env.SPRING_BOOT_API_URL || "http://localhost:8080";
+      const springBootRes = await fetch(`${backendUrl}/api/auth/sso/usaint`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: profile.studentId,
+          name: profile.name,
+          department: profile.department,
+          faculty: profile.faculty,
+          email: profile.email,
+          academicYear: profile.academicYear,
+          phoneNumber: "", // Có thể bổ sung nếu trích xuất được từ SAP
+        }),
+      });
+
+      if (springBootRes.ok) {
+        const springBootData = await springBootRes.json();
+        backendToken = springBootData.token;
+      } else {
+        console.warn("Spring Boot phản hồi mã lỗi HTTP:", springBootRes.status);
+      }
+    } catch (backendError) {
+      console.warn(
+        "Không kết nối được Spring Boot (server chưa bật hoặc lỗi mạng):",
+        backendError,
+      );
+      // Token dự phòng nếu Spring Boot chưa bật trong lúc phát triển frontend độc lập
+      backendToken = `jwt_usaint_${profile.studentId}_${Date.now()}`;
+    }
+
     return NextResponse.json({
       success: true,
       message: MESSAGES.SUCCESS[lang],
       studentId: String(studentId).trim(),
       profile,
+      token: backendToken,
     });
   } catch (error) {
     console.error("Lỗi hệ thống khi xử lý xác thực u-SAINT:", error);
@@ -109,7 +157,7 @@ export async function POST(req: NextRequest) {
         errorCode: "SERVER_ERROR",
         error: MESSAGES.SERVER_ERROR[lang],
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
