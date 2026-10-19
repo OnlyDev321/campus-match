@@ -163,11 +163,11 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
       </div>
 
       {/* Main Container */}
-      <div className="max-w-[1360px] mx-auto px-3.5 sm:px-6 lg:px-8 pt-4 sm:pt-8 min-w-0">
+      <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-7 sm:pt-10 lg:pt-12 min-w-0">
         {/* 2. Hero Header Section */}
-        <div className="mb-6 sm:mb-8 space-y-3.5 sm:space-y-4">
-          {/* Badges row */}
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-5">
+          {/* Badges row with comfortable top spacing */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1.5 sm:pt-2">
             <Badge variant="primary" size="sm" className="sm:text-xs font-semibold">
               {group.courseCode
                 ? `${group.courseCode} • ${group.course}`
