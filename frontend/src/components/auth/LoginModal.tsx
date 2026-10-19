@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Modal, Input, Button, Badge } from "@/design-system";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
-import { ShieldCheck, User, Lock, AlertCircle, Sparkles } from "lucide-react";
+import { ShieldCheck, User, Lock, AlertCircle } from "lucide-react";
 
 export default function LoginModal() {
   const { isLoginModalOpen, closeLoginModal, login } = useAuthStore();
@@ -54,7 +54,10 @@ export default function LoginModal() {
           res.error.includes("올바르지")
         ) {
           setErrorCode("INVALID_CREDENTIALS");
-        } else if (res.error.includes("bắt buộc") || res.error.includes("입력")) {
+        } else if (
+          res.error.includes("bắt buộc") ||
+          res.error.includes("입력")
+        ) {
           setErrorCode("MISSING_FIELDS");
         } else {
           setCustomError(res.error);
@@ -67,13 +70,6 @@ export default function LoginModal() {
       setStudentId("");
       setPassword("");
     }
-  };
-
-  const handleFillDemo = () => {
-    setStudentId("20211234");
-    setPassword("soongsil2026!");
-    setErrorCode(null);
-    setCustomError(null);
   };
 
   return (
@@ -148,19 +144,6 @@ export default function LoginModal() {
             disabled={isSubmitting}
             required
           />
-        </div>
-
-        {/* Quick Demo Fill button */}
-        <div className="flex items-center justify-between text-xs pt-0.5">
-          <button
-            type="button"
-            onClick={handleFillDemo}
-            className="inline-flex items-center gap-1.5 text-xs text-(--primary) hover:underline font-medium cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>{t.loginModal.demoFillBtn}</span>
-          </button>
-          <span className="text-(--text-faint)">{t.loginModal.demoDept}</span>
         </div>
 
         {/* Submit button */}
