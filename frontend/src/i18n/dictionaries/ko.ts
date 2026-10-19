@@ -6,7 +6,6 @@ export const ko: TranslationDict = {
     myPage: "마이페이지",
     manage: "팀 관리",
     createGroup: "그룹 생성",
-    designSystem: "디자인 시스템",
     login: "u-SAINT 로그인",
     logout: "로그아웃",
     notifications: "알림",

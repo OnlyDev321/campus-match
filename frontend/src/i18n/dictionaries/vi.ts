@@ -6,7 +6,6 @@ export const vi: TranslationDict = {
     myPage: "Trang cá nhân",
     manage: "Quản lý nhóm",
     createGroup: "Tạo nhóm mới",
-    designSystem: "Design System",
     login: "Đăng nhập u-SAINT",
     logout: "Đăng xuất",
     notifications: "Thông báo",
