@@ -275,13 +275,13 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 ### 2. Groups (Quản lý nhóm)
 
-| Method   | Endpoint       | Mô tả                                                     | Quyền truy cập  |
-| :------- | :------------- | :-------------------------------------------------------- | :-------------- |
+| Method   | Endpoint       | Mô tả                                                                     | Quyền truy cập  |
+| :------- | :------------- | :------------------------------------------------------------------------ | :-------------- |
 | `GET`    | `/groups`      | Tìm kiếm & lọc nhóm (`search`, `college`, `department`, `year`, `status`) | Public / Bearer |
-| `GET`    | `/groups/{id}` | Xem chi tiết nhóm, danh sách thành viên hiện tại          | Public / Bearer |
-| `POST`   | `/groups`      | Tạo một nhóm học tập mới (Người tạo tự động là Leader)    | Bearer Token    |
-| `PUT`    | `/groups/{id}` | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)            | Chỉ Leader nhóm |
-| `DELETE` | `/groups/{id}` | Đóng đợt tuyển hoặc xóa nhóm                              | Chỉ Leader nhóm |
+| `GET`    | `/groups/{id}` | Xem chi tiết nhóm, danh sách thành viên hiện tại                          | Public / Bearer |
+| `POST`   | `/groups`      | Tạo một nhóm học tập mới (Người tạo tự động là Leader)                    | Bearer Token    |
+| `PUT`    | `/groups/{id}` | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)                            | Chỉ Leader nhóm |
+| `DELETE` | `/groups/{id}` | Đóng đợt tuyển hoặc xóa nhóm                                              | Chỉ Leader nhóm |
 
 ---
 
@@ -329,7 +329,7 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 
 - [x] Đã cấu hình kết nối Neon PostgreSQL trong `application.yaml`.
 - [x] Đã thiết lập `SecurityConfig` và kiểm tra `HealthController`.
-- [ ] Tạo file Entity `User.java`.
+- [x] Tạo file Entity `User.java`.
 - [ ] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
 - [ ] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
 - [ ] Tạo file Entity `GroupMember.java`.
