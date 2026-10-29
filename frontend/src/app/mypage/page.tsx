@@ -23,8 +23,15 @@ import {
   mockStats,
   mockGroups,
   mockApplications,
+  mockApplicants,
 } from "@/lib/mockData";
-import type { User, GroupStatus, ApplicationStatus, MyPageTabKey } from "@/lib/types";
+import type {
+  GroupStatus,
+  ApplicationStatus,
+  MyPageTabKey,
+  MyGroupCardProps,
+  MyGroupColumnProps,
+} from "@/lib/types";
 
 // Trang My Page. Toàn bộ phần hiển thị nằm trong file này.
 // Khi có API thật, chỉ cần đổi 4 biến mock... thành fetch(), phần dưới giữ nguyên.
@@ -59,6 +66,96 @@ const formatDate = (iso: string) => {
   });
 };
 
+// Thẻ nhóm dùng chung cho cả 2 cột. Cột "Groups I lead" không cần badge Leader
+// (đã rõ qua tiêu đề cột) nên chỉ hiện vai trò; bấm thẻ sẽ mở trang duyệt đơn.
+const MyGroupCard = ({ group, href, actionLabel, pendingCount }: MyGroupCardProps) => {
+  const status = groupStatusBadge[group.status];
+
+  return (
+    <Link href={href} className="block">
+      <Card isInteractive className="h-full flex flex-col">
+        <CardHeader>
+          <span className="font-mono text-xs font-semibold text-[var(--primary)] tracking-wide uppercase">
+            {group.courseCode} • {group.courseName}
+          </span>
+          <Badge
+            variant={status.variant}
+            size="sm"
+            dot
+            pulse={group.status === "recruiting"}
+            mono
+          >
+            {status.label}
+          </Badge>
+        </CardHeader>
+
+        <CardTitle>{group.name}</CardTitle>
+        <CardDescription>{group.description}</CardDescription>
+
+        <CardContent className="flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 py-1">
+            <Badge variant="neutral" size="sm">
+              {group.myRole}
+            </Badge>
+          </div>
+
+          <div className="pt-2">
+            <RoleQuota
+              current={group.memberCount}
+              max={group.maxMembers}
+              label="members"
+            />
+          </div>
+        </CardContent>
+
+        <CardFooter>
+          <AvatarGroup max={3} total={group.memberCount} size="sm">
+            {group.members.map((member) => (
+              <Avatar key={member.id} name={member.name} size="sm" />
+            ))}
+          </AvatarGroup>
+
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--text-secondary)]">
+            {actionLabel}
+            {pendingCount !== undefined && pendingCount > 0 && (
+              <Badge variant="pending" size="sm" mono>
+                {pendingCount}
+              </Badge>
+            )}
+            <ArrowRight className="w-3.5 h-3.5" />
+          </span>
+        </CardFooter>
+      </Card>
+    </Link>
+  );
+};
+
+const GroupColumn = ({
+  title,
+  count,
+  emptyMessage,
+  emptyAction,
+  children,
+}: MyGroupColumnProps) => (
+  <div className="space-y-4 min-w-0">
+    <div className="flex items-center gap-2">
+      <h2 className="text-sm font-semibold text-[var(--text-primary)]">{title}</h2>
+      <span className="font-mono text-[11px] text-[var(--text-faint)]">{count}</span>
+    </div>
+
+    {count === 0 ? (
+      <div className="p-8 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-center space-y-3">
+        <p className="text-sm text-[var(--text-secondary)]">{emptyMessage}</p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          {emptyAction}
+        </div>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 gap-5">{children}</div>
+    )}
+  </div>
+);
+
 const MyPage = () => {
   // Thông tin sinh viên đọc trực tiếp từ hồ sơ SSO u-SAINT của trường
   const user = mockUser;
@@ -74,6 +171,10 @@ const MyPage = () => {
 
   const activeGroups = groups.filter((g) => g.status !== "closed").length;
   const ledGroups = groups.filter((g) => g.isLeader);
+  const memberGroups = groups.filter((g) => !g.isLeader);
+  // Khi có API thật: lấy số đơn chờ duyệt từ GET /api/groups/{id}/applications.
+  const pendingCountFor = (groupId: string) =>
+    mockApplicants.filter((a) => a.groupId === groupId).length;
   const inReviewCount = applications.filter((a) => a.status === "pending").length;
 
   const statCards: { label: string; value: number | string; sublabel: string }[] = [
@@ -128,9 +229,6 @@ const MyPage = () => {
     setActiveTab(nextKey);
     tabRefs.current[nextKey]?.focus();
   };
-
-  const isEmpty =
-    activeTab === "groups" ? groups.length === 0 : applications.length === 0;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-8">
@@ -203,12 +301,62 @@ const MyPage = () => {
           id="mypage-tabpanel"
           aria-labelledby={`mypage-tab-${activeTab}`}
         >
-          {isEmpty ? (
+          {activeTab === "groups" ? (
+            // 2 cột: nhóm tôi làm Leader / nhóm tôi là thành viên. Mỗi nhóm chỉ nằm ở 1 cột.
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-6 items-start">
+              <GroupColumn
+                title="Groups I lead"
+                count={ledGroups.length}
+                emptyMessage="You aren't leading any groups yet."
+                emptyAction={
+                  <Button
+                    href="/create-group"
+                    size="sm"
+                    leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
+                  >
+                    Create a group
+                  </Button>
+                }
+              >
+                {ledGroups.map((group) => (
+                  <MyGroupCard
+                    key={group.id}
+                    group={group}
+                    href={`/manage/${group.id}`}
+                    actionLabel="Review applications"
+                    pendingCount={pendingCountFor(group.id)}
+                  />
+                ))}
+              </GroupColumn>
+
+              <GroupColumn
+                title="Groups I'm a member of"
+                count={memberGroups.length}
+                emptyMessage="You haven't joined any groups yet."
+                emptyAction={
+                  <Link
+                    href="/groups"
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
+                  >
+                    Browse groups
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                }
+              >
+                {memberGroups.map((group) => (
+                  <MyGroupCard
+                    key={group.id}
+                    group={group}
+                    href={`/groups/${group.id}`}
+                    actionLabel="Open"
+                  />
+                ))}
+              </GroupColumn>
+            </div>
+          ) : applications.length === 0 ? (
             <div className="p-10 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-center space-y-2">
               <p className="text-sm text-[var(--text-secondary)]">
-                {activeTab === "groups"
-                  ? "You haven't joined any groups yet."
-                  : "You haven't applied to any groups yet."}
+                You haven&apos;t applied to any groups yet.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                 <Link
@@ -218,88 +366,11 @@ const MyPage = () => {
                   Browse groups
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
-                {activeTab === "groups" && (
-                  <Button
-                    href="/create-group"
-                    size="sm"
-                    leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
-                  >
-                    Create a group
-                  </Button>
-                )}
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {activeTab === "groups" &&
-                groups.map((group) => {
-                  const status = groupStatusBadge[group.status];
-
-                  return (
-                    <Link
-                      key={group.id}
-                      href={`/groups/${group.id}`}
-                      className="block"
-                    >
-                      <Card isInteractive className="h-full flex flex-col">
-                        <CardHeader>
-                          <span className="font-mono text-xs font-semibold text-[var(--primary)] tracking-wide uppercase">
-                            {group.courseCode} • {group.courseName}
-                          </span>
-                          <Badge
-                            variant={status.variant}
-                            size="sm"
-                            dot
-                            pulse={group.status === "recruiting"}
-                            mono
-                          >
-                            {status.label}
-                          </Badge>
-                        </CardHeader>
-
-                        <CardTitle>{group.name}</CardTitle>
-                        <CardDescription>{group.description}</CardDescription>
-
-                        <CardContent className="flex-1">
-                          <div className="flex flex-wrap items-center gap-1.5 py-1">
-                            {group.isLeader && (
-                              <Badge variant="primary" size="sm">
-                                Leader
-                              </Badge>
-                            )}
-                            <Badge variant="neutral" size="sm">
-                              {group.myRole}
-                            </Badge>
-                          </div>
-
-                          <div className="pt-2">
-                            <RoleQuota
-                              current={group.memberCount}
-                              max={group.maxMembers}
-                              label="members"
-                            />
-                          </div>
-                        </CardContent>
-
-                        <CardFooter>
-                          <AvatarGroup max={3} total={group.memberCount} size="sm">
-                            {group.members.map((member) => (
-                              <Avatar key={member.id} name={member.name} size="sm" />
-                            ))}
-                          </AvatarGroup>
-
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)]">
-                            Open
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </span>
-                        </CardFooter>
-                      </Card>
-                    </Link>
-                  );
-                })}
-
-              {activeTab === "applications" &&
-                applications.map((application) => {
+              {applications.map((application) => {
                   const status = applicationStatusBadge[application.status];
 
                   return (

@@ -271,6 +271,7 @@ export const mockGroupCards: GroupCardData[] = [
 export const mockApplicants: ApplicantApplication[] = [
   {
     id: "ap-1",
+    groupId: "cs490",
     name: "Park Minji",
     department: "Software Department · 3rd Year",
     badge: "Honors Student",
@@ -284,6 +285,7 @@ export const mockApplicants: ApplicantApplication[] = [
   },
   {
     id: "ap-2",
+    groupId: "cs490",
     name: "Lee Joon",
     department: "Computer Science · 2nd Year",
     appliedAgo: "1 day ago",
@@ -291,6 +293,28 @@ export const mockApplicants: ApplicantApplication[] = [
     scheduleMatch: 78,
     message: "I want to own the backend API and deployment for this project.",
     githubUrl: "github.com/leejoon",
+  },
+  {
+    id: "ap-3",
+    groupId: "cs490",
+    name: "Nguyen Thu Ha",
+    department: "AI Convergence · 3rd Year",
+    badge: "Top Match",
+    appliedAgo: "3 days ago",
+    skills: ["Python", "LangChain", "Vector DB"],
+    scheduleMatch: 88,
+    message:
+      "I built a RAG prototype over our department's course catalog and would love to own the recommendation pipeline.",
+    githubUrl: "github.com/thuha-ng",
+  },
+  {
+    id: "ap-4",
+    groupId: "is334",
+    name: "Kim Dohyun",
+    department: "Computer Science · 4th Year",
+    appliedAgo: "5 days ago",
+    skills: ["Kafka", "Kubernetes"],
+    message: "I can help with load testing and the event pipeline.",
   },
 ];
 

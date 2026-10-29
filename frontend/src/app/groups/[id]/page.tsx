@@ -440,7 +440,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <div>
                 {isLeader ? (
                   <Button
-                    href="/manage"
+                    href={`/manage/${group.id}`}
                     variant="outline"
                     fullWidth
                     className="h-11 font-semibold"

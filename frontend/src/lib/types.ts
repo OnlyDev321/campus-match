@@ -229,6 +229,27 @@ export interface MyGroup {
 }
 
 /**
+ * Props cho thẻ nhóm trong tab "My Groups" tại My Page.
+ */
+export interface MyGroupCardProps {
+  group: MyGroup;           // Dữ liệu nhóm hiển thị
+  href: string;             // Đường dẫn khi bấm thẻ (`/manage/[id]` nếu là Leader, `/groups/[id]` nếu là thành viên)
+  actionLabel: string;      // Nhãn hành động ở chân thẻ (VD: "Open", "Review applications")
+  pendingCount?: number;    // Số đơn ứng tuyển đang chờ duyệt (chỉ hiển thị cho nhóm tôi làm Leader)
+}
+
+/**
+ * Props cho một cột nhóm tại My Page ("Groups I lead" / "Groups I'm a member of").
+ */
+export interface MyGroupColumnProps {
+  title: string;                  // Tiêu đề cột
+  count: number;                  // Số nhóm trong cột
+  emptyMessage: string;           // Thông báo khi cột không có nhóm nào
+  emptyAction: React.ReactNode;   // Nút / liên kết gợi ý hành động trong trạng thái rỗng
+  children: React.ReactNode;      // Danh sách thẻ nhóm
+}
+
+/**
  * Dữ liệu hiển thị cho một thẻ nhóm trên trang danh sách `/groups` (GroupCard).
  */
 export interface GroupCardData {
@@ -355,6 +376,7 @@ export interface MyApplication {
  */
 export interface ApplicantApplication {
   id: string;                   // ID đơn
+  groupId: string;              // ID nhóm nhận đơn (lọc đơn theo nhóm tại `/manage/[groupId]`)
   name: string;                 // Tên ứng viên
   avatarUrl?: string;           // Ảnh đại diện
   department: string;           // Khoa / Ngành của ứng viên
@@ -365,6 +387,15 @@ export interface ApplicantApplication {
   message: string;              // Lời giới thiệu & lý do ứng tuyển
   githubUrl?: string;           // Đường dẫn GitHub
   portfolioUrl?: string;        // Đường dẫn Portfolio
+}
+
+/**
+ * Props cho dynamic route `frontend/src/app/manage/[groupId]/page.tsx` (Leader duyệt đơn của một nhóm).
+ */
+export interface ManageGroupPageProps {
+  params: Promise<{
+    groupId: string;        // ID nhóm truyền từ URL dynamic route
+  }>;
 }
 
 /**
