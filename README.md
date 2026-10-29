@@ -56,11 +56,11 @@ When searching for project teammates on open social media, KakaoTalk open chats,
 
 ---
 
-<!-- ## 🛠️ Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend:** Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS v4, Lucide Icons
-- **Backend:** Java 17/21, Spring Boot 3, Spring Data JPA (Hibernate), Spring Security, JWT (Stateless)
-- **Database:** PostgreSQL 16 hosted on Neon.tech (Serverless Cloud, Singapore Region, SSL-enforced)
+- **Frontend:** Next.js, TypeScript, Tailwind CSS
+- **Backend:** Spring Boot
+- **Database:** PostgreSQL hosted on Neon.tech (Serverless Cloud, Singapore Region, SSL-enforced)
 - **Authentication:** Soongsil University SAP SSO Gateway (`smartid.ssu.ac.kr`)
 - **Infrastructure:** Vercel (Frontend Global Edge) & Oracle Cloud Always Free (Backend Compute)
 
@@ -72,7 +72,7 @@ For developers looking for deep-dive technical specifications — including data
 
 👉 **[architecture.md — System Architecture & Implementation Roadmap](architecture.md)**
 
---- -->
+---
 
 <div align="center">
   <sub>Built by Soongsilians for the Soongsil University community 숭실대학교 💙</sub>
