@@ -27,8 +27,26 @@ public class AuthService {
         // 1. Kiểm tra sinh viên trong Database
         User user = userRepository.findByStudentId(request.getStudentId())
                 .map(existingUser -> {
-                    // ĐÃ TỒN TẠI: TUYỆT ĐỐI KHÔNG THAY ĐỔI THÔNG TIN DANH TÍNH CỦA USER
-                    log.info("Sinh viên {} đã tồn tại. Giữ nguyên thông tin hồ sơ gốc.", existingUser.getStudentId());
+                    // ĐÃ TỒN TẠI: Cập nhật thông tin email/phoneNumber nếu có thay đổi và cập nhật thời gian đăng nhập
+                    log.info("Sinh viên {} đã tồn tại. Cập nhật thông tin hồ sơ từ SSO.", existingUser.getStudentId());
+                    if (request.getEmail() != null && !request.getEmail().isBlank()) {
+                        existingUser.setEmail(request.getEmail().trim());
+                    }
+                    if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
+                        existingUser.setPhoneNumber(request.getPhoneNumber().trim());
+                    }
+                    if (request.getName() != null && !request.getName().isBlank()) {
+                        existingUser.setName(request.getName().trim());
+                    }
+                    if (request.getDepartment() != null && !request.getDepartment().isBlank()) {
+                        existingUser.setDepartment(request.getDepartment().trim());
+                    }
+                    if (request.getFaculty() != null && !request.getFaculty().isBlank()) {
+                        existingUser.setFaculty(request.getFaculty().trim());
+                    }
+                    if (request.getAcademicYear() != null && !request.getAcademicYear().isBlank()) {
+                        existingUser.setAcademicYear(request.getAcademicYear().trim());
+                    }
                     existingUser.setLastLoginAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 })
@@ -66,6 +84,7 @@ public class AuthService {
                         .faculty(user.getFaculty())
                         .email(user.getEmail())
                         .academicYear(user.getAcademicYear())
+                        .phoneNumber(user.getPhoneNumber())
                         .role(user.getRole())
                         .build())
                 .build();

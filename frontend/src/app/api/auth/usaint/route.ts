@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
           faculty: profile.faculty,
           email: profile.email,
           academicYear: profile.academicYear,
-          phoneNumber: "", // Có thể bổ sung nếu trích xuất được từ SAP
+          phoneNumber: profile.phone || "",
         }),
       });
 

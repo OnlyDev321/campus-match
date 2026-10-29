@@ -29,6 +29,7 @@ public class AuthResponse {
         private String faculty;
         private String email;
         private String academicYear;
+        private String phoneNumber;
         private String role;
     }
 }
