@@ -156,46 +156,52 @@ campus-match/
 Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chuẩn mực:
 
 ```text
-┌──────────────────────┐             ┌───────────────────────────┐
-│        users         │             │       study_groups        │
-├──────────────────────┤             ├───────────────────────────┤
-│ id (PK, UUID/BIGINT) │1           *│ id (PK)                   │
-│ student_id (UNIQUE)  │────────────▶│ leader_id (FK)            │
-│ name                 │             │ title                     │
-│ department           │             │ description               │
-│ faculty              │             │ college    (단과대, IT대학)  │
-│ email                │             │ department (학과, 소프트...) │
-│ academic_year        │             │ post_year  (Năm đăng, 2024)│
-│ avatar_url           │             │ max_members               │
-│ created_at           │             │ status                    │
-└──────────┬───────────┘             │ created_at                │
-           │                         └─────────────┬─────────────┘
-           │                                       │
-           │ 1                                     │ 1
-           ▼ *                                     ▼ *
-┌──────────────────────┐             ┌───────────────────────────┐
-│     applications     │             │       group_members       │
-├──────────────────────┤             ├───────────────────────────┤
-│ id (PK)              │             │ group_id (PK, FK)         │
-│ group_id (FK)        │             │ user_id  (PK, FK)         │
-│ applicant_id (FK)    │             │ joined_at                 │
-│ statement            │             └───────────────────────────┘
-│ status (PENDING...)  │
-│ created_at           │
-└──────────────────────┘
+┌───────────────────────────┐             ┌───────────────────────────┐
+│           users           │             │       study_groups        │
+├───────────────────────────┤             ├───────────────────────────┤
+│ id (PK, BIGINT)           │1           *│ id (PK)                   │
+│ student_id (UNIQUE)       │────────────▶│ leader_id (FK)            │
+│ name                      │             │ title                     │
+│ department                │             │ description               │
+│ faculty                   │             │ college    (단과대, IT대학)  │
+│ email                     │             │ department (학과, 소프트...) │
+│ academic_year             │             │ post_year  (Năm đăng, 2024)│
+│ phone_number              │             │ max_members               │
+│ avatar_url                │             │ status                    │
+│ role                      │             │ created_at                │
+│ created_at                │             └─────────────┬─────────────┘
+│ last_login_at             │                           │
+└─────────────┬─────────────┘                           │
+              │                                         │
+              │ 1                                       │ 1
+              ▼ *                                       ▼ *
+┌───────────────────────────┐             ┌───────────────────────────┐
+│       applications        │             │       group_members       │
+├───────────────────────────┤             ├───────────────────────────┤
+│ id (PK)                   │             │ group_id (PK, FK)         │
+│ group_id (FK)             │             │ user_id  (PK, FK)         │
+│ applicant_id (FK)         │             │ joined_at                 │
+│ statement                 │             └───────────────────────────┘
+│ status (PENDING...)       │
+│ created_at                │
+└───────────────────────────┘
 ```
 
 ### Chi tiết các Table & Ràng buộc (Constraints):
 
 1. **`users` (Thông tin sinh viên Soongsil):**
-   - `id`: Khóa chính (Long/UUID).
-   - `student_id`: Mã sinh viên (VD: `20211234`), **UNIQUE**, Index.
-   - `name`: Họ và tên sinh viên.
-   - `department`: Khoa (e.g. `컴퓨터학부`, `소프트웨어학부`).
-   - `faculty`: Trường/Viện (e.g. `IT대학`).
-   - `email`: Email trường (e.g. `20211234@soongsil.ac.kr`).
-   - `academic_year`: Năm học (1, 2, 3, 4).
-   - `created_at`: Thời gian tạo.
+   - `id`: Khóa chính (`BIGINT` / `Long`, Identity).
+   - `student_id`: Mã sinh viên u-SAINT (VD: `20211234`), `VARCHAR(20)`, **UNIQUE**, `NOT NULL`, Index, bất biến (`updatable = false`).
+   - `name`: Họ và tên sinh viên chính thức (`VARCHAR(100)`), `NOT NULL`, bất biến (`updatable = false`).
+   - `department`: Khoa / Ngành học (VD: `소프트웨어학부`, `컴퓨터학부`), `VARCHAR(100)`, bất biến (`updatable = false`).
+   - `faculty`: Trường / Viện chủ quản (VD: `IT대학`), `VARCHAR(100)`, bất biến (`updatable = false`).
+   - `email`: Email trường cấp (`VARCHAR(150)`, VD: `20211234@soongsil.ac.kr`).
+   - `academic_year`: Năm học ghi nhận lúc nhập học (`VARCHAR(10)`, VD: `1`, `2`, `3`, `4`), bất biến (`updatable = false`).
+   - `phone_number`: Số điện thoại liên hệ (`VARCHAR(20)`).
+   - `avatar_url`: Ảnh đại diện / ảnh thẻ sinh viên u-SAINT (`TEXT`).
+   - `role`: Phân quyền trong hệ thống (`VARCHAR(20)`), `NOT NULL`, mặc định `ROLE_STUDENT`.
+   - `created_at`: Thời gian tạo tài khoản lần đầu (`TIMESTAMP`), `NOT NULL`, bất biến.
+   - `last_login_at`: Thời điểm đăng nhập u-SAINT gần nhất (`TIMESTAMP`).
 
 2. **`study_groups` (Nhóm học tập & Đồ án - Lọc theo 3 tiêu chí u-SAINT):**
    - `id`: Khóa chính.
