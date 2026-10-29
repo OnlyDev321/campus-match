@@ -13,23 +13,6 @@ import type { TranslationDict } from "@/i18n/dictionaries/en";
    -------------------------------------------------------------------------- */
 
 /**
- * Hồ sơ sinh viên đầy đủ (Dùng cho trang My Page & Cập nhật thông tin cá nhân).
- * - Các trường studentId, major, cohort được đồng bộ tự động từ tài khoản trường u-SAINT.
- * - Các trường email, phone, bio, skills, avatarUrl do sinh viên chủ động tùy chỉnh.
- */
-export interface User {
-  name: string;             // Họ và tên sinh viên (VD: "Hau Tran")
-  studentId: string;        // Mã số sinh viên (VD: "20211234")
-  major: string;            // Chuyên ngành / Khoa (VD: "소프트웨어학부")
-  cohort: string;           // Khóa học / Niên khóa (VD: "K21")
-  email: string;            // Email liên lạc (ưu tiên email trường @soongsil.ac.kr)
-  phone?: string;           // Số điện thoại liên hệ (tùy chọn)
-  bio: string;              // Giới thiệu bản thân ngắn gọn
-  skills: string[];         // Danh sách kỹ năng lập trình / thế mạnh
-  avatarUrl?: string;       // Đường dẫn ảnh đại diện (URL hoặc base64 preview)
-}
-
-/**
  * Thông tin sinh viên nhận về từ hệ thống SSO u-SAINT của trường Soongsil.
  * Được lưu trong Zustand Store (authStore) & localStorage sau khi đăng nhập thành công.
  */
@@ -47,17 +30,10 @@ export interface StudentProfile {
 }
 
 /**
- * Thống kê hoạt động của sinh viên (hiển thị trên My Page).
- */
-export interface UserStats {
-  completionRate: number;   // Tỷ lệ hoàn thành các nhóm đồ án tham gia (%)
-}
-
-/**
  * Props cho component ProfileCard tại trang My Page (Chế độ chỉ đọc từ u-SAINT SSO).
  */
 export interface ProfileCardProps {
-  user: User;               // Dữ liệu người dùng hiển thị
+  user: StudentProfile;     // Hồ sơ sinh viên đang đăng nhập (lấy từ authStore)
 }
 
 
@@ -81,6 +57,7 @@ export interface AuthLoginResult {
 export interface AuthState {
   user: StudentProfile | null;                                    // Dữ liệu sinh viên đang đăng nhập
   token: string | null;                                           // JWT Bearer Token gửi kèm Header API
+  userId: number | null;                                          // ID người dùng trong DB Backend (users.id), null nếu Backend chưa phản hồi
   isLoggedIn: boolean;                                            // Trạng thái đã đăng nhập
   isLoading: boolean;                                             // Trạng thái đang khôi phục phiên từ storage
   isLoginModalOpen: boolean;                                      // Trạng thái đóng/mở modal đăng nhập SSO
@@ -134,7 +111,8 @@ export interface UsaintLoginResult {
 export interface UsaintLoginApiResponse {
   success: boolean;         // Trạng thái phản hồi
   profile?: StudentProfile; // Hồ sơ sinh viên đã bóc tách từ u-SAINT
-  token?: string;           // Token phiên làm việc
+  token?: string | null;    // JWT do Spring Boot cấp (null nếu Backend phản hồi lỗi)
+  userId?: number | null;   // ID người dùng trong DB Backend (users.id), null nếu Backend không phản hồi
   errorCode?: string;       // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
   error?: string;           // Thông báo lỗi nếu thất bại
 }
@@ -164,6 +142,47 @@ export interface ApiErrorResponse {
   message: string;          // Chi tiết lỗi thân thiện cho người dùng
   statusCode: number;       // Mã HTTP (400, 401, 403, 404, 500...)
   fieldErrors?: Record<string, string>; // Chi tiết lỗi validation theo từng trường
+}
+
+/**
+ * Body lỗi chuẩn từ Backend Spring Boot (`@RestControllerAdvice`, architecture.md §6).
+ */
+export interface ApiErrorBody {
+  status: number;           // Mã HTTP (400, 401, 403, 404, 500...)
+  error: string;            // Tên mã lỗi (VD: "FORBIDDEN", "BAD_REQUEST")
+  message: string;          // Chi tiết lỗi từ server (không hiển thị trực tiếp lên UI)
+  timestamp: string;        // Thời điểm xảy ra lỗi (ISO-8601)
+}
+
+/**
+ * Mã lỗi chuẩn hóa do `lib/api.ts` ném ra, dùng để ánh xạ sang `t.apiErrors.*`.
+ * - NETWORK_ERROR: Không kết nối được tới server
+ * - UNAUTHORIZED: Thiếu / hết hạn JWT (401)
+ * - FORBIDDEN: Không có quyền (403, VD: không phải Leader nhóm)
+ * - NOT_FOUND: Không tìm thấy tài nguyên (404)
+ * - SERVER_ERROR: Các lỗi còn lại
+ */
+export type ApiErrorCode =
+  | "NETWORK_ERROR"
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "SERVER_ERROR";
+
+/**
+ * Trạng thái tải dữ liệu bất đồng bộ của một trang / khối giao diện.
+ */
+export type AsyncStatus = "loading" | "error" | "ready";
+
+/**
+ * Kết quả của hook `useServiceData` (`lib/hooks.ts`) khi gọi một hàm trong services/.
+ */
+export interface ServiceDataState<T> {
+  status: AsyncStatus;                          // Trạng thái tải
+  data: T | null;                               // Dữ liệu đã tải (null khi chưa có)
+  errorCode: ApiErrorCode | null;               // Mã lỗi khi status = "error"
+  reload: () => void;                           // Tải lại dữ liệu (VD: nút "Thử lại")
+  setData: (updater: (prev: T | null) => T | null) => void; // Cập nhật dữ liệu cục bộ sau thao tác thành công
 }
 
 /**
@@ -204,28 +223,88 @@ export type GroupStatus = "active" | "recruiting" | "closed";
 export type MeetingFormat = "Online" | "Offline" | "Hybrid";
 
 /**
- * Thông tin thành viên cơ bản trong nhóm (danh sách tóm tắt).
+ * Trạng thái nhóm theo Backend (cột `study_groups.status`, architecture.md §4):
+ * - RECRUITING: Đang tuyển thành viên
+ * - COMPLETED: Đã đủ thành viên
+ * - CLOSED: Đã đóng đợt tuyển
  */
-export interface GroupMember {
-  id: string;               // ID định danh thành viên
-  name: string;             // Tên thành viên
+export type GroupStatusCode = "RECRUITING" | "COMPLETED" | "CLOSED";
+
+/**
+ * Vai trò của một thành viên trong nhóm (cột `group_members.role`):
+ * - LEADER: Trưởng nhóm
+ * - MEMBER: Thành viên
+ */
+export type GroupMemberRole = "LEADER" | "MEMBER";
+
+/**
+ * Thông tin tóm tắt người dùng nhúng trong response nhóm / đơn ứng tuyển.
+ */
+export interface UserSummary {
+  id: number;                       // ID người dùng (users.id)
+  studentId: string;                // Mã số sinh viên u-SAINT
+  name: string;                     // Họ tên sinh viên
+  department: string | null;        // Khoa / Ngành (학부/학과)
+  faculty: string | null;           // Trường / Viện (단과대학)
+  academicYear: string | null;      // Năm học (1, 2, 3, 4)
 }
 
 /**
- * Dữ liệu nhóm của tôi (Hiển thị trong tab "My Groups" tại trang My Page).
+ * Một thành viên trong response tóm tắt nhóm.
  */
-export interface MyGroup {
-  id: string;               // ID nhóm
-  courseCode: string;       // Mã học phần (VD: "CSE408")
-  courseName: string;       // Tên môn học (VD: "Web Programming")
-  name: string;             // Tiêu đề / Tên đề tài của nhóm
-  description: string;      // Mô tả ngắn gọn về nhóm
-  status: GroupStatus;      // Trạng thái nhóm (active/recruiting/closed)
-  myRole: string;           // Vai trò của tôi trong nhóm (Frontend, Backend...)
-  isLeader: boolean;        // Tôi có phải là nhóm trưởng hay không
-  memberCount: number;      // Số thành viên hiện có
-  maxMembers: number;       // Số thành viên tối đa
-  members: GroupMember[];   // Danh sách tên các thành viên
+export interface GroupMemberSummary {
+  userId: number;                   // ID người dùng (users.id)
+  name: string;                     // Tên thành viên
+  role: GroupMemberRole;            // Vai trò trong nhóm (LEADER/MEMBER)
+  joinedAt: string;                 // Ngày gia nhập (ISO-8601)
+}
+
+/**
+ * Tóm tắt một nhóm mà người dùng hiện tại tham gia.
+ * Response của `GET /api/users/me/groups` (trả về MyGroupSummary[]).
+ */
+export interface MyGroupSummary {
+  id: number;                       // ID nhóm (study_groups.id)
+  title: string;                    // Tên nhóm / đề tài
+  description: string;              // Mô tả nhóm
+  courseCode: string | null;        // Mã môn học (VD: "CS490"), tùy chọn
+  courseName: string | null;        // Tên môn học (VD: "Capstone"), tùy chọn
+  college: string;                  // Trường / Viện (단과대학, VD: "IT대학")
+  department: string;               // Khoa / Ngành (학부/학과, VD: "소프트웨어학부")
+  status: GroupStatusCode;          // Trạng thái nhóm
+  maxMembers: number;               // Số thành viên tối đa
+  memberCount: number;              // Số thành viên hiện có
+  myRole: GroupMemberRole;          // Vai trò của tôi trong nhóm (do Backend xác định)
+  leader: UserSummary;              // Trưởng nhóm
+  members: GroupMemberSummary[];    // Danh sách thành viên chính thức
+  pendingApplicationCount: number;  // Số đơn đang chờ duyệt (chỉ có ý nghĩa khi myRole = LEADER, ngược lại = 0)
+  createdAt: string;                // Ngày tạo nhóm (ISO-8601)
+}
+
+/**
+ * Kiểu thẻ nhóm trên My Page / Manage:
+ * - lead: Nhóm tôi làm Leader (mở `/manage/[groupId]`)
+ * - member: Nhóm tôi là thành viên (mở `/groups/[id]`)
+ */
+export type MyGroupCardVariant = "lead" | "member";
+
+/**
+ * Props cho component MyGroupCard (`src/components/group/MyGroupCard.tsx`).
+ */
+export interface MyGroupCardProps {
+  group: MyGroupSummary;            // Dữ liệu nhóm hiển thị
+  variant: MyGroupCardVariant;      // Kiểu thẻ quyết định đường dẫn & nhãn hành động
+}
+
+/**
+ * Props cho một cột nhóm trên My Page ("Groups I lead" / "Groups I'm a member of").
+ */
+export interface MyGroupColumnProps {
+  title: string;                    // Tiêu đề cột
+  groups: MyGroupSummary[] | null;  // Danh sách nhóm thuộc cột (null khi đang tải → hiển thị skeleton)
+  variant: MyGroupCardVariant;      // Kiểu thẻ của cột
+  emptyText: string;                // Nội dung trạng thái rỗng
+  emptyAction: React.ReactNode;     // Nút / liên kết hành động trong trạng thái rỗng
 }
 
 /**
@@ -328,43 +407,25 @@ export interface GroupDetailData extends GroupCardData {
    -------------------------------------------------------------------------- */
 
 /**
- * Trạng thái của đơn xin gia nhập nhóm:
- * - pending: Chờ nhóm trưởng xem xét duyệt
- * - accepted: Đã được nhóm trưởng chấp thuận (gia nhập nhóm)
- * - rejected: Đã bị từ chối
+ * Trạng thái đơn xin gia nhập nhóm theo Backend (cột `applications.status`):
+ * - PENDING: Chờ nhóm trưởng duyệt
+ * - ACCEPTED: Đã chấp thuận (tự động thêm vào group_members)
+ * - REJECTED: Đã từ chối
  */
-export type ApplicationStatus = "pending" | "accepted" | "rejected";
+export type ApplicationStatusCode = "PENDING" | "ACCEPTED" | "REJECTED";
 
 /**
- * Đơn ứng tuyển của bản thân (hiển thị trong tab "My Applications" tại My Page).
+ * Đơn xin gia nhập một nhóm (Leader xem & duyệt tại `/manage/[groupId]`).
+ * Response của `GET /api/groups/{id}/applications` (GroupApplication[], chỉ Leader; 403 nếu không phải)
+ * và của `PUT /api/applications/{id}/accept` | `/reject` (đơn sau khi cập nhật).
  */
-export interface MyApplication {
-  id: string;                   // ID đơn ứng tuyển
-  groupId: string;              // ID nhóm ứng tuyển
-  courseCode: string;           // Mã môn học
-  courseName: string;           // Tên môn học
-  groupName: string;            // Tên nhóm ứng tuyển
-  appliedRole: string;          // Vị trí đã ứng tuyển
-  appliedAt: string;            // Ngày nộp đơn (YYYY-MM-DD)
-  status: ApplicationStatus;    // Trạng thái đơn (pending/accepted/rejected)
-  message: string;              // Lời nhắn / Nguyện vọng gửi nhóm trưởng
-}
-
-/**
- * Thông tin ứng viên gửi tới nhóm (Hiển thị cho Leader duyệt tại trang `/manage`).
- */
-export interface ApplicantApplication {
-  id: string;                   // ID đơn
-  name: string;                 // Tên ứng viên
-  avatarUrl?: string;           // Ảnh đại diện
-  department: string;           // Khoa / Ngành của ứng viên
-  badge?: string;               // Huy hiệu nổi bật (VD: "Top Match", "Fast Learner")
-  appliedAgo: string;           // Thời gian nộp (VD: "2 hours ago")
-  skills: string[];             // Danh sách kỹ năng ứng viên có
-  scheduleMatch?: number;       // Độ trùng khớp lịch rảnh (%)
-  message: string;              // Lời giới thiệu & lý do ứng tuyển
-  githubUrl?: string;           // Đường dẫn GitHub
-  portfolioUrl?: string;        // Đường dẫn Portfolio
+export interface GroupApplication {
+  id: number;                                     // ID đơn (applications.id)
+  groupId: number;                                // ID nhóm nhận đơn
+  applicant: UserSummary & { email: string | null }; // Thông tin ứng viên (kèm email liên hệ)
+  statement: string;                              // Lời giới thiệu / nguyện vọng của ứng viên
+  status: ApplicationStatusCode;                  // Trạng thái đơn
+  createdAt: string;                              // Thời điểm nộp đơn (ISO-8601)
 }
 
 /**
@@ -382,12 +443,36 @@ export interface ApplyGroupPayload {
 }
 
 /**
+ * Props cho dynamic route `frontend/src/app/manage/[groupId]/page.tsx`.
+ */
+export interface ManageGroupPageProps {
+  params: Promise<{
+    groupId: string;        // ID nhóm truyền từ URL dynamic route
+  }>;
+}
+
+/**
+ * Dữ liệu trang duyệt đơn `/manage/[groupId]`.
+ */
+export interface ManageGroupData {
+  group: MyGroupSummary | null;                 // Nhóm tôi làm Leader (null nếu không tồn tại / không phải Leader)
+  applications: GroupApplication[];             // Toàn bộ đơn ứng tuyển của nhóm
+}
+
+/**
+ * Hành động duyệt đơn của Leader.
+ */
+export type ApplicationAction = "accept" | "reject";
+
+/**
  * Props cho component ApplicationCard (dành cho Leader duyệt đơn).
  */
 export interface ApplicationCardProps {
-  application: ApplicantApplication;            // Dữ liệu đơn ứng tuyển
-  onAccept?: (id: string) => void;              // Callback khi duyệt chấp thuận
-  onReject?: (id: string) => void;              // Callback khi từ chối
+  application: GroupApplication;                // Dữ liệu đơn ứng tuyển
+  onAccept?: (id: number) => void;              // Callback khi duyệt chấp thuận
+  onReject?: (id: number) => void;              // Callback khi từ chối
+  pendingAction?: ApplicationAction | null;     // Hành động đang xử lý (hiển thị loading trên nút tương ứng)
+  errorCode?: ApiErrorCode | null;              // Mã lỗi của lần xử lý gần nhất (hiển thị qua t.apiErrors.*)
 }
 
 /**
@@ -428,9 +513,29 @@ export interface PinnedGroup {
 }
 
 /**
- * Khóa chuyển tab trên trang My Page (`groups` hoặc `applications`).
+ * Props cho khung trạng thái rỗng (`components/common/AsyncState.tsx`).
  */
-export type MyPageTabKey = "groups" | "applications";
+export interface EmptyStateProps {
+  text: string;                                 // Nội dung thông báo rỗng
+  action?: React.ReactNode;                     // Nút / liên kết hành động (tùy chọn)
+}
+
+/**
+ * Props cho khung trạng thái lỗi kèm nút thử lại (`components/common/AsyncState.tsx`).
+ */
+export interface ErrorStateProps {
+  title: string;                                // Tiêu đề lỗi (VD: "Không tải được nhóm")
+  message: string;                              // Chi tiết lỗi đã dịch từ t.apiErrors.*
+  retryLabel?: string;                          // Nhãn nút thử lại
+  onRetry?: () => void;                         // Hàm tải lại dữ liệu
+}
+
+/**
+ * Props cho danh sách thẻ skeleton khi đang tải (`components/common/AsyncState.tsx`).
+ */
+export interface CardSkeletonListProps {
+  count?: number;                               // Số thẻ skeleton hiển thị
+}
 
 /**
  * Props cho nút dịch thuật đa ngữ TranslateButton.

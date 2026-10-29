@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import type { StudentProfile, AuthState } from "@/lib/types";
@@ -8,6 +9,7 @@ export const useAuthStore = create<AuthState>()(
     (set, get) => ({
       user: null,
       token: null,
+      userId: null,
       isLoggedIn: false,
       isLoading: false,
       isLoginModalOpen: false,
@@ -66,11 +68,12 @@ export const useAuthStore = create<AuthState>()(
           }
 
           const studentProfile: StudentProfile = data.profile;
-          const token = `jwt_usaint_${studentId.trim()}_${Date.now()}`;
 
+          // Lưu JWT thật do Spring Boot cấp và ID người dùng trong DB (BFF chuyển tiếp từ /api/auth/sso/usaint)
           set({
             user: studentProfile,
-            token: token,
+            token: data.token ?? null,
+            userId: data.userId ?? null,
             isLoggedIn: true,
             isLoginModalOpen: false,
             isLoading: false,
@@ -90,6 +93,7 @@ export const useAuthStore = create<AuthState>()(
         set({
           user: null,
           token: null,
+          userId: null,
           isLoggedIn: false,
           isLoginModalOpen: false,
           redirectAfterLogin: null,
@@ -99,13 +103,25 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "campusmatch_auth_storage",
       storage: createJSONStorage(() => localStorage),
-      // Chỉ lưu trữ user và token vào localStorage
+      // Chỉ lưu trữ user, token và userId vào localStorage
       partialize: (state) => ({
         user: state.user,
         token: state.token,
+        userId: state.userId,
         isLoggedIn: state.isLoggedIn,
       }),
     }
   )
 );
 
+/**
+ * Cho biết authStore đã khôi phục phiên từ localStorage hay chưa.
+ * Server và lần render hydrate đầu tiên luôn trả về false, tránh lệch HTML giữa server và client
+ * cũng như chuyển hướng nhầm sang trang chủ trước khi đọc xong phiên đăng nhập.
+ */
+export const useAuthHydrated = () =>
+  useSyncExternalStore(
+    (onChange) => useAuthStore.persist.onFinishHydration(onChange),
+    () => useAuthStore.persist.hasHydrated(),
+    () => false,
+  );

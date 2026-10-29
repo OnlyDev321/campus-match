@@ -110,6 +110,7 @@ export async function POST(req: NextRequest) {
 
     // BÀN GIAO THÔNG TIN SANG SPRING BOOT BACKEND ĐỂ LƯU VÀ LẤY JWT ---
     let backendToken: string | null = null;
+    let backendUserId: number | null = null;
     try {
       const backendUrl =
         process.env.SPRING_BOOT_API_URL || "http://localhost:8080";
@@ -131,6 +132,7 @@ export async function POST(req: NextRequest) {
       if (springBootRes.ok) {
         const springBootData = await springBootRes.json();
         backendToken = springBootData.token;
+        backendUserId = springBootData.user?.id ?? null;
       } else {
         console.warn("Spring Boot phản hồi mã lỗi HTTP:", springBootRes.status);
       }
@@ -140,6 +142,8 @@ export async function POST(req: NextRequest) {
         backendError,
       );
       // Token dự phòng nếu Spring Boot chưa bật trong lúc phát triển frontend độc lập
+      // TODO: Xem lại hành vi fallback này khi chuyển services/ sang API thật (USE_MOCK = false):
+      // token giả sẽ bị Backend từ chối (401). Cân nhắc báo lỗi SERVER_ERROR hoặc trả token null.
       backendToken = `jwt_usaint_${profile.studentId}_${Date.now()}`;
     }
 
@@ -149,6 +153,7 @@ export async function POST(req: NextRequest) {
       studentId: String(studentId).trim(),
       profile,
       token: backendToken,
+      userId: backendUserId,
     });
   } catch (error) {
     console.error("Lỗi hệ thống khi xử lý xác thực u-SAINT:", error);
