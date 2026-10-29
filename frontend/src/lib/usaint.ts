@@ -156,7 +156,117 @@ export async function fetchStudentProfileFromSap(
     );
     const status = getControlValue(wda, SAP_STUDENT_INFO_CONTROL_IDS.STATUS);
     const rawEmail = getControlValue(wda, SAP_STUDENT_INFO_CONTROL_IDS.EMAIL);
-    const email = rawEmail || (studentId ? `${studentId}@soongsil.ac.kr` : "");
+    // Luôn chuẩn hóa email theo đúng mã số sinh viên Soongsil: <studentId>@soongsil.ac.kr
+    const email = studentId ? `${studentId}@soongsil.ac.kr` : (rawEmail || "");
+
+    // 4. Trích xuất số điện thoại (휴대전화)
+    let phoneNumber: string | undefined;
+
+    const phoneRegex = /(01[016789][-\s]?\d{3,4}[-\s]?\d{4})/;
+    const formatPhone = (raw: string): string => {
+      const match = raw.match(phoneRegex);
+      if (!match) return raw.trim();
+      const digits = match[1].replace(/[^\d]/g, "");
+      if (digits.length === 11) {
+        return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+      } else if (digits.length === 10) {
+        return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
+      }
+      return match[1];
+    };
+
+    // Bước 4.1: Kiểm tra các Control ID thông dụng trong view mặc định
+    const candidatePhoneControlIds = [
+      "ZCMW1001.ID_0001:VIW_DEFAULT.HP_NO",
+      "ZCMW1001.ID_0001:VIW_DEFAULT.TELNO",
+      "ZCMW1001.ID_0001:VIW_DEFAULT.MOB_NUMBER",
+      "ZCMW1001.ID_0001:VIW_DEFAULT.TC_DEFAULT_HP_NO",
+      "ZCMW1001.ID_0001:VIW_DEFAULT.TC_DEFAULT_TELNO",
+      "ZCMW1001.ID_0001:VIW_DEFAULT.TC_DEFAULT_HP",
+    ];
+
+    for (const cid of candidatePhoneControlIds) {
+      const val = getControlValue(wda, cid);
+      if (val && phoneRegex.test(val)) {
+        phoneNumber = formatPhone(val);
+        break;
+      }
+    }
+
+    // Bước 4.2: Quét toàn bộ phần tử trong DOM view hiện tại
+    if (!phoneNumber) {
+      wda.$("input, span, td, div, p").each((_, el) => {
+        if (phoneNumber) return;
+        const rawVal = wda.$(el).val();
+        const text = String(Array.isArray(rawVal) ? rawVal.join(" ") : (rawVal || wda.$(el).text() || "")).trim();
+        if (phoneRegex.test(text)) {
+          phoneNumber = formatPhone(text);
+        }
+      });
+    }
+
+    // Bước 4.3: Nếu chưa tìm thấy, kích hoạt chuyển sang tab "신상정보" (Personal Info / Liên lạc)
+    if (!phoneNumber) {
+      try {
+        let targetTabId = "";
+        let targetTsId = "";
+
+        wda.$('[ct="TAB"], [role="tab"], .urSTTItem').each((_, el) => {
+          if (targetTabId) return;
+          const text = wda.$(el).text() || "";
+          if (text.includes("신상") || text.includes("연락")) {
+            targetTabId = wda.$(el).attr("id") || "";
+            const tsParent = wda.$(el).closest('[ct="TS"]');
+            if (tsParent.length > 0) {
+              targetTsId = tsParent.attr("id") || "";
+            }
+          }
+        });
+
+        if (!targetTabId) {
+          wda.$("[id]").each((_, el) => {
+            if (targetTabId) return;
+            const text = wda.$(el).text() || "";
+            const id = wda.$(el).attr("id") || "";
+            if ((text.includes("신상정보") || text.includes("신상")) && id.includes("TAB")) {
+              targetTabId = id;
+            }
+          });
+        }
+
+        if (targetTabId) {
+          const { SapEventQueue } = require("usaint-lib/dist/core/event-queue");
+          const queue = new SapEventQueue();
+          queue.addEvent(
+            "ClientInspector_Notify",
+            { Id: "WD01", Data: "CssMatchesHtmlVersion:TRUE" },
+            { ResponseData: "delta", EnqueueCardinality: "single" },
+          );
+          queue.addEvent(
+            "TabStrip_TabSelect",
+            {
+              Id: targetTsId || targetTabId,
+              Item: targetTabId,
+            },
+            { ResponseData: "delta", ClientAction: "submit" },
+          );
+          queue.addFormRequest(`@{"sFocussedId":"${targetTabId}"}`);
+
+          await (wda as any).dispatchEvents(queue);
+
+          wda.$("input, span, td, div, p").each((_, el) => {
+            if (phoneNumber) return;
+            const rawVal = wda.$(el).val();
+            const text = String(Array.isArray(rawVal) ? rawVal.join(" ") : (rawVal || wda.$(el).text() || "")).trim();
+            if (phoneRegex.test(text)) {
+              phoneNumber = formatPhone(text);
+            }
+          });
+        }
+      } catch (tabError) {
+        console.warn("Không thể chuyển tab 신상정보 trong SAP WDA:", tabError);
+      }
+    }
 
     // 4. Trích xuất ảnh thẻ sinh viên (Avatar) nếu có
     let avatarUrl: string | undefined;
@@ -201,6 +311,7 @@ export async function fetchStudentProfileFromSap(
       faculty,
       academicYear,
       email,
+      phone: phoneNumber,
       status: status || undefined,
       semester: semester || undefined,
       avatarUrl,

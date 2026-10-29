@@ -35,8 +35,8 @@ public class User {
     @Column(length = 100, updatable = false)
     private String faculty;
 
-    // Email trường cấp (@soongsil.ac.kr): Bất biến
-    @Column(length = 150, updatable = false)
+    // Email trường cấp (@soongsil.ac.kr)
+    @Column(length = 150)
     private String email;
 
     // Năm học ghi nhận lúc nhập học: Bất biến
