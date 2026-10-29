@@ -82,6 +82,7 @@ export default function Header() {
                     aria-expanded={isUserMenuOpen}
                   >
                     <Avatar
+                      src={user?.avatarUrl}
                       name={user?.name || "홍길동"}
                       size="sm"
                       className="ring-1 ring-[var(--border)] shrink-0"

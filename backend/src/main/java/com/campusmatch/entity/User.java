@@ -47,6 +47,10 @@ public class User {
     @Column(name = "phone_number", length = 20)
     private String phoneNumber;
 
+    // Ảnh đại diện / ảnh thẻ sinh viên u-SAINT
+    @Column(name = "avatar_url", columnDefinition = "TEXT")
+    private String avatarUrl;
+
     // Phân quyền mặc định trong hệ thống
     @Column(nullable = false, length = 20)
     @Builder.Default

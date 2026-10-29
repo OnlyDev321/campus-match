@@ -124,6 +124,7 @@ export async function POST(req: NextRequest) {
           email: profile.email,
           academicYear: profile.academicYear,
           phoneNumber: profile.phone || "",
+          avatarUrl: profile.avatarUrl || "",
         }),
       });
 
