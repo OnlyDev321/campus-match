@@ -73,6 +73,71 @@ export const en = {
     showOriginal: "Show Original",
     translatedBy: "Translated by Google Gemini AI",
   },
+  // Profile Card (My Page)
+  profile: {
+    verified: "u-SAINT Verified",
+    yearBadge: "Year {year}",
+  },
+  // My Page
+  myPage: {
+    statsActive: "Active Groups",
+    statsActiveSub: "{count} recruiting",
+    statsLed: "Groups Led",
+    statsMemberOf: "Member Of",
+    statsNone: "None",
+    groupsSectionTitle: "My Groups",
+    ledColumnTitle: "Groups I lead",
+    memberColumnTitle: "Groups I'm a member of",
+    ledEmpty: "You aren't leading any groups yet.",
+    memberEmpty: "You haven't joined any groups as a member yet.",
+    createGroup: "Create a group",
+    browseGroups: "Browse groups",
+    groupsError: "We couldn't load your groups.",
+    retry: "Try again",
+  },
+  // My Group Card (My Page & Manage)
+  myGroupCard: {
+    leader: "Leader",
+    member: "Member",
+    membersLabel: "members",
+    open: "Open",
+    reviewApplications: "Review applications",
+    pendingCount: "{count} pending",
+  },
+  // Group status (study_groups.status)
+  groupStatus: {
+    RECRUITING: "RECRUITING",
+    COMPLETED: "COMPLETED",
+    CLOSED: "CLOSED",
+  },
+  // Manage (Leader reviews join requests)
+  manage: {
+    title: "Manage Applications",
+    subtitle: "Choose a group you lead to review its join requests.",
+    empty: "You aren't leading any groups yet.",
+    backToMyPage: "Back to My Page",
+    backToManage: "All groups I lead",
+    applicationsTitle: "Pending join requests",
+    pendingEmpty: "No pending applications for this group.",
+    notAvailableTitle: "This group isn't available",
+    notAvailableDesc: "It doesn't exist, or you aren't its leader.",
+    applicationsError: "We couldn't load the applications.",
+    retry: "Try again",
+  },
+  // Application Card (Leader view)
+  applicationCard: {
+    applied: "Applied {time}",
+    accept: "Accept Application",
+    reject: "Reject",
+  },
+  // Normalized API errors (lib/api.ts → ApiErrorCode)
+  apiErrors: {
+    NETWORK_ERROR: "Can't reach the server. Please check your connection.",
+    UNAUTHORIZED: "Your session has expired. Please sign in again.",
+    FORBIDDEN: "You don't have permission to do this.",
+    NOT_FOUND: "The requested item could not be found.",
+    SERVER_ERROR: "Something went wrong on the server. Please try again.",
+  },
 };
 
 export type TranslationDict = typeof en;
