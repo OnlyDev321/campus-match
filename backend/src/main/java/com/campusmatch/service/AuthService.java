@@ -47,6 +47,9 @@ public class AuthService {
                     if (request.getAcademicYear() != null && !request.getAcademicYear().isBlank()) {
                         existingUser.setAcademicYear(request.getAcademicYear().trim());
                     }
+                    if (request.getAvatarUrl() != null && !request.getAvatarUrl().isBlank()) {
+                        existingUser.setAvatarUrl(request.getAvatarUrl().trim());
+                    }
                     existingUser.setLastLoginAt(LocalDateTime.now());
                     return userRepository.save(existingUser);
                 })
@@ -61,6 +64,7 @@ public class AuthService {
                             .email(request.getEmail())
                             .academicYear(request.getAcademicYear())
                             .phoneNumber(request.getPhoneNumber())
+                            .avatarUrl(request.getAvatarUrl())
                             .role("ROLE_STUDENT")
                             .lastLoginAt(LocalDateTime.now())
                             .build();
@@ -85,6 +89,7 @@ public class AuthService {
                         .email(user.getEmail())
                         .academicYear(user.getAcademicYear())
                         .phoneNumber(user.getPhoneNumber())
+                        .avatarUrl(user.getAvatarUrl())
                         .role(user.getRole())
                         .build())
                 .build();
