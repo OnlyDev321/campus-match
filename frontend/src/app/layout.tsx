@@ -29,6 +29,8 @@ export const metadata = {
     "Unified Light and Dark Theme Design System for CampusMatch academic productivity platform.",
 };
 
+import LoginModal from "@/components/auth/LoginModal";
+
 export default function RootLayout({
   children,
 }: {
@@ -43,14 +45,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
       </head>
-      <body className="min-h-screen flex flex-col bg-(--background) text-(--text-primary) antialiased transition-colors duration-150">
+      <body className="min-h-screen flex flex-col bg-(--background) text-(--text-primary) antialiased">
         <ThemeProvider>
           <Header />
           <div className="flex flex-1 w-full">
             <Sidebar />
-            <main className="flex-1 min-w-0 @container app-main-content">{children}</main>
+            <main className="flex-1 min-w-0 @container app-main-content">
+              {children}
+            </main>
           </div>
           <Footer />
+          <LoginModal />
         </ThemeProvider>
       </body>
     </html>

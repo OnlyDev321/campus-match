@@ -18,7 +18,9 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
     course,
     title,
     description,
-    tags,
+    college,
+    department,
+    postYear,
     leaderName,
     leaderAvatarUrl,
     leaderMajor,
@@ -31,7 +33,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const isClosed = group.openForApplications === false;
 
   return (
-    <Card className="h-full flex flex-col gap-4 p-6 transition-all duration-200 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
+    <Card className="h-full flex flex-col gap-4 p-6 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
       <CardHeader className="mb-0 flex-wrap items-center">
         <Badge variant="primary" className="font-medium">
           {course}
@@ -52,15 +54,16 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         </CardDescription>
       </div>
 
-      <div className="flex flex-wrap gap-1.5 flex-1 content-start">
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="inline-flex items-center px-2 py-0.5 rounded-lg text-[11px] font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)] transition-colors hover:border-[var(--border-strong)]"
-          >
-            #{tag}
-          </span>
-        ))}
+      <div className="flex flex-wrap items-center gap-1.5 flex-1 content-start">
+        <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary-soft-border)]">
+          {college}
+        </span>
+        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)]">
+          {department}
+        </span>
+        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
+          {postYear}년
+        </span>
       </div>
 
       <CardFooter className="pt-3 border-t border-[var(--border-muted)]">

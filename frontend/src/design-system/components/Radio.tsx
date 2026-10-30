@@ -31,7 +31,7 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
             {...props}
           />
           <div
-            className={`w-4 h-4 rounded-full border transition-all duration-150 flex items-center justify-center border-(--border-strong) bg-(--surface) peer-checked:border-(--primary-container) peer-checked:bg-(--primary-container) peer-checked:[&>span]:scale-100 peer-focus-visible:ring-2 peer-focus-visible:ring-(--focus-ring) peer-focus-visible:ring-offset-1 ${className}`}
+            className={`w-4 h-4 rounded-full border flex items-center justify-center border-(--border-strong) bg-(--surface) peer-checked:border-(--primary-container) peer-checked:bg-(--primary-container) peer-checked:[&>span]:scale-100 ${className}`}
           >
             <span className="w-1.5 h-1.5 rounded-full bg-white scale-0 transition-transform duration-150" />
           </div>

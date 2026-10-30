@@ -1,642 +1,385 @@
-# CampusMatch — Kiến trúc hệ thống
+# 🎓 CampusMatch — Tài liệu Kiến trúc Hệ thống (System Architecture)
 
-Tài liệu mô tả kiến trúc thực tế của dự án **CampusMatch** — nền tảng tìm kiếm, tạo và quản lý nhóm học tập / đồ án trong trường đại học.
-
----
-
-## Mục lục
-
-1. [Tổng quan](#1-tổng-quan)
-2. [Kiến trúc hệ thống](#2-kiến-trúc-hệ-thống)
-3. [Cấu trúc thư mục](#3-cấu-trúc-thư-mục)
-4. [Database Design](#4-database-design)
-5. [REST API](#5-rest-api)
-6. [Quy ước Backend](#6-quy-ước-backend)
-7. [Frontend Architecture](#7-frontend-architecture)
-8. [Core User Flow](#8-core-user-flow)
+> **Tài liệu đặc tả kiến trúc chuẩn cho dự án CampusMatch — Nền tảng ghép nhóm học tập & đồ án sinh viên Đại học Soongsil (숭실대학교).**  
+> Dựa trên tài liệu gốc `README.md`, tài liệu này vạch ra toàn bộ bản thiết kế kỹ thuật, luồng xác thực SSO, mô hình dữ liệu và lộ trình triển khai chi tiết từng bước.
 
 ---
 
-## 1. Tổng quan
+## 📑 Mục lục
 
-**CampusMatch** giúp sinh viên tìm nhóm học tập / đồ án phù hợp, kết nối với đồng đội và quản lý quá trình hợp tác trong một nơi.
-
-**MVP tập trung vào 4 chức năng cốt lõi:**
-
-1. Đăng nhập / đăng ký
-2. Tìm kiếm & xem Study Group
-3. Tạo & quản lý Study Group
-4. Apply & duyệt thành viên
-
-Với phạm vi này, project có đủ **CRUD, Authentication, Search/Filter, quan hệ 1-N / N-N, REST API** và database.
-
-### Tech Stack
-
-| Layer              | Technologies                                                |
-| ------------------ | ----------------------------------------------------------- |
-| **Frontend**       | Next.js 16 · React 19 · TypeScript · Tailwind CSS v4 · pnpm |
-| **Backend**        | Python · Flask · Flask Blueprints · REST API                |
-| **Database**       | MySQL                                                       |
-| **Authentication** | JWT · bcrypt password hashing                               |
-| **HTTP client**    | Fetch API (gói trong `lib/api.ts`)                          |
+1. [Tổng quan hệ thống (System Overview)](#1-tổng-quan-hệ-thống)
+2. [Kiến trúc tổng thể & Luồng SSO (Architecture & BFF Flow)](#2-kiến-trúc-tổng-thể--luồng-sso)
+3. [Cấu trúc mã nguồn (Project Structure)](#3-cấu-trúc-mã-nguồn)
+4. [Thiết kế Cơ sở dữ liệu (PostgreSQL Schema & JPA Entities)](#4-thiết-kế-cơ-sở-dữ-liệu)
+5. [Đặc tả RESTful API (API Specifications)](#5-đặc-tả-restful-api)
+6. [Quy chuẩn triển khai Backend & Frontend](#6-quy-chuẩn-triển-khai)
+7. [Lộ trình triển khai chi tiết: "Cần làm những gì?"](#7-lộ-trình-triển-khai-chi-tiết)
+8. [Triển khai Cloud & Vận hành (Production Deployment)](#8-triển-khai-cloud--vận-hành)
 
 ---
 
-## 2. Kiến trúc hệ thống
+## 1. Tổng quan hệ thống
+
+**CampusMatch** giải quyết bài toán cốt lõi trong môi trường đại học: Giúp sinh viên tìm kiếm đồng đội có cùng kỹ năng/môn học, thành lập nhóm học tập và đồ án capstone, đồng thời loại bỏ 100% tình trạng tài khoản ảo, bùng nhóm hoặc thông tin giả mạo.
+
+### 🌟 4 Trụ cột công nghệ (Tech Stack)
+
+| Tầng (Layer)           | Công nghệ chính                                                       | Vai trò kỹ thuật                                                                       |
+| :--------------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
+| **Frontend**           | **Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4** | Server/Client Components, Design System tokens, Theme Provider, Client routing.        |
+| **Auth Gateway (BFF)** | **Next.js Route Handlers (`/api/auth/usaint`)**                       | Backend-For-Frontend đóng vai trò cổng đệm xác thực với cổng thông tin SAP của trường. |
+| **Backend API**        | **Java 17/21 · Spring Boot 3/4 · Spring Data JPA · Spring Security**  | Xử lý domain nghiệp vụ, phân quyền JWT stateless, giao tiếp PostgreSQL qua HikariCP.   |
+| **Database**           | **PostgreSQL 16 on Neon.tech (Singapore Region)**                     | Database quan hệ serverless, hỗ trợ SSL bắt buộc, Hibernate auto-ddl.                  |
+
+---
+
+## 2. Kiến trúc tổng thể & Luồng SSO
+
+CampusMatch áp dụng mô hình kiến trúc **BFF (Backend-For-Frontend)**:
 
 ```text
-┌──────────────────────────────────────────────┐
-│                  Frontend                    │
-│      Next.js 16 · React 19 · TypeScript      │
-│            Tailwind CSS v4                   │
-│                                              │
-│  app/ (pages) → components/ (domain)         │
-│       → design-system/ (generic UI)          │
-│       → lib/ (api.ts, types.ts)              │
-└────────────────────┬─────────────────────────┘
-                     │  HTTP / JSON  (REST API)
-                     │  Header: Authorization: Bearer <JWT>
-                     ▼
-┌──────────────────────────────────────────────┐
-│                  Backend                     │
-│         Python · Flask · Blueprint           │
-│                                              │
-│  routes/  ──►  services/  ──►  config/       │
-│  (HTTP layer)  (business logic)  (database)  │
-│  utils/ (jwt, validators)                    │
-└────────────────────┬─────────────────────────┘
-                     │  SQL (PyMySQL)
-                     ▼
-┌──────────────────────────────────────────────┐
-│                 Database                     │
-│                    MySQL                     │
-│  users · study_groups · tags · group_tags    │
-│  applications · group_members                │
-└──────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│                   Frontend: Next.js 16                 │
+│              (Hosted on Vercel · 24/7 Free)            │
+│                                                        │
+│  ┌─────────────────────────┐  ┌─────────────────────┐  │
+│  │   UI Pages & Components │  │  Auth API Handler   │  │
+│  │   (Tailwind CSS v4)     │  │  (BFF Route)        │  │
+│  └────────────┬────────────┘  └──────────┬──────────┘  │
+└───────────────┼──────────────────────────┼─────────────┘
+                │                          │
+       User Action                         │ 1. Xác thực ID & Password
+       (Student ID & Portal Pass)          │    trực tiếp với trường
+                │                          ▼
+                │               ┌───────────────────────┐
+                │               │  Soongsil University  │
+                │               │     u-SAINT Portal    │
+                │               │   (smartid.ssu.ac.kr) │
+                │               └───────────────────────┘
+                │                          │
+                ▼                          │ 2. Trả về Profile đã xác thực
+       3. Gửi Student Profile              │    (Tên, Khoa, Viện, Năm học)
+          kèm Secret Handshake             │
+                │                          ▼
+ ┌──────────────┴────────────────────────────────────────┐
+ │               Backend: Java Spring Boot 3              │
+ │       (Hosted on OCI Always Free VM · 24GB RAM)        │
+ │                                                        │
+ │  - Kiểm tra và đồng bộ (Upsert) user vào table users  │
+ │  - Ký và cấp phát JWT Token (HMAC-SHA256)             │
+ └───────────────────────────┬────────────────────────────┘
+                             │ JDBC over SSL
+                             ▼
+ ┌────────────────────────────────────────────────────────┐
+ │                Database: Neon PostgreSQL               │
+ │          (Singapore Region · Serverless 1GB)           │
+ └────────────────────────────────────────────────────────┘
 ```
 
-### Nguyên tắc phân tầng Backend
+### 🔒 Nguyên tắc bảo mật: Zero Password Retention
 
-| Layer         | Responsibility                                                      | Ví dụ                          |
-| ------------- | ------------------------------------------------------------------- | ------------------------------ |
-| **routes/**   | Nhận HTTP request, validate đầu vào, gọi service, trả JSON + mã lỗi | `routes/groups.py`             |
-| **services/** | Toàn bộ business logic + truy vấn database                          | `group_service.create_group()` |
-| **config/**   | Kết nối database                                                    | `database.get_db_connection()` |
-| **utils/**    | Hàm dùng chung (JWT, validators)                                    | `jwt.encode_token()`           |
-
-**Quy tắc:** route **không** viết SQL, service **không** biết gì về HTTP — mọi lỗi nghiệp vụ được ném ra dưới dạng exception để route đổi thành mã HTTP (xem [mục 6](#6-quy-ước-backend)).
+- Mật khẩu u-SAINT của sinh viên **chỉ tồn tại tạm thời trong bộ nhớ đệm** tại máy chủ serverless edge trong vài mili-giây để bắt tay với `smartid.ssu.ac.kr`.
+- Sau khi u-SAINT xác nhận hợp lệ, mật khẩu bị **hủy bỏ lập tức** (Garbage Collected).
+- Backend Spring Boot và Database Neon **hoàn toàn KHÔNG BAO GIỜ lưu trữ mật khẩu**.
+- Mọi tương tác sau đó giữa Frontend và Backend sử dụng **JWT Token (Bearer)** có thời hạn 24 giờ.
 
 ---
 
-## 3. Cấu trúc thư mục
-
-### Backend
+## 3. Cấu trúc mã nguồn
 
 ```text
-backend/
-├── app.py                       # Tạo Flask app, CORS, đăng ký blueprint
-├── config/
-│   └── database.py              # get_db_connection() — PyMySQL, DictCursor, .env
-├── routes/                      # HTTP layer (Blueprint)
-│   ├── auth.py                  # /api/auth/*
-│   ├── users.py                 # /api/users/*
-│   ├── groups.py                # /api/groups/*
-│   ├── applications.py          # /api/groups/:id/applications, /api/applications/*
-│   └── members.py               # /api/groups/:id/members/*
-├── services/                    # Business logic + query SQL
-│   ├── auth_service.py
-│   ├── group_service.py
-│   └── application_service.py
-├── models/                      # Định nghĩa bảng / helper data
-│   ├── user.py
-│   ├── group.py
-│   ├── tag.py
-│   ├── application.py
-│   └── member.py
-├── utils/
-│   ├── jwt.py                   # Tạo / verify token
-│   └── validators.py            # Kiểm tra input
-├── requirements.txt
-├── .env                         # Secret (KHÔNG commit)
-└── venv/                        # Virtual environment
-```
-
-### Frontend
-
-```text
-frontend/
-├── src/
-│   ├── app/                     # App Router — mỗi page 1 route
-│   │   ├── layout.tsx           # Shell chung: Header + Sidebar + Footer + Theme
-│   │   ├── page.tsx             # Trang chủ
-│   │   ├── groups/
-│   │   │   ├── page.tsx         # Group Search
-│   │   │   └── [id]/page.tsx    # Group Detail
-│   │   ├── create-group/page.tsx  # Tạo nhóm
-│   │   ├── manage/page.tsx        # Quản lý nhóm / duyệt đơn
-│   │   ├── mypage/page.tsx        # Profile, nhóm đã tham gia, đơn đã gửi
-│   │   └── design/page.tsx        # Xem trước design system
-│   ├── components/              # Domain components (tái sử dụng ≥ 2 page)
-│   │   ├── layout/              # Header.tsx · Sidebar.tsx · Footer.tsx
-│   │   ├── group/               # GroupCard.tsx
-│   │   └── application/         # ApplicationCard.tsx
-│   ├── design-system/           # UI generic — KHÔNG chứa business
-│   │   ├── tokens.ts            # Design tokens (màu, spacing, radius...)
-│   │   ├── theme/               # ThemeProvider, ThemeToggle (light/dark)
-│   │   └── components/          # Button · Card · Badge · Avatar · Modal ·
-│   │                            # Input · SearchInput · Checkbox · Radio ·
-│   │                            # RoleQuota · CommandBar · CompatibilityTag
-│   └── lib/
-│       ├── api.ts               # Fetch wrapper: base URL, JWT, error chung
-│       ├── types.ts             # Types dùng chung cho toàn project
-│       └── mockData.ts          # Data giả để dev khi chưa có API
-├── DESIGN.md                    # Quy chuẩn thiết kế (color, typography...)
-├── AGENTS.md                    # Quy tắc cho AI agent (Next.js breaking changes)
-└── package.json
+campus-match/
+├── frontend/                               # Next.js 16 Web Application
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── page.tsx                    # Landing Page giới thiệu & CTA SSO
+│   │   │   ├── layout.tsx                  # Root layout (ThemeProvider, AuthProvider)
+│   │   │   ├── globals.css                 # Design Tokens & CSS Variables
+│   │   │   ├── groups/                     # [Trang chính] Danh sách & Lọc nhóm
+│   │   │   ├── manage/                     # Workspace quản lý nhóm của Leader
+│   │   │   ├── mypage/                     # Profile cá nhân & Đơn ứng tuyển
+│   │   │   ├── create-group/               # Form tạo nhóm mới
+│   │   │   └── api/auth/usaint/route.ts    # BFF Handler xác thực u-SAINT
+│   │   ├── components/
+│   │   │   ├── auth/                       # LoginModal, LoginForm
+│   │   │   ├── group/                      # GroupCard, FilterBar
+│   │   │   ├── application/                # ApplicationCard
+│   │   │   └── layout/                     # Header, Sidebar, Footer
+│   │   ├── context/
+│   │   │   └── AuthContext.tsx             # Quản lý Global Auth State (useAuth)
+│   │   ├── design-system/                  # Button, Badge, Card, Modal, Input...
+│   │   └── lib/
+│   │       ├── api.ts                      # Client gọi REST API sang Spring Boot
+│   │       └── types.ts                    # TypeScript interface dùng chung
+│
+├── backend/                                # Java Spring Boot 3 REST API
+│   ├── src/main/java/com/campusmatch/
+│   │   ├── BackendApplication.java         # Main Entry Point (@SpringBootApplication)
+│   │   ├── config/
+│   │   │   ├── SecurityConfig.java         # CORS, Stateless Session, PermitAll/JWT Filter
+│   │   │   └── WebConfig.java              # Cấu hình MVC & CORS nâng cao
+│   │   ├── controller/
+│   │   │   ├── AuthController.java         # /api/auth/sso/usaint, /api/users/me
+│   │   │   ├── GroupController.java        # /api/groups
+│   │   │   ├── ApplicationController.java  # /api/groups/{id}/applications
+│   │   │   └── HealthController.java       # /api/health
+│   │   ├── service/
+│   │   │   ├── AuthService.java            # Logic cấp phát JWT & đồng bộ User
+│   │   │   ├── GroupService.java           # Tìm kiếm, lọc, tạo & sửa Group
+│   │   │   └── ApplicationService.java     # Nộp đơn, duyệt đơn (Accept/Reject)
+│   │   ├── repository/
+│   │   │   ├── UserRepository.java         # Spring Data JPA cho User
+│   │   │   ├── GroupRepository.java        # Spring Data JPA cho StudyGroup
+│   │   │   └── ApplicationRepository.java  # Spring Data JPA cho Application
+│   │   ├── entity/
+│   │   │   ├── User.java                   # Table: users
+│   │   │   ├── StudyGroup.java             # Table: study_groups
+│   │   │   ├── Application.java            # Table: applications
+│   │   │   └── GroupMember.java            # Table: group_members
+│   │   ├── dto/
+│   │   │   ├── request/                    # SSORequest, CreateGroupRequest, ApplyRequest...
+│   │   │   └── response/                   # AuthResponse, GroupResponse, MemberResponse...
+│   │   └── security/
+│   │       ├── JwtTokenProvider.java       # Sinh & giải mã JWT
+│   │       ├── JwtAuthenticationFilter.java# Interceptor kiểm tra Bearer token
+│   │       └── CustomUserDetails.java      # UserDetails Spring Security
+│   ├── src/main/resources/
+│   │   ├── application.yaml                # Cấu hình Neon PostgreSQL, HikariCP, JWT
+│   │   └── application-prod.yaml           # Cấu hình môi trường Production
+│   └── build.gradle                        # Gradle dependencies & toolchain
 ```
 
 ---
 
-## 4. Database Design
+## 4. Thiết kế Cơ sở dữ liệu
 
-6 bảng, đã được tạo trong database `campusmatch_db`.
-
-### Sơ đồ quan hệ
+Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chuẩn mực:
 
 ```text
-                     ┌──────────────┐
-                     │    users     │
-                     └──────┬───────┘
-                            │
-            ┌───────────────┼────────────────┐
-            │ leader_id     │ applicant_id   │ user_id
-            ▼               ▼                ▼
-   ┌────────────────┐  ┌──────────────┐  ┌────────────────┐
-   │ study_groups   │  │ applications │  │ group_members  │
-   └───────┬────────┘  └──────▲───────┘  └───────▲────────┘
-           │ group_id         │ group_id         │ group_id
-           ▼                  │                  │
-   ┌────────────────┐         │                  │
-   │   group_tags   │─────────┼──────────────────┘
-   └───────┬────────┘         │
-           │ tag_id           │
-           ▼                  │
-      ┌─────────┐             │
-      │  tags   │             │
-      └─────────┘             │
+┌───────────────────────────┐             ┌───────────────────────────┐
+│           users           │             │       study_groups        │
+├───────────────────────────┤             ├───────────────────────────┤
+│ id (PK, BIGINT)           │1           *│ id (PK)                   │
+│ student_id (UNIQUE)       │────────────▶│ leader_id (FK)            │
+│ name                      │             │ title                     │
+│ department                │             │ description               │
+│ faculty                   │             │ college    (단과대, IT대학)  │
+│ email                     │             │ department (학과, 소프트...) │
+│ academic_year             │             │ post_year  (Năm đăng, 2024)│
+│ phone_number              │             │ max_members               │
+│ avatar_url                │             │ status                    │
+│ role                      │             │ created_at                │
+│ created_at                │             └─────────────┬─────────────┘
+│ last_login_at             │                           │
+└─────────────┬─────────────┘                           │
+              │                                         │
+              │ 1                                       │ 1
+              ▼ *                                       ▼ *
+┌───────────────────────────┐             ┌───────────────────────────┐
+│       applications        │             │       group_members       │
+├───────────────────────────┤             ├───────────────────────────┤
+│ id (PK)                   │             │ group_id (PK, FK)         │
+│ group_id (FK)             │             │ user_id  (PK, FK)         │
+│ applicant_id (FK)         │             │ joined_at                 │
+│ statement                 │             └───────────────────────────┘
+│ status (PENDING...)       │
+│ created_at                │
+└───────────────────────────┘
 ```
 
-### 4.1. users
+### Chi tiết các Table & Ràng buộc (Constraints):
 
-| Column          | Type                    | Description               |
-| --------------- | ----------------------- | ------------------------- |
-| `id`            | INT PK AUTO             | ID người dùng             |
-| `student_num`   | VARCHAR(20) **UNIQUE**  | Mã số sinh viên           |
-| `name`          | VARCHAR(50)             | Họ tên                    |
-| `email`         | VARCHAR(100) **UNIQUE** | Email                     |
-| `password_hash` | VARCHAR(255)            | Mật khẩu đã hash (bcrypt) |
-| `department`    | VARCHAR(50)             | Khoa / ngành              |
-| `created_at`    | TIMESTAMP               | Thời gian tạo             |
+1. **`users` (Thông tin sinh viên Soongsil):**
+   - `id`: Khóa chính (`BIGINT` / `Long`, Identity).
+   - `student_id`: Mã sinh viên u-SAINT (VD: `20211234`), `VARCHAR(20)`, **UNIQUE**, `NOT NULL`, Index, bất biến (`updatable = false`).
+   - `name`: Họ và tên sinh viên chính thức (`VARCHAR(100)`), `NOT NULL`, bất biến (`updatable = false`).
+   - `department`: Khoa / Ngành học (VD: `소프트웨어학부`, `컴퓨터학부`), `VARCHAR(100)`, bất biến (`updatable = false`).
+   - `faculty`: Trường / Viện chủ quản (VD: `IT대학`), `VARCHAR(100)`, bất biến (`updatable = false`).
+   - `email`: Email trường cấp (`VARCHAR(150)`, VD: `20211234@soongsil.ac.kr`).
+   - `academic_year`: Năm học ghi nhận lúc nhập học (`VARCHAR(10)`, VD: `1`, `2`, `3`, `4`), bất biến (`updatable = false`).
+   - `phone_number`: Số điện thoại liên hệ (`VARCHAR(20)`).
+   - `avatar_url`: Ảnh đại diện / ảnh thẻ sinh viên u-SAINT (`TEXT`).
+   - `role`: Phân quyền trong hệ thống (`VARCHAR(20)`), `NOT NULL`, mặc định `ROLE_STUDENT`.
+   - `created_at`: Thời gian tạo tài khoản lần đầu (`TIMESTAMP`), `NOT NULL`, bất biến.
+   - `last_login_at`: Thời điểm đăng nhập u-SAINT gần nhất (`TIMESTAMP`).
 
-### 4.2. study_groups
+2. **`study_groups` (Nhóm học tập & Đồ án - Lọc theo 3 tiêu chí u-SAINT):**
+   - `id`: Khóa chính.
+   - `leader_id`: FK liên kết tới `users(id)`.
+   - `title`: Tên nhóm / đề tài.
+   - `description`: Mô tả chi tiết mục tiêu, yêu cầu.
+   - `college`: Đơn vị trường/viện (단과대학, VD: `IT대학`). Kế thừa trực tiếp từ profile u-SAINT của người tạo.
+   - `department`: Đơn vị khoa/ngành (학부/학과, VD: `소프트웨어학부`, `컴퓨터학부`). Kế thừa trực tiếp từ profile u-SAINT của người tạo.
+   - `post_year`: Năm đăng bài (Integer, VD: `2024`). Được hệ thống tự động trích xuất từ năm của `created_at` để đánh B-Tree Index phục vụ lọc siêu tốc.
+   - `course_code` / `course_name`: Mã môn học (e.g. `CS490 - Capstone`, tùy chọn).
+   - `max_members`: Số lượng thành viên tối đa (VD: 4 - 6).
+   - `status`: Enum (`RECRUITING`, `COMPLETED`, `CLOSED`).
+   - `created_at`, `updated_at`: Timestamps.
 
-| Column             | Type           | Description                                  |
-| ------------------ | -------------- | -------------------------------------------- |
-| `id`               | INT PK AUTO    | ID nhóm                                      |
-| `title`            | VARCHAR(100)   | Tên nhóm / project                           |
-| `subject_name`     | VARCHAR(100)   | Tên môn học                                  |
-| `description`      | TEXT           | Mô tả nhóm                                   |
-| `max_members`      | INT            | Số thành viên tối đa (≥ 2, CHECK constraint) |
-| `current_members`  | INT            | Số thành viên hiện tại — **đồng bộ tự động bởi trigger** (xem 4.7), DEFAULT 0 |
-| `status`           | ENUM           | `RECRUITING` · `COMPLETED` · `CLOSED`        |
-| `leader_id`        | INT FK → users | Trưởng nhóm (source of truth)                |
-| `created_at`       | TIMESTAMP      | Thời gian tạo                                |
+3. **`applications` (Đơn xin gia nhập nhóm):**
+   - `id`: Khóa chính.
+   - `group_id`: FK liên kết tới `study_groups(id)`.
+   - `applicant_id`: FK liên kết tới `users(id)`.
+   - `statement`: Lời giới thiệu / nguyện vọng của ứng viên.
+   - `status`: Enum (`PENDING`, `ACCEPTED`, `REJECTED`).
+   - **Ràng buộc:** `UNIQUE(group_id, applicant_id)` (Mỗi sinh viên chỉ nộp 1 đơn vào 1 nhóm).
 
-> **Về `current_members`:** đây là cột denormalized — dữ liệu **phụ thuộc** được lưu sẵn để query list nhanh (không cần `GROUP BY` mỗi lần). Thay đổi tới `group_members` **tự động** cập nhật cột này qua MySQL trigger, nên không thể bị lệch. Query ngược lại (`COUNT`) chỉ dùng khi cần kiểm tra / repair.
-
-### 4.3. tags
-
-| Column     | Type                   | Description                     |
-| ---------- | ---------------------- | ------------------------------- |
-| `id`       | INT PK AUTO            | ID tag                          |
-| `tag_name` | VARCHAR(30) **UNIQUE** | Tên kỹ năng (React, Next.js...) |
-
-### 4.4. group_tags (quan hệ N-N)
-
-| Column     | Type                  |
-| ---------- | --------------------- |
-| `group_id` | INT FK → study_groups |
-| `tag_id`   | INT FK → tags         |
-
-**Primary Key:** `(group_id, tag_id)`
-
-### 4.5. applications
-
-| Column         | Type           | Description                         |
-| -------------- | -------------- | ----------------------------------- |
-| `id`           | INT PK AUTO    | ID đơn                              |
-| `group_id`     | INT FK         | Nhóm muốn tham gia                  |
-| `applicant_id` | INT FK → users | Người đăng ký                       |
-| `introduction` | TEXT           | Lời giới thiệu                      |
-| `status`       | ENUM           | `PENDING` · `ACCEPTED` · `REJECTED` |
-| `created_at`   | TIMESTAMP      | Thời gian đăng ký                   |
-
-**Constraint:** `UNIQUE(group_id, applicant_id)` — 1 sinh viên chỉ gửi 1 đơn cho 1 nhóm.
-
-### 4.6. group_members
-
-| Column      | Type           | Description                             |
-| ----------- | -------------- | --------------------------------------- |
-| `group_id`  | INT FK         | Nhóm                                    |
-| `user_id`   | INT FK → users | Thành viên                              |
-| `role`      | ENUM           | `LEADER` · `MEMBER` (mặc định `MEMBER`) |
-| `joined_at` | TIMESTAMP      | Thời gian vào nhóm                      |
-
-**Primary Key:** `(group_id, user_id)`
-
-### Business Rules
-
-1. **`current_members` luôn được đồng bộ bởi trigger** — mọi INSERT/DELETE trên `group_members` tự động ±1 (xem 4.7). Code backend **không** tự update cột này:
-   ```sql
-   -- Accept application: chỉ INSERT member, trigger tự +1
-   INSERT INTO group_members (group_id, user_id, role) VALUES (?, ?, 'MEMBER');
-   ```
-2. **Trưởng nhóm cũng là thành viên** — khi tạo group, backend INSERT ngay 1 dòng vào `group_members` với `role='LEADER'` → trigger +1 → `current_members = 1` ngay lập tức.
-3. **`leader_id` trong `study_groups` là source of truth** cho quyền hạn (duyệt đơn, xóa thành viên); cột `role` chỉ để query hiển thị tiện lợi. Leader không bao giờ chuyển nhượng → 2 nguồn không bị mâu thuẫn.
-4. **Khi application được ACCEPTED** → backend INSERT vào `group_members` với `role='MEMBER'` (kiểm tra `current_members < max_members` trước, trong cùng transaction).
-5. **Đủ người** (`current_members = max_members`) → `status = COMPLETED`; leader chủ động đóng → `status = CLOSED`.
-
-### 4.7. Triggers đồng bộ `current_members`
-
-Hai trigger trên bảng `group_members` — **nguồn tự động hóa duy nhất** để giữ `current_members` khớp:
-
-```sql
--- Áp dụng cho database đã tạo (thêm cột + trigger)
-ALTER TABLE study_groups
-  ADD COLUMN current_members INT NOT NULL DEFAULT 0;
-
--- INSERT member (accept đơn / leader vào nhóm) → +1
-CREATE TRIGGER trg_gm_after_insert
-AFTER INSERT ON group_members
-FOR EACH ROW
-  UPDATE study_groups
-  SET current_members = current_members + 1
-  WHERE id = NEW.group_id;
-
--- DELETE member (leader xóa người / xóa nhóm cascade) → -1
-CREATE TRIGGER trg_gm_after_delete
-AFTER DELETE ON group_members
-FOR EACH ROW
-  UPDATE study_groups
-  SET current_members = current_members - 1
-  WHERE id = OLD.group_id;
-```
-
-**Đối chiếu tình huống:**
-
-| Tình huống                          | Trigger            | `current_members` |
-| ----------------------------------- | ------------------ | ----------------- |
-| Tạo group (INSERT leader)           | `AFTER INSERT`     | = 1               |
-| Accept application (INSERT member)  | `AFTER INSERT`     | +1                |
-| Reject / rút đơn (không insert member) | không kích hoạt  | giữ nguyên        |
-| Xóa member khỏi nhóm                | `AFTER DELETE`     | −1                |
-| Đổi role (UPDATE)                   | không có trigger   | giữ nguyên        |
-
-**Repair query** — đối soát định kỳ hoặc nếu lỡ sửa DB tay ngoài trigger:
-
-```sql
-UPDATE study_groups g
-SET current_members = (SELECT COUNT(*) FROM group_members WHERE group_id = g.id);
-```
-
-### Trạng thái (Status Values)
-
-| Entity          | Statuses                              |
-| --------------- | ------------------------------------- |
-| **Group**       | `RECRUITING` · `COMPLETED` · `CLOSED` |
-| **Application** | `PENDING` · `ACCEPTED` · `REJECTED`   |
+4. **`group_members` (Thành viên chính thức của nhóm):**
+   - Composite PK: `(group_id, user_id)`.
+   - `role`: Trưởng nhóm (`LEADER`) hoặc Thành viên (`MEMBER`).
+   - `joined_at`: Ngày gia nhập.
 
 ---
 
-## 5. REST API
+## 5. Đặc tả RESTful API
 
-**Local base URL:** `http://localhost:5000`
-**Content-Type:** `application/json`
-**Authentication:** `Authorization: Bearer <JWT>` (các endpoint cần đăng nhập)
+**Base URL Backend:** `http://localhost:8080/api` (Local) / `https://api.yourdomain.com/api` (Prod)
 
-Tổng cộng **17 endpoints**, chia 4 module:
+### 1. Authentication & Student Profile
 
-### 5.1. Authentication & User
+| Method | Endpoint           | Mô tả                                             | Quyền truy cập (Auth) |
+| :----- | :----------------- | :------------------------------------------------ | :-------------------- |
+| `POST` | `/auth/sso/usaint` | Nhận profile từ BFF, đồng bộ DB, trả về JWT Token | Public (BFF Internal) |
+| `GET`  | `/users/me`        | Lấy profile sinh viên hiện tại dựa trên JWT Token | Bearer Token          |
+| `GET`  | `/health`          | Kiểm tra trạng thái server & database             | Public                |
 
-| Method | Endpoint             | Description           |
-| ------ | -------------------- | --------------------- |
-| `POST` | `/api/auth/register` | Đăng ký sinh viên     |
-| `POST` | `/api/auth/login`    | Đăng nhập             |
-| `POST` | `/api/auth/logout`   | Đăng xuất             |
-| `GET`  | `/api/users/me`      | Lấy thông tin cá nhân |
-| `PUT`  | `/api/users/me`      | Cập nhật thông tin    |
+#### Sample SSO Payload:
 
-```jsonc
-// POST /api/auth/register
-{ "student_num": "20231234", "name": "Kim Jin Ho",
-  "email": "student@example.com", "password": "password123",
-  "department": "Software" }
-
-// POST /api/auth/login → response
-{ "access_token": "JWT_TOKEN",
-  "user": { "id": 1, "name": "Kim Jin Ho", "student_num": "20231234" } }
-```
-
-### 5.2. Groups
-
-| Method   | Endpoint          | Description                      |
-| -------- | ----------------- | -------------------------------- |
-| `GET`    | `/api/groups`     | Danh sách nhóm (search + filter) |
-| `GET`    | `/api/groups/:id` | Chi tiết nhóm                    |
-| `POST`   | `/api/groups`     | Tạo nhóm                         |
-| `PUT`    | `/api/groups/:id` | Cập nhật nhóm                    |
-| `DELETE` | `/api/groups/:id` | Đóng / xóa nhóm                  |
-
-**Query params** (kết hợp được với nhau):
-
-```http
-GET /api/groups?search=web&subject_name=WebProgramming&tag=React&status=RECRUITING
-```
-
-| Param          | Meaning                           | Default      |
-| -------------- | --------------------------------- | ------------ |
-| `search`       | Tìm trong `title` / `description` | —            |
-| `subject_name` | Lọc theo môn học                  | —            |
-| `tag`          | Lọc theo tag (N-N qua group_tags) | —            |
-| `status`       | Trạng thái nhóm                   | `RECRUITING` |
-
-```jsonc
-// GET /api/groups/:id → response
+```json
+// POST /api/auth/sso/usaint
 {
-  "id": 1,
-  "title": "Nhóm React",
-  "subject_name": "WebProgramming",
-  "description": "...",
-  "max_members": 4,
-  "status": "RECRUITING",
-  "leader_id": 1,
-  "leader_name": "Kim Jin Ho",
-  "member_count": 2,
-  "tags": [{ "id": 1, "name": "React" }],
+  "studentId": "20211234",
+  "name": "홍길동",
+  "department": "컴퓨터학부",
+  "faculty": "IT대학",
+  "email": "20211234@soongsil.ac.kr",
+  "academicYear": "3"
 }
 ```
 
-### 5.3. Applications
-
-| Method   | Endpoint                       | Description           |
-| -------- | ------------------------------ | --------------------- |
-| `POST`   | `/api/groups/:id/applications` | Gửi đơn tham gia      |
-| `GET`    | `/api/groups/:id/applications` | Xem đơn (leader only) |
-| `PUT`    | `/api/applications/:id/accept` | Chấp nhận đơn         |
-| `PUT`    | `/api/applications/:id/reject` | Từ chối đơn           |
-| `DELETE` | `/api/applications/:id`        | Rút đơn               |
-
-```jsonc
-// POST /api/groups/12/applications
-{ "introduction": "Em đã có kinh nghiệm React và TypeScript." }
-```
-
-### 5.4. Members
-
-| Method   | Endpoint                          | Description    |
-| -------- | --------------------------------- | -------------- |
-| `GET`    | `/api/groups/:id/members`         | Xem thành viên |
-| `DELETE` | `/api/groups/:id/members/:userId` | Xóa thành viên |
-
-> **Không có** `POST /api/groups/:id/members` — thành viên chỉ được thêm qua Application → `ACCEPTED` → `group_members`.
-
-### Quy ước lỗi
-
-| HTTP  | Khi nào                                |
-| ----- | -------------------------------------- |
-| `400` | Dữ liệu đầu vào không hợp lệ           |
-| `401` | Chưa đăng nhập / token hết hạn         |
-| `403` | Không có quyền (vd: không phải leader) |
-| `404` | Không tìm thấy resource                |
-| `500` | Lỗi database / server                  |
-
-Format lỗi thống nhất:
+#### Sample Response:
 
 ```json
-{ "error": "title và subject_name là bắt buộc" }
+{
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "studentId": "20211234",
+    "name": "홍길동",
+    "department": "컴퓨터학부",
+    "faculty": "IT대학"
+  }
+}
 ```
 
 ---
 
-## 6. Quy ước Backend
+### 2. Groups (Quản lý nhóm)
 
-### 6.1. Import & cách chạy
-
-Project import theo kiểu **relative đến `backend/`** (không có prefix `backend.`):
-
-```python
-# routes/groups.py
-from flask import Blueprint, request, jsonify
-from services.group_service import get_groups, create_group, get_group_by_id
-
-# services/group_service.py
-from config.database import get_db_connection
-```
-
-Vì vậy app **bắt buộc chạy từ thư mục `backend/`**:
-
-```bash
-cd backend
-source venv/bin/activate   # Windows: .\venv\Scripts\Activate.ps1
-python app.py              # → http://localhost:5000
-```
-
-> ⚠️ Sai lệch này (`ModuleNotFoundError: No module named 'backend'`) xảy ra nếu chạy từ thư mục gốc với `from backend.services...`. Quy ước chốt: **không dùng prefix `backend.`**.
-
-### 6.2. Blueprint
-
-Mỗi file route tạo Blueprint riêng, `app.py` đăng ký với `url_prefix`:
-
-```python
-# routes/groups.py
-bp = Blueprint("groups", __name__)
-
-# app.py
-from routes.groups import bp as groups_bp
-app.register_blueprint(groups_bp, url_prefix="/api/groups")
-```
-
-Route trong file chỉ viết path tương đối: `@bp.get("/")`, `@bp.get("/<int:group_id>")`.
-
-### 6.3. Quy ước lỗi Service → Route
-
-Service **không trả HTTP status** — chỉ ném exception, route bắt và đổi sang mã HTTP:
-
-| Exception         | HTTP | Route bắt             |
-| ----------------- | ---- | --------------------- |
-| `ValueError`      | 400  | Dữ liệu không hợp lệ  |
-| `LookupError`     | 404  | Không tìm thấy record |
-| `PermissionError` | 403  | Không có quyền        |
-| `ConnectionError` | 500  | Lỗi database          |
-
-```python
-# routes/groups.py — pattern chuẩn
-@bp.post("/")
-def create():
-    try:
-        group = create_group(request.get_json() or {}, leader_id=1)
-        return jsonify(group), 201
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except ConnectionError as e:
-        return jsonify({"error": str(e)}), 500
-```
-
-### 6.4. Quy ước transaction
-
-Các thao tác ghi nhiều bảng (vd: tạo group + thêm leader vào `group_members` + gán tags) phải dùng **transaction thủ công**:
-
-```python
-conn = get_db_connection()      # database.py bật autocommit=True mặc định
-conn.autocommit(False)          # tắt autocommit cho transaction này
-try:
-    # ... nhiều INSERT/UPDATE ...
-    conn.commit()               # tất cả thành công mới lưu
-except Exception:
-    conn.rollback()             # có lỗi → hoàn toàn như chưa thay đổi gì
-    raise
-finally:
-    conn.close()
-```
-
-### 6.5. Quy tắc query
-
-- Dùng `pymysql.cursors.DictCursor` → kết quả là `dict`, trả thẳng ra JSON được
-- Tên cột SQL phải khớp schema: `subject_name`, `tag_name` (không phải `subject`, `name`)
-- Số thành viên đọc từ cột `study_groups.current_members` (trigger đã đồng bộ) — không cần `GROUP BY` khi list; `COUNT(group_members)` chỉ dùng để đối soát / repair, không bao giờ đếm qua application
-- Gom tags cho nhiều group bằng 1 query `WHERE group_id IN (...)` (tránh N+1)
+| Method   | Endpoint       | Mô tả                                                                     | Quyền truy cập  |
+| :------- | :------------- | :------------------------------------------------------------------------ | :-------------- |
+| `GET`    | `/groups`      | Tìm kiếm & lọc nhóm (`search`, `college`, `department`, `year`, `status`) | Public / Bearer |
+| `GET`    | `/groups/{id}` | Xem chi tiết nhóm, danh sách thành viên hiện tại                          | Public / Bearer |
+| `POST`   | `/groups`      | Tạo một nhóm học tập mới (Người tạo tự động là Leader)                    | Bearer Token    |
+| `PUT`    | `/groups/{id}` | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)                            | Chỉ Leader nhóm |
+| `DELETE` | `/groups/{id}` | Đóng đợt tuyển hoặc xóa nhóm                                              | Chỉ Leader nhóm |
 
 ---
 
-## 7. Frontend Architecture
+### 3. Applications (Ứng tuyển & Duyệt thành viên)
 
-### 7.1. Ba tầng component
-
-```text
-┌─────────────────────────────────────────────────────────┐
-│ 1. app/  (Pages)                                        │
-│    Chỉ routing + composition + gọi API. Page MỎNG.      │
-│    groups/page.tsx · groups/[id]/page.tsx · mypage/...  │
-├─────────────────────────────────────────────────────────┤
-│ 2. components/  (Domain components)                     │
-│    Component theo nghiệp vụ, compose design-system.     │
-│    group/GroupCard · application/ApplicationCard        │
-│    + components/layout/ (Header, Sidebar, Footer)       │
-├─────────────────────────────────────────────────────────┤
-│ 3. design-system/  (Generic UI)                         │
-│    UI thuần, KHÔNG biết gì về business.                 │
-│    Button · Card · Badge · Avatar · Modal · tokens...   │
-└─────────────────────────────────────────────────────────┘
-```
-
-### 7.2. Nguyên tắc tách component
-
-| Tình huống                       | Quyết định                            |
-| -------------------------------- | ------------------------------------- |
-| Component dùng ở **≥ 2 page**    | Tách vào `components/<domain>/`       |
-| Mapping / logic business lặp lại | Tách ra (vd: status → badge variant)  |
-| Dùng ở **1 lần**, không lặp      | Code thẳng trong page                 |
-| UI thuần (nút, hộp, input)       | Dùng `design-system/`, không viết lại |
-
-- **Quy tắc "rule of 2"**: extract component khi thấy code trùng lần thứ 2, không extract trước khi cần.
-- **Ví dụ**: `GroupCard` dùng ở `/groups`, `/mypage`, `/manage` → tách. `ApplyModal` chỉ ở `/groups/[id]` → nằm trong page.
-- `GroupCard` **không duplicate design-system** — nó chỉ compose `Card + Badge + Avatar + RoleQuota` đã có, đóng gói thêm mapping status + dữ liệu business.
-
-### 7.3. lib/ — file dùng chung toàn project
-
-| File          | Responsibility                                                                                                                                 |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api.ts`      | Fetch wrapper: base URL (`http://localhost:5000`), tự gắn header JWT, parse JSON, xử lý lỗi 401/500 thống nhất — **17 endpoint gọi qua 1 chỗ** |
-| `types.ts`    | TypeScript interface/type cho dữ liệu API (`Group`, `Application`, `User`, status unions) — 1 nguồn sự thật cho 4 thành viên                   |
-| `mockData.ts` | Data giả + type tạm để dev khi backend chưa có API                                                                                             |
-
-```typescript
-// lib/api.ts — pattern sử dụng
-const groups = await api.get<Group[]>("/groups?status=RECRUITING");
-const group = await api.post<Group>("/groups", { title, subject_name });
-```
-
-### 7.4. Theme
-
-- Hệ thống **light/dark theme** hoàn chỉnh: `ThemeProvider` + `tokens.ts` (theo `DESIGN.md`), script khởi tạo theme chạy trước khi paint (tránh nháy màn hình).
-- Component dùng CSS variable: `var(--surface)`, `var(--border)`, `var(--text-primary)`...
+| Method   | Endpoint                    | Mô tả                                                  | Quyền truy cập   |
+| :------- | :-------------------------- | :----------------------------------------------------- | :--------------- |
+| `POST`   | `/groups/{id}/applications` | Nộp đơn xin vào nhóm kèm lời nhắn                      | Bearer Token     |
+| `GET`    | `/groups/{id}/applications` | Xem tất cả đơn ứng tuyển của một nhóm                  | Chỉ Leader nhóm  |
+| `PUT`    | `/applications/{id}/accept` | Chấp thuận ứng viên (Tự động thêm vào `group_members`) | Chỉ Leader nhóm  |
+| `PUT`    | `/applications/{id}/reject` | Từ chối đơn ứng tuyển                                  | Chỉ Leader nhóm  |
+| `DELETE` | `/applications/{id}`        | Ứng viên tự rút lại đơn đang chờ duyệt                 | Ứng viên nộp đơn |
 
 ---
 
-## 8. Core User Flow
+## 6. Quy chuẩn triển khai
 
-### 8.1. Sinh viên tìm & tham gia nhóm
+### Backend (Spring Boot 3/4)
 
-```text
-Login → Group List → Search / Filter → Group Detail
-                                          ↓
-                                        Apply (gửi introduction)
-                                          ↓
-                                       PENDING
-                                          ↓
-                                    Leader Review
-                                    ↙           ↘
-                              ACCEPTED       REJECTED
-                                  ↓
-              CHECK current_members < max_members
-                                  ↓
-              INSERT group_members (role='MEMBER')   ← trigger +1
-                                  ↓
-        Nếu current_members = max_members → status = COMPLETED
-```
+1. **Layered Architecture:** Controller chỉ nhận Request DTO và trả Response DTO (không để lộ Entity ra ngoài API).
+2. **Exception Handling:** Sử dụng `@RestControllerAdvice` và `@ExceptionHandler` để bắt lỗi tập trung, trả về format JSON chuẩn:
+   ```json
+   {
+     "status": 400,
+     "error": "BAD_REQUEST",
+     "message": "Nhóm đã đủ số lượng thành viên tối đa",
+     "timestamp": "2026-10-15T15:00:00"
+   }
+   ```
+3. **Transaction Management:** Mọi thao tác ghi DB nghiệp vụ (tạo nhóm, accept đơn) đều đánh dấu `@Transactional`.
 
-**Ràng buộc:**
+### Frontend (Next.js 16)
 
-- Đã là thành viên / đã có đơn `PENDING` → không gửi thêm (violation `UNIQUE(group_id, applicant_id)` → 400)
-- Nhóm `CLOSED` / `COMPLETED` → không nhận đơn mới
-
-### 8.2. Leader tạo & quản lý nhóm
-
-```text
-Create Group
-    ↓
-INSERT study_groups (leader_id = current user)
-INSERT group_members (leader, role='LEADER')   ← trigger +1 → current_members = 1
-INSERT tags / group_tags
-    ↓
-RECRUITING → Review Applications → Accept / Reject
-    ↓                                  ↓
-đủ max_members              INSERT group_members (MEMBER)
-    ↓
-COMPLETED                          ↓
-              đủ → COMPLETED · leader đóng → CLOSED
-```
-
-**Quy tắc quản lý:**
-
-- Chỉ `leader_id` của nhóm mới được duyệt đơn, xóa thành viên, cập nhật / đóng nhóm (403 nếu là người khác)
-- **Không cho xóa leader** khỏi `group_members`
-- `DELETE /api/groups/:id` = đóng nhóm (`CLOSED`), giữ dữ liệu; xóa hẳn là thao tác khác (dev có thể chọn 1 trong 2)
+1. **Design System First:** Tất cả nút bấm, thẻ bài, popup, badge đều phải dùng component từ `src/design-system/` (`Button`, `Card`, `Badge`, `Modal`, `Input`).
+2. **Tokens & Theme:** Tuyệt đối không hardcode màu sắc; sử dụng biến CSS token trong `globals.css` (`var(--primary)`, `var(--surface)`, `var(--border)`).
+3. **State Management:** Dùng `AuthContext` để nắm giữ thông tin sinh viên đăng nhập và token toàn cục.
 
 ---
 
-## Tóm tắt
+## 7. Lộ trình triển khai chi tiết: "Cần làm những gì?"
+
+Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn bộ hệ thống từ Backend tới Frontend:
+
+### 📍 Giai đoạn 1: Hoàn thiện Database Entities (Backend)
+
+- [x] Đã cấu hình kết nối Neon PostgreSQL trong `application.yaml`.
+- [x] Đã thiết lập `SecurityConfig` và kiểm tra `HealthController`.
+- [x] Tạo file Entity `User.java`.
+- [ ] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
+- [ ] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
+- [ ] Tạo file Entity `GroupMember.java`.
+- [ ] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
+
+### 📍 Giai đoạn 2: Cơ chế Xác thực & Cấp phát JWT (Backend + Frontend)
+
+- [ ] Thêm thư viện `jjwt-api`, `jjwt-impl`, `jjwt-jackson` vào `build.gradle`.
+- [ ] Viết `JwtTokenProvider.java` (tạo token, validate token, trích xuất studentId).
+- [ ] Viết `JwtAuthenticationFilter.java` chặn và đọc header `Authorization: Bearer <token>`.
+- [ ] Viết `AuthController.java` xử lý endpoint `POST /api/auth/sso/usaint`.
+- [ ] Cập nhật hàm `login()` trong `frontend/src/context/AuthContext.tsx` gọi trực tiếp sang Backend thật thay vì dùng mock timer.
+
+### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
+
+- [ ] Viết `GroupRepository.java` hỗ trợ tìm kiếm theo từ khóa và lọc theo 3 mục chuẩn u-SAINT: 단과대 (`college`), 학부/학과 (`department`), năm đăng bài (`post_year`).
+- [ ] Viết `GroupService.java` xử lý nghiệp vụ tạo nhóm (tự động gắn `college`, `department` của user và `post_year` từ thời điểm tạo), giới hạn số lượng thành viên.
+- [ ] Viết `GroupController.java` cho các endpoint `GET /api/groups`, `GET /api/groups/{id}`, `POST /api/groups`.
+
+### 📍 Giai đoạn 4: Ứng tuyển & Duyệt thành viên (Backend Application Module)
+
+- [ ] Viết `ApplicationRepository.java` & `ApplicationService.java`.
+- [ ] Xử lý logic nghiệp vụ:
+  - Khi Leader bấm **Accept**: Chuyển trạng thái đơn thành `ACCEPTED`, tự động thêm bản ghi vào `group_members`, kiểm tra nếu nhóm đã đầy thì tự đổi trạng thái nhóm sang `COMPLETED`.
+  - Khi Leader bấm **Reject**: Chuyển trạng thái đơn thành `REJECTED`.
+- [ ] Viết `ApplicationController.java`.
+
+### 📍 Giai đoạn 5: Tích hợp Frontend với Backend API
+
+- [ ] Viết các hàm fetch API trong `frontend/src/lib/api.ts` kết nối tới backend `http://localhost:8080/api`.
+- [ ] Thay thế dữ liệu tĩnh trong `mockData.ts` bằng dữ liệu gọi thật từ API trong các trang:
+  - `frontend/src/app/groups/page.tsx` (Hiển thị danh sách nhóm thật từ Neon DB).
+  - `frontend/src/app/create-group/page.tsx` (Form tạo nhóm gửi POST sang backend).
+  - `frontend/src/app/manage/page.tsx` (Leader duyệt danh sách đơn ứng tuyển).
+  - `frontend/src/app/mypage/page.tsx` (Hiển thị nhóm đã tham gia và đơn đã gửi).
+
+---
+
+## 8. Triển khai Cloud & Vận hành (Production)
+
+Hệ thống được thiết kế để chạy **24/7 hoàn toàn miễn phí (100% Free)** trên 3 nền tảng Cloud:
 
 ```text
-Frontend (Next.js)  ──HTTP/JSON──►  Flask (routes → services → config)
-                                              │
-                                              ▼
-                              MySQL: users · study_groups · tags
-                                     group_tags · applications · group_members
-
-• 17 REST endpoints — 4 module (auth, users, groups, applications + members)
-• 6 bảng — quan hệ 1-N và N-N; current_members đồng bộ tự động bằng trigger
-• Leader là member với role='LEADER' ngay khi tạo nhóm
-• Frontend 3 tầng: page mỏng → domain component → design-system
-• Quy ước lỗi: ValueError→400 · LookupError→404 · ConnectionError→500
+┌──────────────────────┐      ┌───────────────────────────┐      ┌─────────────────────────┐
+│     Vercel Edge      │ ───► │      Oracle Cloud VM      │ ───► │     Neon PostgreSQL     │
+│   (Next.js 16 Web)   │      │  (Spring Boot Container)  │      │   (Singapore Region)    │
+│  HTTPS Auto · No CDN │      │ 4 OCPU ARM · 24GB RAM · 24/7│    │  Serverless 1GB Storage │
+└──────────────────────┘      └───────────────────────────┘      └─────────────────────────┘
 ```
+
+1. **Frontend:** Triển khai tự động từ GitHub lên **Vercel** (`https://campusmatch.vercel.app`).
+2. **Backend:** Đóng gói Docker qua `docker-compose.prod.yml` chạy trên **Oracle Cloud Always Free VM (Ampere A1 ARM 24GB RAM)** không bao giờ ngủ (No Sleep Timer).
+3. **Database:** **Neon PostgreSQL** kết nối bảo mật qua SSL.

@@ -8,54 +8,15 @@ import {
   LayoutGrid,
   Users,
   PlusCircle,
-  Layers,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Avatar } from "@/design-system";
-
-interface NavItem {
-  label: string;
-  shortLabel?: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-}
-
-const mainNavItems: NavItem[] = [
-  {
-    label: "Groups",
-    shortLabel: "Groups",
-    href: "/groups",
-    icon: Compass,
-  },
-  {
-    label: "My Page",
-    shortLabel: "My Page",
-    href: "/mypage",
-    icon: LayoutGrid,
-  },
-  {
-    label: "Manage",
-    shortLabel: "Manage",
-    href: "/manage",
-    icon: Users,
-  },
-  {
-    label: "Create Group",
-    shortLabel: "Create",
-    href: "/create-group",
-    icon: PlusCircle,
-  },
-  {
-    label: "Design System",
-    shortLabel: "Design",
-    href: "/design",
-    icon: Layers,
-  },
-];
+import { useLanguageStore } from "@/stores/languageStore";
+import type { NavItem, PinnedGroup } from "@/lib/types";
 
 // Pinned / Active groups for students
-const pinnedGroups = [
+const pinnedGroups: PinnedGroup[] = [
   {
     id: "cs490",
     code: "CS490",
@@ -74,6 +35,34 @@ export default function Sidebar() {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { t } = useLanguageStore();
+
+  const mainNavItems: NavItem[] = [
+    {
+      label: t.nav.groups,
+      shortLabel: t.nav.groups,
+      href: "/groups",
+      icon: Compass,
+    },
+    {
+      label: t.nav.myPage,
+      shortLabel: t.nav.myPage,
+      href: "/mypage",
+      icon: LayoutGrid,
+    },
+    {
+      label: t.nav.manage,
+      shortLabel: t.nav.manage,
+      href: "/manage",
+      icon: Users,
+    },
+    {
+      label: t.nav.createGroup,
+      shortLabel: t.nav.createGroup,
+      href: "/create-group",
+      icon: PlusCircle,
+    },
+  ];
 
   // Load collapse state from localStorage if available
   useEffect(() => {
@@ -95,6 +84,10 @@ export default function Sidebar() {
       return next;
     });
   };
+
+  if (pathname === "/") {
+    return null;
+  }
 
   return (
     <aside
@@ -136,7 +129,7 @@ export default function Sidebar() {
                 )}
 
                 <Icon
-                  className={`w-5 h-5 shrink-0 transition-colors ${
+                  className={`w-5 h-5 shrink-0 ${
                     isActive
                       ? "text-[var(--primary)]"
                       : "text-[var(--text-muted)] group-hover:text-[var(--text-primary)]"
@@ -175,7 +168,7 @@ export default function Sidebar() {
                   <Link
                     key={group.id}
                     href={`/groups/${group.id}`}
-                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] transition-colors group"
+                    className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] group"
                   >
                     <span
                       className={`w-2 h-2 rounded-full shrink-0 ${
@@ -204,7 +197,7 @@ export default function Sidebar() {
       <div className="app-nav-desktop-only p-2 border-t border-[var(--border)] bg-[var(--surface-container-lowest)] flex flex-col gap-2">
         {/* User Card */}
         <div
-          className={`flex items-center gap-3 p-1.5 rounded-xl hover:bg-[var(--surface-container-low)] transition-colors ${
+          className={`flex items-center gap-3 p-1.5 rounded-xl hover:bg-[var(--surface-container-low)] ${
             isCollapsed ? "justify-center" : ""
           }`}
         >
@@ -225,7 +218,7 @@ export default function Sidebar() {
         <button
           onClick={toggleCollapse}
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex items-center justify-center gap-2 w-full py-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] rounded-xl transition-colors cursor-pointer"
+          className="flex items-center justify-center gap-2 w-full py-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] rounded-xl cursor-pointer"
         >
           {isCollapsed ? (
             <ChevronRight className="w-4 h-4" />

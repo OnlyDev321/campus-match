@@ -80,11 +80,11 @@
 
   --primary-soft: #eff6ff;
   --primary-soft-border: #dbeafe;
-  --focus-ring: rgba(37, 99, 235, 0.15);
 
   /* Typography Families */
   --font-primary:
-    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   --font-mono:
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
@@ -105,9 +105,11 @@
   --radius-badge: 9999px;
 
   /* Shadows - Light Theme */
-  --shadow-level-1: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
+  --shadow-level-1:
+    0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.05);
   --shadow-level-2:
-    0 8px 20px -4px rgba(15, 23, 42, 0.08), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+    0 8px 20px -4px rgba(15, 23, 42, 0.08),
+    0 4px 8px -2px rgba(15, 23, 42, 0.04);
   --shadow-level-3:
     0 20px 25px -5px rgba(15, 23, 42, 0.1),
     0 8px 10px -6px rgba(15, 23, 42, 0.04);
@@ -188,11 +190,11 @@
 
   --primary-soft: rgba(59, 130, 246, 0.14);
   --primary-soft-border: rgba(59, 130, 246, 0.28);
-  --focus-ring: rgba(59, 130, 246, 0.35);
 
   /* Typography Families */
   --font-primary:
-    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    sans-serif;
   --font-mono:
     "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
     monospace;
@@ -213,17 +215,23 @@
   --radius-badge: 9999px;
 
   /* Shadows - Dark Theme */
-  --shadow-level-1: 0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  --shadow-level-2: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08), 0 0 20px -5px rgba(59, 130, 246, 0.08);
-  --shadow-level-3: 0 24px 38px -8px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  --shadow-level-1:
+    0 1px 3px 0 rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  --shadow-level-2:
+    0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 20px -5px rgba(59, 130, 246, 0.08);
+  --shadow-level-3:
+    0 24px 38px -8px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
-/* Prevent layout shift between short and long pages */
+/* Prevent layout shift between short and long pages & eliminate horizontal overflow */
 html {
   scrollbar-gutter: stable;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Base Body Styles */
@@ -231,12 +239,10 @@ body {
   background-color: var(--background);
   color: var(--text-primary);
   font-family: var(--font-primary);
-  transition:
-    background-color 150ms ease,
-    color 150ms ease,
-    border-color 150ms ease;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 /* Card inner reflection in dark mode for tactile depth */
@@ -247,7 +253,10 @@ body {
 
 .dark .hover\:shadow-\(--shadow-level-2\):hover,
 [data-theme="dark"] .hover\:shadow-\(--shadow-level-2\):hover {
-  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(96, 165, 250, 0.25), 0 0 24px -4px rgba(59, 130, 246, 0.12);
+  box-shadow:
+    0 12px 28px -6px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(96, 165, 250, 0.25),
+    0 0 24px -4px rgba(59, 130, 246, 0.12);
 }
 
 /* Typography Scale Classes */
@@ -432,7 +441,6 @@ body {
     font-size: 0.6875rem;
     font-weight: 500;
     text-decoration: none;
-    transition: all 0.15s ease-in-out;
     position: relative;
   }
 
@@ -524,7 +532,6 @@ body {
     border-radius: 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
-    transition: all 0.15s ease-in-out;
     position: relative;
   }
 
@@ -570,4 +577,14 @@ body {
   }
 }
 
-
+/* -------------------------------------------------------------
+   Group Detail Responsive Utilities
+   ------------------------------------------------------------- */
+.group-detail-sticky-bar {
+  position: sticky;
+  top: 3.5rem;
+  z-index: 25;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.05);
+}

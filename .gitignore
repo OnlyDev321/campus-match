@@ -1,8 +1,29 @@
+# Dependencies
+node_modules/
+
+# Next.js / Frontend builds
+.next/
+out/
+dist/
+build/
+
 # Python / backend
 venv/
 __pycache__/
 *.pyc
 .env
+.env*.local
 
 # OS / IDE
 .DS_Store
+.idea/
+.vscode/
+
+#Agents & skill
+.agents
+skills-lock.json
+
+#reference folder 
+ssuonepage
+
+~$CampusMatch.pptx

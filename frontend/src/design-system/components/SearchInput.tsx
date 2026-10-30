@@ -43,7 +43,7 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
             borderRadius: "var(--radius-input)",
             ...style,
           }}
-          className={`w-full h-[38px] pl-9 pr-14 text-sm bg-(--surface) text-(--text-primary) border border-(--border) placeholder:text-(--text-faint) transition-all duration-150 hover:border-(--border-strong) focus:outline-none focus:border-(--primary-container) focus:ring-2 focus:ring-(--focus-ring) ${className}`}
+          className={`w-full h-[38px] pl-9 pr-14 text-sm bg-(--surface) text-(--text-primary) border border-(--border) placeholder:text-(--text-faint) hover:border-(--border-strong) focus:outline-none focus:border-(--primary-container) ${className}`}
           {...props}
         />
 
