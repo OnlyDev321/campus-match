@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import {
   Network,
   UserPlus,
@@ -11,6 +11,7 @@ import {
   SlidersHorizontal,
   Search,
 } from "lucide-react";
+import { getBrowserGroupsSnapshot, parseBrowserGroups, subscribeBrowserGroups } from "@/services/browserGroupService";
 import GroupCard from "@/components/group/GroupCard";
 import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
@@ -22,6 +23,8 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 
 const GroupPage = () => {
+  const stored = useSyncExternalStore(subscribeBrowserGroups, getBrowserGroupsSnapshot, () => "[]");
+  const groups = useMemo(() => [...parseBrowserGroups(stored), ...mockGroupCards], [stored]);
   const router = useRouter();
   const { isLoggedIn, isLoading, openLoginModal } = useAuthStore();
 
@@ -63,33 +66,33 @@ const GroupPage = () => {
 
   // Available colleges (단과대)
   const colleges = useMemo(() => {
-    const list = Array.from(new Set(mockGroupCards.map((g) => g.college)));
+    const list = Array.from(new Set(groups.map((g) => g.college).filter(Boolean)));
     return ["All Colleges", ...list];
-  }, []);
+  }, [groups]);
 
   // Available departments (학부/학과 - cascaded by selected college)
   const departments = useMemo(() => {
     const pool =
       selectedCollege === "All Colleges"
-        ? mockGroupCards
-        : mockGroupCards.filter((g) => g.college === selectedCollege);
-    const list = Array.from(new Set(pool.map((g) => g.department)));
+        ? groups
+        : groups.filter((g) => g.college === selectedCollege);
+    const list = Array.from(new Set(pool.map((g) => g.department).filter(Boolean)));
     return ["All Departments", ...list];
-  }, [selectedCollege]);
+  }, [selectedCollege, groups]);
 
   // Available years (연도 / Năm đăng bài)
   const years = useMemo(() => {
-    const list = Array.from(new Set(mockGroupCards.map((g) => g.postYear))).sort(
+    const list = Array.from(new Set(groups.map((g) => g.postYear))).sort(
       (a, b) => b - a,
     );
     return ["All Years", ...list.map(String)];
-  }, []);
+  }, [groups]);
 
   const handleSelectCollege = (col: string) => {
     setSelectedCollege(col);
     setIsCollegeOpen(false);
     if (col !== "All Colleges") {
-      const deptsInCollege = mockGroupCards
+      const deptsInCollege = groups
         .filter((g) => g.college === col)
         .map((g) => g.department);
       if (!deptsInCollege.includes(selectedDepartment)) {
@@ -108,7 +111,7 @@ const GroupPage = () => {
 
   // Filter groups
   const filteredGroups = useMemo(() => {
-    return mockGroupCards
+    return groups
       .filter((group) => {
         // Search keyword filter
         if (appliedQuery.trim()) {
@@ -169,6 +172,7 @@ const GroupPage = () => {
         return 0;
       });
   }, [
+    groups,
     appliedQuery,
     appliedCollege,
     appliedDepartment,
@@ -183,9 +187,9 @@ const GroupPage = () => {
     return filteredGroups.slice(start, start + ITEMS_PER_PAGE);
   }, [filteredGroups, currentPage]);
 
-  const activeGroupsCount = mockGroupCards.length;
-  const teamsRecruitingCount = mockGroupCards.filter(
-    (g) => g.maxMembers > g.memberCount,
+  const activeGroupsCount = groups.length;
+  const teamsRecruitingCount = groups.filter(
+    (g) => g.openForApplications !== false && g.maxMembers > g.memberCount,
   ).length;
 
   const hasActiveFilters =

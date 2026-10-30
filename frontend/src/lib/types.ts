@@ -311,6 +311,8 @@ export interface MyGroupColumnProps {
  * Dữ liệu hiển thị cho một thẻ nhóm trên trang danh sách `/groups` (GroupCard).
  */
 export interface GroupCardData {
+  openForApplications?: boolean;
+  tags?: string[];
   id: string;               // ID nhóm (dùng cho routing `/groups/[id]`)
   course: string;           // Tên học phần (VD: "Web Programming")
   title: string;            // Tiêu đề bài đăng tuyển nhóm
@@ -566,3 +568,41 @@ export interface LanguageOption {
 
 // Re-export type từ điển đa ngữ để tiện dùng toàn ứng dụng
 export type { TranslationDict };
+
+/** Props cho phần nội dung có tiêu đề trong form tạo nhóm. */
+export interface CreateGroupSectionProps {
+  /** Tiêu đề lấy từ bộ dịch hiện tại. */
+  title: string;
+  /** Biểu tượng minh họa của phần. */
+  icon: React.ReactNode;
+  /** Các trường nhập liệu trong phần. */
+  children: React.ReactNode;
+}
+
+/** Props cho danh sách kỹ năng có thể thêm và xóa. */
+export interface CreateGroupSkillsProps {
+  /** Nhãn lấy từ bộ dịch hiện tại. */
+  label: string;
+  /** Những kỹ năng người dùng đã chọn. */
+  values: string[];
+  /** Cập nhật danh sách kỹ năng trong form. */
+  onChange: (items: string[]) => void;
+}
+
+/** Dữ liệu nhập để tạo nhóm trong bản thử nghiệm lưu tại trình duyệt. */
+export interface CreateBrowserGroupPayload {
+  /** Tên nhóm do người tạo nhập. */
+  title: string;
+  /** Môn học hoặc chủ đề hoạt động. */
+  course: string;
+  /** Nội dung và lịch hoạt động. */
+  description: string;
+  /** Phân biệt nhóm học tập và nhóm dự án. */
+  type: "study" | "project";
+  /** Kỹ năng và lĩnh vực quan tâm. */
+  skills: string[];
+  /** Tổng số thành viên, bao gồm trưởng nhóm. */
+  maxMembers: number;
+  /** Có nhận đơn tham gia hay không. */
+  openForApplications: boolean;
+}

@@ -10,9 +10,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/design-system";
+import { useLanguageStore } from "@/stores/languageStore";
 import type { GroupCardProps } from "@/lib/types";
 
 const GroupCard = ({ group, onJoin }: GroupCardProps) => {
+  const { t } = useLanguageStore();
   const {
     id,
     course,
@@ -30,6 +32,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
 
   const spotsLeft = Math.max(maxMembers - memberCount, 0);
   const isFull = spotsLeft === 0;
+  const isClosed = group.openForApplications === false;
 
   return (
     <Card className="h-full flex flex-col gap-4 p-6 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
@@ -37,8 +40,8 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         <Badge variant="primary" className="font-medium">
           {course}
         </Badge>
-        <Badge variant={isFull ? "closed" : "recruiting"} dot>
-          {isFull
+        <Badge variant={isFull || isClosed ? "closed" : "recruiting"} dot>
+          {isClosed ? t.createGroup.closed : isFull
             ? "Full"
             : `Recruiting (${spotsLeft} ${spotsLeft === 1 ? "spot" : "spots"})`}
         </Badge>
@@ -102,7 +105,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
-          disabled={isFull}
+          disabled={isFull || isClosed}
           onClick={() => onJoin?.(id)}
         >
           Join
