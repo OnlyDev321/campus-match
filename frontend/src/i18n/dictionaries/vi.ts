@@ -2,6 +2,8 @@ import { TranslationDict } from "./en";
 
 export const vi: TranslationDict = {
   createGroup: {
+    workspace: "Không gian làm việc",
+    breadcrumb: "Điều hướng trang",
     "title": "Tạo nhóm",
     "subtitle": "Tìm đồng đội cùng học tập hoặc thực hiện dự án.",
     "basic": "Thông tin cơ bản",

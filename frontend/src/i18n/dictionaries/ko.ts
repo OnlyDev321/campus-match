@@ -2,6 +2,8 @@ import { TranslationDict } from "./en";
 
 export const ko: TranslationDict = {
   createGroup: {
+    workspace: "워크스페이스",
+    breadcrumb: "현재 위치",
     "title": "그룹 만들기",
     "subtitle": "함께 공부하거나 프로젝트를 진행할 팀원을 모집해 보세요.",
     "basic": "기본 정보",

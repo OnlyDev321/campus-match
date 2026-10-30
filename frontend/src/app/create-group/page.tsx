@@ -2,8 +2,8 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Check, Eye, FileText, Layers, Minus, Plus, ShieldCheck, Tags, Users, X } from "lucide-react";
-import { Badge, Button, Card, Input } from "@/design-system";
+import { Check, Eye, FileText, Layers, Minus, Plus, ShieldCheck, Tags, Users, X } from "lucide-react";
+import { Badge, Button, Card, CardHeader, CardTitle, CardContent, Checkbox, Input, Radio } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
 import { useAuthStore } from "@/stores/authStore";
 import { createBrowserGroup } from "@/services/browserGroupService";
@@ -13,12 +13,12 @@ const field = "w-full rounded-(--radius-input) border border-(--border-strong) b
 
 function Section({ title, icon, children }: CreateGroupSectionProps) {
   return (
-    <Card>
-      <h2 className="mb-5 flex items-center gap-2 border-b border-(--border) pb-4 text-sm font-semibold">
-        <span className="rounded-md bg-(--surface-container) p-1.5 text-(--primary)">{icon}</span>
-        {title}
-      </h2>
-      {children}
+    <Card className="min-w-0 p-4 sm:p-5">
+      <CardHeader className="items-center gap-2.5 border-b border-(--border-muted) pb-4">
+        <span className="inline-flex shrink-0 rounded-(--radius-sm) bg-(--primary-soft) p-2 text-(--primary)">{icon}</span>
+        <CardTitle className="flex-1">{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="mt-4 mb-0">{children}</CardContent>
     </Card>
   );
 }
@@ -115,12 +115,19 @@ export default function CreateGroupPage() {
   if (!isLoggedIn || !user) return null;
 
   return (
-    <div lang={language} className="mx-auto max-w-5xl px-4 py-8 sm:px-8 lg:px-10">
-      <h1 className="text-2xl font-bold tracking-tight">{copy.title}</h1>
-      <p className="mb-7 mt-1 text-sm text-(--text-secondary)">{copy.subtitle}</p>
-      <div className="grid items-start gap-6 @min-[850px]:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <form onSubmit={submit} className="space-y-5">
-          <fieldset disabled={saved} className="min-w-0 space-y-5 disabled:opacity-70">
+    <div lang={language} className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <nav aria-label={copy.breadcrumb} className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wider">
+        <span className="uppercase text-(--primary)">{copy.workspace}</span>
+        <span aria-hidden="true" className="text-(--text-faint)">/</span>
+        <span className="font-normal text-(--text-muted)">{copy.title}</span>
+      </nav>
+      <div className="space-y-1.5">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-(--text-primary)">{copy.title}</h1>
+        <p className="text-sm sm:text-base text-(--text-secondary)">{copy.subtitle}</p>
+      </div>
+      <div className="grid items-start gap-6 @min-[920px]:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <form onSubmit={submit} className="min-w-0 space-y-6">
+          <fieldset disabled={saved} className="min-w-0 space-y-6 disabled:opacity-70">
             <Section title={copy.basic} icon={<Layers size={16} />}>
               <div className="space-y-4">
                 <Input id="group-name" label={`${copy.name} *`} required maxLength={80} value={name} onChange={e => setName(e.target.value)} placeholder={copy.namePlaceholder} />
@@ -129,13 +136,11 @@ export default function CreateGroupPage() {
                   <legend className="mb-2 text-xs font-medium">{copy.type} *</legend>
                   <div className="grid gap-3 sm:grid-cols-2">
                     {(["study", "project"] as const).map(value => (
-                      <label key={value} className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 ${type === value ? "border-(--primary) bg-(--primary-soft) ring-1 ring-(--primary)" : "border-(--border-strong)"}`}>
-                        <input type="radio" name="group-type" checked={type === value} onChange={() => setType(value)} className="mt-0.5 accent-(--primary)" />
-                        <span>
-                          <span className="flex items-center gap-1 text-xs font-semibold">{value === "study" ? <BookOpen size={13} /> : <Layers size={13} />}{copy[value]}</span>
-                          <span className="mt-1 block text-xs leading-relaxed text-(--text-secondary)">{value === "study" ? copy.studyHint : copy.projectHint}</span>
-                        </span>
-                      </label>
+                      <div key={value} className={`rounded-(--radius-input) border p-4 ${type === value ? "border-(--primary) bg-(--primary-soft)" : "border-(--border)"}`}>
+                        <Radio id={`group-type-${value}`} name="group-type" value={value}
+                          checked={type === value} onChange={() => setType(value)}
+                          label={copy[value]} description={value === "study" ? copy.studyHint : copy.projectHint} />
+                      </div>
                     ))}
                   </div>
                 </fieldset>
@@ -162,23 +167,23 @@ export default function CreateGroupPage() {
                   </div>
                   <p className="mt-2 text-xs text-(--text-muted)">{copy.includesLeader}</p>
                 </div>
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg bg-(--surface-container-low) p-3">
-                  <input type="checkbox" role="switch" checked={open} onChange={e => setOpen(e.target.checked)} className="h-4 w-4 accent-(--secondary)" />
-                  <span><span className="block text-xs font-semibold">{open ? copy.open : copy.closed}</span><span className="mt-1 block text-xs text-(--text-muted)">{open ? copy.openHint : copy.closedHint}</span></span>
-                </label>
+                <div className="rounded-(--radius-input) border border-(--border) bg-(--surface-container-low) p-4">
+                  <Checkbox id="group-recruitment" checked={open} onChange={e => setOpen(e.target.checked)}
+                    label={open ? copy.open : copy.closed} description={open ? copy.openHint : copy.closedHint} />
+                </div>
               </div>
             </Section>
           </fieldset>
-          <div className="flex flex-wrap items-center justify-between gap-4 py-2">
+          <Card className="flex flex-wrap items-center justify-between gap-4 p-4 sm:p-5">
             <p className={`flex items-center gap-1 text-xs ${valid ? "text-(--secondary)" : "text-(--text-muted)"}`}><ShieldCheck size={14} />{valid ? copy.ready : copy.required}</p>
             <div className="flex gap-2">
               <Button href="/groups" variant="outline">{saved ? copy.viewGroups : copy.cancel}</Button>
               <Button type="submit" disabled={!valid || saved} leftIcon={<Check size={16} />}>{saved ? copy.saved : copy.title}</Button>
             </div>
-          </div>
+          </Card>
           {(saved || saveError) && <p role="status" className={`rounded-lg border p-3 text-sm ${saved ? "border-(--success-border) bg-(--success-bg) text-(--success-text)" : "border-(--error-border) text-(--error-text)"}`}>{saved ? copy.success : copy.saveError}</p>}
         </form>
-        <aside className="@min-[850px]:sticky @min-[850px]:top-20">
+        <aside className="min-w-0 @min-[920px]:sticky @min-[920px]:top-20">
           <Section title={copy.preview} icon={<Eye size={16} />}>
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">

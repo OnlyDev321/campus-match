@@ -1,5 +1,7 @@
 export const en = {
   createGroup: {
+    workspace: "Workspace directory",
+    breadcrumb: "Breadcrumb",
     "title": "Create a group",
     "subtitle": "Find teammates for your study or project.",
     "basic": "Basic information",
