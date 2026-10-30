@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useSyncExternalStore } from "react";
+import { use, useState, useMemo, useSyncExternalStore } from "react";
 import {
   Network,
   UserPlus,
@@ -13,20 +13,39 @@ import {
 } from "lucide-react";
 import { getBrowserGroupsSnapshot, parseBrowserGroups, subscribeBrowserGroups } from "@/services/browserGroupService";
 import GroupCard from "@/components/group/GroupCard";
+import MyGroupsTab from "@/components/group/MyGroupsTab";
 import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
 import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
-import type { GroupCardData, GroupDetailData } from "@/lib/types";
+import type {
+  GroupCardData,
+  GroupDetailData,
+  GroupsPageProps,
+  GroupsPageTab,
+} from "@/lib/types";
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import { useLanguageStore } from "@/stores/languageStore";
 
-const GroupPage = () => {
+const GroupPage = ({ searchParams }: GroupsPageProps) => {
   const stored = useSyncExternalStore(subscribeBrowserGroups, getBrowserGroupsSnapshot, () => "[]");
   const groups = useMemo(() => [...parseBrowserGroups(stored), ...mockGroupCards], [stored]);
   const router = useRouter();
   const { isLoggedIn, isLoading, openLoginModal } = useAuthStore();
+  const { t } = useLanguageStore();
+
+  // Tab "All groups" / "My groups" điều khiển bằng query ?tab=mine (dùng chung cho redirect từ /manage).
+  const { tab } = use(searchParams);
+  const activeTab: GroupsPageTab = tab === "mine" ? "mine" : "all";
+  const groupsTabs: { key: GroupsPageTab; label: string }[] = [
+    { key: "all", label: t.groupsPage.tabAll },
+    { key: "mine", label: t.groupsPage.tabMine },
+  ];
+  const selectTab = (key: GroupsPageTab) => {
+    router.replace(key === "mine" ? "/groups?tab=mine" : "/groups", { scroll: false });
+  };
 
   // Yêu cầu đăng nhập trước khi vào xem trang Groups
   useEffect(() => {
@@ -234,6 +253,34 @@ const GroupPage = () => {
         </p>
       </div>
 
+      {/* Tabs: All groups / My groups */}
+      <div
+        role="tablist"
+        aria-label={t.groupsPage.tabsLabel}
+        className="inline-flex items-center gap-1 p-1 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)]"
+      >
+        {groupsTabs.map(({ key, label }) => (
+          <button
+            key={key}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === key}
+            onClick={() => selectTab(key)}
+            className={`px-4 py-1.5 rounded-[var(--radius-sm)] text-xs transition-colors cursor-pointer ${
+              activeTab === key
+                ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                : "font-medium text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)]"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {activeTab === "mine" ? (
+        <MyGroupsTab onBrowseAll={() => selectTab("all")} />
+      ) : (
+      <>
       {/* 3. Metric Summary Cards - Using Design System Card */}
       <Card className="grid grid-cols-1 sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-[var(--border-muted)] p-4 sm:p-5">
         {/* Active Groups */}
@@ -658,6 +705,8 @@ const GroupPage = () => {
             Reset Filters
           </Button>
         </Card>
+      )}
+      </>
       )}
 
       {/* Quick Application Modal */}

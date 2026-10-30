@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import {
   Compass,
   LayoutGrid,
-  Users,
   PlusCircle,
   ChevronLeft,
   ChevronRight,
@@ -49,12 +48,6 @@ export default function Sidebar() {
       shortLabel: t.nav.myPage,
       href: "/mypage",
       icon: LayoutGrid,
-    },
-    {
-      label: t.nav.manage,
-      shortLabel: t.nav.manage,
-      href: "/manage",
-      icon: Users,
     },
     {
       label: t.nav.createGroup,
