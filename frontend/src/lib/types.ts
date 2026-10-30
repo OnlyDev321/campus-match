@@ -282,7 +282,7 @@ export interface MyGroupSummary {
 }
 
 /**
- * Kiểu thẻ nhóm trên My Page / Manage:
+ * Kiểu thẻ nhóm trong tab "My groups" của trang `/groups`:
  * - lead: Nhóm tôi làm Leader (mở `/manage/[groupId]`)
  * - member: Nhóm tôi là thành viên (mở `/groups/[id]`)
  */
@@ -297,14 +297,37 @@ export interface MyGroupCardProps {
 }
 
 /**
- * Props cho một cột nhóm trên My Page ("Groups I lead" / "Groups I'm a member of").
+ * Props cho một khu vực nhóm trong tab "My groups" ("Groups I lead" / "Groups I'm a member of").
  */
-export interface MyGroupColumnProps {
-  title: string;                    // Tiêu đề cột
-  groups: MyGroupSummary[] | null;  // Danh sách nhóm thuộc cột (null khi đang tải → hiển thị skeleton)
-  variant: MyGroupCardVariant;      // Kiểu thẻ của cột
+export interface MyGroupSectionProps {
+  title: string;                    // Tiêu đề khu vực
+  groups: MyGroupSummary[];         // Danh sách nhóm thuộc khu vực
+  variant: MyGroupCardVariant;      // Kiểu thẻ của khu vực
   emptyText: string;                // Nội dung trạng thái rỗng
   emptyAction: React.ReactNode;     // Nút / liên kết hành động trong trạng thái rỗng
+}
+
+/**
+ * Tab hiển thị trên trang `/groups` (điều khiển bằng query `?tab=mine`):
+ * - all: Danh sách toàn bộ nhóm
+ * - mine: Nhóm tôi làm Leader và nhóm tôi là thành viên
+ */
+export type GroupsPageTab = "all" | "mine";
+
+/**
+ * Props cho trang `frontend/src/app/groups/page.tsx`.
+ */
+export interface GroupsPageProps {
+  searchParams: Promise<{
+    tab?: string | string[];        // "mine" → mở tab "My groups", giá trị khác → tab "All groups"
+  }>;
+}
+
+/**
+ * Props cho component MyGroupsTab (`src/components/group/MyGroupsTab.tsx`).
+ */
+export interface MyGroupsTabProps {
+  onBrowseAll: () => void;          // Chuyển sang tab "All groups" (hành động trong trạng thái rỗng)
 }
 
 /**
