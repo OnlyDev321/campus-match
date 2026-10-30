@@ -10,6 +10,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       token: null,
       userId: null,
+      timetable: null,
       isLoggedIn: false,
       isLoading: false,
       isLoginModalOpen: false,
@@ -74,6 +75,8 @@ export const useAuthStore = create<AuthState>()(
             user: studentProfile,
             token: data.token ?? null,
             userId: data.userId ?? null,
+            // Thời khóa biểu u-SAINT lấy cùng lúc đăng nhập (chỉ dữ liệu đã bóc tách, không có cookie / mật khẩu)
+            timetable: data.timetable ?? null,
             isLoggedIn: true,
             isLoginModalOpen: false,
             isLoading: false,
@@ -94,6 +97,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           token: null,
           userId: null,
+          timetable: null,
           isLoggedIn: false,
           isLoginModalOpen: false,
           redirectAfterLogin: null,
@@ -103,11 +107,12 @@ export const useAuthStore = create<AuthState>()(
     {
       name: "campusmatch_auth_storage",
       storage: createJSONStorage(() => localStorage),
-      // Chỉ lưu trữ user, token và userId vào localStorage
+      // Chỉ lưu trữ user, token, userId và thời khóa biểu vào localStorage
       partialize: (state) => ({
         user: state.user,
         token: state.token,
         userId: state.userId,
+        timetable: state.timetable,
         isLoggedIn: state.isLoggedIn,
       }),
     }

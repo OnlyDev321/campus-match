@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateUsaint, fetchStudentProfileFromSap } from "@/lib/usaint";
+import {
+  authenticateUsaint,
+  fetchStudentProfileFromSap,
+  fetchTimetableWithTimeout,
+} from "@/lib/usaint";
 import type { SupportedLanguage, StudentProfile } from "@/lib/types";
 
 const MESSAGES = {
@@ -87,6 +91,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 5a. Bắt đầu lấy thời khóa biểu (ZCMW2102) SONG SONG với việc lấy hồ sơ và bàn giao sang Spring Boot.
+    // fetchTimetableWithTimeout không bao giờ reject và tự giới hạn 8 giây, nên lỗi / quá hạn của thời khóa biểu
+    // không làm đăng nhập hay hồ sơ thất bại (chỉ trả về trạng thái unavailable).
+    // LƯU Ý: thời khóa biểu và hồ sơ mở 2 phiên WDA song song trên cùng cookie SSO (giống 2 tab trình duyệt).
+    // Nếu sau này cách chạy song song này gây lỗi phiên, hãy chuyển sang chạy tuần tự (await sau khi lấy hồ sơ).
+    const timetablePromise = fetchTimetableWithTimeout(authResult.sessionCookies);
+
     // 5. Xác thực thành công: Lấy thông tin sinh viên từ SAP WDA
     let profile: StudentProfile | null = null;
     if (authResult.sessionCookies) {
@@ -147,6 +158,9 @@ export async function POST(req: NextRequest) {
       backendToken = `jwt_usaint_${profile.studentId}_${Date.now()}`;
     }
 
+    // Chờ thời khóa biểu (đã chạy song song từ bước 5a, tối đa 8 giây kể từ lúc bắt đầu).
+    const timetable = await timetablePromise;
+
     return NextResponse.json({
       success: true,
       message: MESSAGES.SUCCESS[lang],
@@ -154,6 +168,7 @@ export async function POST(req: NextRequest) {
       profile,
       token: backendToken,
       userId: backendUserId,
+      timetable,
     });
   } catch (error) {
     console.error("Lỗi hệ thống khi xử lý xác thực u-SAINT:", error);

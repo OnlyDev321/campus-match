@@ -5,10 +5,25 @@
  * Chức năng:
  * 1. authenticateUsaint: Xác thực tài khoản với cổng trường u-SAINT SSO (MYSAPSSO2).
  * 2. fetchStudentProfileFromSap: Lấy thông tin sinh viên từ ứng dụng SAP WDA (ZCMW1001n).
+ * 3. fetchTimetableWithTimeout: Lấy thời khóa biểu học kỳ hiện tại từ ứng dụng SAP WDA (ZCMW2102).
  */
 
-import { SapSsoClient, SapWdaClient } from "usaint-lib";
-import type { UsaintLoginResult, StudentProfile } from "@/lib/types";
+import { SapSsoClient, SapWdaClient, type SapComboBox } from "usaint-lib";
+import {
+  TERM_KEYS,
+  TIMETABLE_CONTROL_IDS,
+  extractRawTimetable,
+  parseTimetable,
+  resolveSemesterTarget,
+  termFromKey,
+  unavailableTimetable,
+} from "@/lib/timetable";
+import type {
+  UsaintLoginResult,
+  StudentProfile,
+  StudentTimetable,
+  TimetableSemesterTarget,
+} from "@/lib/types";
 
 export type { UsaintLoginResult };
 
@@ -322,4 +337,116 @@ export async function fetchStudentProfileFromSap(
     console.error("Lỗi khi trích xuất thông tin sinh viên từ SAP WDA:", error);
     return null;
   }
+}
+
+/** Thời gian chờ tối đa cho việc lấy thời khóa biểu; quá hạn thì trả về trạng thái unavailable (TIMEOUT). */
+const TIMETABLE_TIMEOUT_MS = 8000;
+
+/**
+ * Đọc năm học / học kỳ đang chọn trên màn hình ZCMW2102 từ 2 dropdown PERYR, PERID.
+ * Trả về null nếu không tìm thấy dropdown.
+ */
+function readSelectedSemester(
+  wda: SapWdaClient,
+): { target: TimetableSemesterTarget | null; label: string | null } | null {
+  const yearBox = wda.getControlById<SapComboBox>(TIMETABLE_CONTROL_IDS.YEAR);
+  const termBox = wda.getControlById<SapComboBox>(TIMETABLE_CONTROL_IDS.SEMESTER);
+  if (!yearBox || !termBox || !("selectByKey" in yearBox) || !("selectByKey" in termBox)) {
+    return null;
+  }
+  const year = Number(yearBox.selectedKey);
+  const term = termFromKey(termBox.selectedKey);
+  const label = [yearBox.selectedText, termBox.selectedText].filter(Boolean).join(" ") || null;
+  return {
+    target: Number.isInteger(year) && year > 0 && term ? { year, term } : null,
+    label,
+  };
+}
+
+/** Chọn một giá trị trên dropdown (gửi đúng 1 sự kiện ComboBox_Select). */
+async function selectComboKey(wda: SapWdaClient, id: string, key: string): Promise<boolean> {
+  const box = wda.getControlById<SapComboBox>(id);
+  if (!box || !("selectByKey" in box)) return false;
+  const result = await box.selectByKey(key);
+  return result.isSuccess;
+}
+
+/**
+ * Lấy thời khóa biểu học kỳ hiện tại từ ứng dụng SAP WDA ZCMW2102 (개인수업시간표).
+ * - Dùng lại cookie phiên MYSAPSSO2 của lần đăng nhập hiện tại, chỉ chạy phía server (BFF).
+ * - Chỉ chọn năm học / học kỳ khi màn hình đang hiển thị học kỳ khác (tối đa 2 sự kiện ComboBox_Select),
+ *   không lặp, không thử lại.
+ * - Không ném lỗi: mọi lỗi được chuyển thành trạng thái unavailable kèm mã lý do.
+ */
+export async function fetchTimetableFromSap(
+  sessionCookies: string,
+  now: Date = new Date(),
+): Promise<StudentTimetable> {
+  const fetchedAt = now.toISOString();
+  try {
+    const wda = new SapWdaClient("https://ecc.ssu.ac.kr:8443", "ZCMW2102", sessionCookies);
+    const initResult = await wda.initialize();
+    if (!initResult.isSuccess) return unavailableTimetable("SCREEN_UNAVAILABLE", fetchedAt);
+
+    const shown = readSelectedSemester(wda);
+    if (!shown) return unavailableTimetable("SEMESTER_SELECT_FAILED", fetchedAt);
+
+    // Học kỳ mặc định là "học kỳ xem gần nhất" nên phải so với học kỳ mục tiêu và chọn lại nếu khác.
+    const target = resolveSemesterTarget(now, shown.target);
+    if (shown.target?.year !== target.year) {
+      const ok = await selectComboKey(wda, TIMETABLE_CONTROL_IDS.YEAR, String(target.year));
+      if (!ok) return unavailableTimetable("SEMESTER_SELECT_FAILED", fetchedAt);
+    }
+    if (readSelectedSemester(wda)?.target?.term !== target.term) {
+      const ok = await selectComboKey(wda, TIMETABLE_CONTROL_IDS.SEMESTER, TERM_KEYS[target.term]);
+      if (!ok) return unavailableTimetable("SEMESTER_SELECT_FAILED", fetchedAt);
+    }
+
+    const selected = readSelectedSemester(wda);
+    if (selected?.target?.year !== target.year || selected.target.term !== target.term) {
+      return unavailableTimetable("SEMESTER_SELECT_FAILED", fetchedAt);
+    }
+
+    const semester = { year: target.year, term: target.term, semesterLabel: selected.label };
+    const raw = extractRawTimetable(wda.$);
+    if (!raw) return { ...unavailableTimetable("TABLE_NOT_FOUND", fetchedAt), ...semester };
+
+    const parsed = parseTimetable(raw);
+    return {
+      status: parsed.status,
+      ...(parsed.reason ? { reason: parsed.reason } : {}),
+      ...semester,
+      courses: parsed.courses,
+      fetchedAt,
+    };
+  } catch {
+    return unavailableTimetable("SCREEN_UNAVAILABLE", fetchedAt);
+  }
+}
+
+/**
+ * Lấy thời khóa biểu với giới hạn thời gian TIMETABLE_TIMEOUT_MS. Promise này không bao giờ bị reject,
+ * nên có thể chạy song song với việc lấy hồ sơ mà không ảnh hưởng tới đăng nhập.
+ * usaint-lib không hỗ trợ hủy request: khi quá hạn, các request còn lại tự kết thúc ở nền và bị bỏ qua.
+ * Chỉ ghi log mã lý do, không bao giờ ghi log nội dung thời khóa biểu hay thông tin đăng nhập.
+ */
+export async function fetchTimetableWithTimeout(
+  sessionCookies: string | undefined,
+): Promise<StudentTimetable> {
+  if (!sessionCookies) return unavailableTimetable("SCREEN_UNAVAILABLE");
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<StudentTimetable>((resolve) => {
+    timer = setTimeout(() => resolve(unavailableTimetable("TIMEOUT")), TIMETABLE_TIMEOUT_MS);
+  });
+  const work = fetchTimetableFromSap(sessionCookies).catch(() =>
+    unavailableTimetable("SCREEN_UNAVAILABLE"),
+  );
+
+  const timetable = await Promise.race([work, timeout]);
+  clearTimeout(timer);
+  if (timetable.status === "unavailable") {
+    console.warn(`[timetable] unavailable: ${timetable.reason ?? "UNKNOWN"}`);
+  }
+  return timetable;
 }
