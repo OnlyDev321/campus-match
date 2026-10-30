@@ -36,6 +36,131 @@ export interface ProfileCardProps {
   user: StudentProfile;     // Hồ sơ sinh viên đang đăng nhập (lấy từ authStore)
 }
 
+/**
+ * Thứ trong tuần của một buổi học trên thời khóa biểu u-SAINT (Thứ Hai → Thứ Bảy).
+ */
+export type TimetableDay = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
+
+/**
+ * Học kỳ trên u-SAINT, tương ứng khóa (key) của dropdown học kỳ trên màn hình ZCMW2102:
+ * FIRST = "090" (1학기), SUMMER = "091" (여름학기), SECOND = "092" (2학기), WINTER = "093" (겨울학기).
+ */
+export type TimetableTerm = "FIRST" | "SUMMER" | "SECOND" | "WINTER";
+
+/**
+ * Trạng thái thời khóa biểu lưu trong authStore:
+ * - ok: Đọc được và có ít nhất một môn học
+ * - empty: Đọc được nhưng học kỳ này không có môn nào
+ * - unavailable: Không đọc được (xem `reason`)
+ */
+export type TimetableStatus = "ok" | "empty" | "unavailable";
+
+/**
+ * Mã lý do khi thời khóa biểu không đọc được (chỉ dùng để chẩn đoán, không hiển thị thô cho người dùng).
+ */
+export type TimetableUnavailableReason =
+  | "TIMEOUT"                 // Quá thời gian chờ (8 giây)
+  | "SCREEN_UNAVAILABLE"      // Không mở được màn hình ZCMW2102
+  | "SEMESTER_SELECT_FAILED"  // Không chọn được năm học / học kỳ mong muốn
+  | "TABLE_NOT_FOUND"         // Không tìm thấy bảng thời khóa biểu
+  | "LAYOUT_CHANGED"          // Tiêu đề cột không khớp 월 화 수 목 금 토 (cấu trúc u-SAINT đã đổi)
+  | "PARSE_FAILED";           // Có ô dữ liệu nhưng không bóc tách được môn nào
+
+/**
+ * Một buổi học trên thời khóa biểu (không lưu tên giảng viên).
+ */
+export interface TimetableCourse {
+  name: string;             // Tên môn học, giữ nguyên như u-SAINT trả về (không dịch)
+  day: TimetableDay;        // Thứ trong tuần
+  start: string;            // Giờ bắt đầu "HH:MM"
+  end: string;              // Giờ kết thúc "HH:MM"
+  room?: string;            // Phòng học, giữ nguyên như u-SAINT trả về (có thể không có)
+}
+
+/**
+ * Thời khóa biểu của sinh viên, lấy từ u-SAINT lúc đăng nhập và lưu trong authStore (persist).
+ */
+export interface StudentTimetable {
+  status: TimetableStatus;                  // Trạng thái đọc thời khóa biểu
+  reason?: TimetableUnavailableReason;      // Lý do khi status = "unavailable"
+  year: number | null;                      // Năm học (학년도), VD: 2026
+  term: TimetableTerm | null;               // Học kỳ
+  semesterLabel: string | null;             // Nhãn học kỳ thô từ u-SAINT (VD: "2026학년도 2학기")
+  courses: TimetableCourse[];               // Danh sách buổi học (đã loại trùng, sắp xếp theo thứ & giờ)
+  fetchedAt: string;                        // Thời điểm lấy dữ liệu (ISO-8601)
+}
+
+/**
+ * Dữ liệu thô đọc từ bảng thời khóa biểu u-SAINT, đầu vào của hàm parse thuần (`lib/timetable.ts`).
+ */
+export interface RawTimetable {
+  headers: string[];        // Văn bản các ô tiêu đề <th> theo thứ tự hiển thị
+  rows: string[][][];       // Hàng → ô → các dòng văn bản trong ô (đã tách theo <br>)
+}
+
+/**
+ * Kết quả của hàm parse thời khóa biểu (không bao giờ ném lỗi).
+ */
+export interface TimetableParseResult {
+  status: TimetableStatus;                  // ok / empty / unavailable
+  reason?: TimetableUnavailableReason;      // Lý do khi không đọc được
+  courses: TimetableCourse[];               // Các buổi học đọc được
+  skippedCells: number;                     // Số ô có nội dung nhưng không bóc tách được
+}
+
+/**
+ * Học kỳ mục tiêu khi mở màn hình thời khóa biểu (năm học + key dropdown học kỳ).
+ */
+export interface TimetableSemesterTarget {
+  year: number;             // Năm học (학년도) cần chọn
+  term: TimetableTerm;      // Học kỳ cần chọn
+}
+
+/**
+ * Props cho component TimetableCard tại trang My Page.
+ */
+export interface TimetableCardProps {
+  timetable: StudentTimetable | null;       // Thời khóa biểu trong authStore (null: phiên đăng nhập cũ chưa có dữ liệu)
+}
+
+/**
+ * Props cho lưới / danh sách thời khóa biểu bên trong TimetableCard.
+ */
+export interface TimetableCoursesProps {
+  courses: TimetableCourse[];               // Các buổi học cần hiển thị
+}
+
+/**
+ * Props cho phần nội dung một buổi học (tên môn, giờ, phòng) bên trong TimetableCard.
+ */
+export interface TimetableCourseDetailsProps {
+  course: TimetableCourse;                  // Buổi học
+  compact?: boolean;                        // Kiểu chữ nhỏ cho khối trên lưới
+}
+
+/**
+ * Một khối môn học đã tính vị trí để vẽ trên lưới thời khóa biểu.
+ */
+export interface TimetableBlock {
+  course: TimetableCourse;  // Buổi học
+  top: number;              // Vị trí từ mép trên cột (px)
+  height: number;           // Chiều cao khối (px)
+  lane: number;             // Làn (0-based) khi có môn trùng giờ trong cùng một ngày
+  laneCount: number;        // Tổng số làn của nhóm môn trùng giờ
+  tone: number;             // Chỉ số màu (0-3) suy ra từ tên môn, ổn định giữa các ngày
+}
+
+/**
+ * Bố cục lưới thời khóa biểu đã tính sẵn cho TimetableCard.
+ */
+export interface TimetableLayout {
+  days: TimetableDay[];                             // Các cột ngày hiển thị (T2–T6, thêm T7 nếu có môn)
+  startHour: number;                                // Giờ đầu tiên của trục thời gian (làm tròn xuống)
+  endHour: number;                                  // Giờ cuối cùng của trục thời gian (làm tròn lên)
+  hourHeight: number;                               // Chiều cao một giờ trên lưới (px)
+  blocksByDay: Record<TimetableDay, TimetableBlock[]>; // Các khối môn học theo từng ngày
+}
+
 
 /* --------------------------------------------------------------------------
    2. ZUSTAND STORES (Quản lý trạng thái toàn cục - State & Actions)
@@ -58,7 +183,8 @@ export interface AuthState {
   user: StudentProfile | null;                                    // Dữ liệu sinh viên đang đăng nhập
   token: string | null;                                           // JWT Bearer Token gửi kèm Header API
   userId: number | null;                                          // ID người dùng trong DB Backend (users.id), null nếu Backend chưa phản hồi
-  isLoggedIn: boolean;                                            // Trạng thái đã đăng nhập
+  timetable: StudentTimetable | null;                             // Thời khóa biểu u-SAINT lấy lúc đăng nhập (null: phiên cũ chưa có)
+  isLoggedIn: boolean;                                           // Trạng thái đã đăng nhập
   isLoading: boolean;                                             // Trạng thái đang khôi phục phiên từ storage
   isLoginModalOpen: boolean;                                      // Trạng thái đóng/mở modal đăng nhập SSO
   redirectAfterLogin: string | null;                              // Đường dẫn cần chuyển đến sau khi đăng nhập
@@ -113,7 +239,8 @@ export interface UsaintLoginApiResponse {
   profile?: StudentProfile; // Hồ sơ sinh viên đã bóc tách từ u-SAINT
   token?: string | null;    // JWT do Spring Boot cấp (null nếu Backend phản hồi lỗi)
   userId?: number | null;   // ID người dùng trong DB Backend (users.id), null nếu Backend không phản hồi
-  errorCode?: string;       // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
+  timetable?: StudentTimetable; // Thời khóa biểu u-SAINT (luôn có khi đăng nhập thành công, có thể ở trạng thái unavailable)
+  errorCode?: string;      // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
   error?: string;           // Thông báo lỗi nếu thất bại
 }
 

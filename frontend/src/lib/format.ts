@@ -26,6 +26,16 @@ const RELATIVE_UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] =
   { unit: "minute", seconds: 60 },
 ];
 
+// ISO-8601 → ngày giờ theo ngôn ngữ hiện tại (VD: "Oct 30, 2026, 9:05 PM"). Giữ nguyên chuỗi nếu không parse được.
+export const formatDateTime = (iso: string, language: SupportedLanguage): string => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(LOCALES[language], {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
 // ISO-8601 → "2 hours ago" / "2시간 전" / "2 giờ trước". Giữ nguyên chuỗi nếu không parse được.
 export const formatRelativeTime = (iso: string, language: SupportedLanguage): string => {
   const time = new Date(iso).getTime();

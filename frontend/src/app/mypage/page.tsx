@@ -2,6 +2,7 @@
 
 import React from "react";
 import ProfileCard from "./ProfileCard";
+import TimetableCard from "./TimetableCard";
 import { useRequireLogin } from "@/lib/hooks";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
@@ -11,7 +12,7 @@ import { useLanguageStore } from "@/stores/languageStore";
 
 const MyPage = () => {
   const { t } = useLanguageStore();
-  const { user } = useAuthStore();
+  const { user, timetable } = useAuthStore();
   const isReady = useRequireLogin("/mypage");
 
   if (!isReady || !user) return null;
@@ -37,6 +38,9 @@ const MyPage = () => {
 
       {/* Profile (Read-only u-SAINT verified) */}
       <ProfileCard user={user} />
+
+      {/* Weekly timetable (u-SAINT, fetched at login) */}
+      <TimetableCard timetable={timetable} />
     </div>
   );
 };
