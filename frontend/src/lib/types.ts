@@ -58,6 +58,7 @@ export interface MyApplication {
 
 // Group Card (trang Groups)
 export interface GroupCardData {
+  openForApplications?: boolean;
   id: string;
   course: string;
   title: string;

@@ -28,6 +28,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
 
   const spotsLeft = Math.max(maxMembers - memberCount, 0);
   const isFull = spotsLeft === 0;
+  const isClosed = group.openForApplications === false;
 
   return (
     <Card className="h-full flex flex-col gap-4 p-6 transition-all duration-200 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
@@ -35,8 +36,8 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         <Badge variant="primary" className="font-medium">
           {course}
         </Badge>
-        <Badge variant={isFull ? "closed" : "recruiting"} dot>
-          {isFull
+        <Badge variant={isFull || isClosed ? "closed" : "recruiting"} dot>
+          {isClosed ? "Closed" : isFull
             ? "Full"
             : `Recruiting (${spotsLeft} ${spotsLeft === 1 ? "spot" : "spots"})`}
         </Badge>
@@ -99,7 +100,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
-          disabled={isFull}
+          disabled={isFull || isClosed}
           onClick={() => onJoin?.(id)}
         >
           Join
