@@ -3,7 +3,6 @@ export const en = {
   nav: {
     groups: "Groups",
     myPage: "My Page",
-    manage: "Manage",
     createGroup: "Create Group",
     login: "u-SAINT Login",
     logout: "Logout",
@@ -77,23 +76,24 @@ export const en = {
   profile: {
     verified: "u-SAINT Verified",
     yearBadge: "Year {year}",
+    breadcrumb: "WORKSPACE DIRECTORY",
+    pageTitle: "My Page",
+    pageSubtitle: "Your profile and account information from u-SAINT.",
   },
   // My Page
-  myPage: {
-    statsActive: "Active Groups",
-    statsActiveSub: "{count} recruiting",
-    statsLed: "Groups Led",
-    statsMemberOf: "Member Of",
-    statsNone: "None",
-    groupsSectionTitle: "My Groups",
-    ledColumnTitle: "Groups I lead",
-    memberColumnTitle: "Groups I'm a member of",
+  groupsPage: {
+    tabsLabel: "Group views",
+    tabAll: "All groups",
+    tabMine: "My groups",
+    ledTitle: "Groups I lead",
+    memberTitle: "Groups I'm a member of",
     ledEmpty: "You aren't leading any groups yet.",
     memberEmpty: "You haven't joined any groups as a member yet.",
     createGroup: "Create a group",
-    browseGroups: "Browse groups",
-    groupsError: "We couldn't load your groups.",
+    browseAll: "Browse all groups",
+    error: "We couldn't load your groups.",
     retry: "Try again",
+    backToMyGroups: "Back to My groups",
   },
   // My Group Card (My Page & Manage)
   myGroupCard: {
@@ -113,10 +113,6 @@ export const en = {
   // Manage (Leader reviews join requests)
   manage: {
     title: "Manage Applications",
-    subtitle: "Choose a group you lead to review its join requests.",
-    empty: "You aren't leading any groups yet.",
-    backToMyPage: "Back to My Page",
-    backToManage: "All groups I lead",
     applicationsTitle: "Pending join requests",
     pendingEmpty: "No pending applications for this group.",
     notAvailableTitle: "This group isn't available",

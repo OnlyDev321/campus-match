@@ -101,15 +101,10 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-6">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <Link href="/mypage" className={backLinkClass}>
-          <ArrowLeft className="w-3.5 h-3.5" />
-          {t.manage.backToMyPage}
-        </Link>
-        <Link href="/manage" className={backLinkClass}>
-          {t.manage.backToManage}
-        </Link>
-      </div>
+      <Link href="/groups?tab=mine" className={backLinkClass}>
+        <ArrowLeft className="w-3.5 h-3.5" />
+        {t.groupsPage.backToMyGroups}
+      </Link>
 
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
         {t.manage.title}
@@ -122,10 +117,10 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
           text={`${t.manage.notAvailableTitle}. ${t.manage.notAvailableDesc}`}
           action={
             <Link
-              href="/manage"
+              href="/groups?tab=mine"
               className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
             >
-              {t.manage.backToManage}
+              {t.groupsPage.backToMyGroups}
             </Link>
           }
         />

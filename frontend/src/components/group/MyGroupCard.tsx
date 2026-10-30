@@ -19,7 +19,7 @@ import { useLanguageStore } from "@/stores/languageStore";
 import { formatMessage } from "@/lib/format";
 import type { GroupStatusCode, MyGroupCardProps } from "@/lib/types";
 
-// Thẻ nhóm của tôi (My Page & Manage).
+// Thẻ nhóm của tôi (tab "My groups" trên trang /groups).
 // - variant "lead": mở /manage/[groupId] để duyệt đơn ứng tuyển của nhóm.
 // - variant "member": mở trang chi tiết nhóm /groups/[id].
 
