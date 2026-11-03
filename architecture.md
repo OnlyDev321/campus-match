@@ -330,7 +330,7 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Đã cấu hình kết nối Neon PostgreSQL trong `application.yaml`.
 - [x] Đã thiết lập `SecurityConfig` và kiểm tra `HealthController`.
 - [x] Tạo file Entity `User.java`.
-- [ ] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
+- [x] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
 - [ ] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
 - [ ] Tạo file Entity `GroupMember.java`.
 - [ ] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
