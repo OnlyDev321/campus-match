@@ -96,8 +96,8 @@ campus-match/
 │   │   │   ├── layout.tsx                  # Root layout (ThemeProvider, AuthProvider)
 │   │   │   ├── globals.css                 # Design Tokens & CSS Variables
 │   │   │   ├── groups/                     # [Trang chính] Danh sách & Lọc nhóm
-│   │   │   ├── manage/                     # Workspace quản lý nhóm của Leader
-│   │   │   ├── mypage/                     # Profile cá nhân & Đơn ứng tuyển
+│   │   │   ├── manage/                     # My Groups (Sidebar → Manage): nhóm tôi làm Leader / thành viên; duyệt đơn tại manage/[groupId]
+│   │   │   ├── mypage/                     # Profile cá nhân (u-SAINT, chỉ đọc)
 │   │   │   ├── create-group/               # Form tạo nhóm mới
 │   │   │   └── api/auth/usaint/route.ts    # BFF Handler xác thực u-SAINT
 │   │   ├── components/
@@ -363,8 +363,9 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [ ] Thay thế dữ liệu tĩnh trong `mockData.ts` bằng dữ liệu gọi thật từ API trong các trang:
   - `frontend/src/app/groups/page.tsx` (Hiển thị danh sách nhóm thật từ Neon DB).
   - `frontend/src/app/create-group/page.tsx` (Form tạo nhóm gửi POST sang backend).
-  - `frontend/src/app/manage/page.tsx` (Leader duyệt danh sách đơn ứng tuyển).
-  - `frontend/src/app/mypage/page.tsx` (Hiển thị nhóm đã tham gia và đơn đã gửi).
+  - `frontend/src/app/manage/page.tsx` (My Groups — mục Manage trên Sidebar: nhóm tôi làm Leader & nhóm tôi là thành viên).
+  - `frontend/src/app/manage/[groupId]/page.tsx` (Leader duyệt danh sách đơn ứng tuyển của một nhóm).
+  - `frontend/src/app/mypage/page.tsx` (Hồ sơ cá nhân u-SAINT, chỉ đọc).
 
 ---
 

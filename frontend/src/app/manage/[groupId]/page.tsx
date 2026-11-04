@@ -101,15 +101,10 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-6">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-        <Link href="/mypage" className={backLinkClass}>
-          <ArrowLeft className="w-3.5 h-3.5" />
-          {t.manage.backToMyPage}
-        </Link>
-        <Link href="/manage" className={backLinkClass}>
-          {t.manage.backToManage}
-        </Link>
-      </div>
+      <Link href="/manage" className={backLinkClass}>
+        <ArrowLeft className="w-3.5 h-3.5" />
+        {t.manage.backToManage}
+      </Link>
 
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
         {t.manage.title}
