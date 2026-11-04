@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { authenticateUsaint, fetchStudentProfileFromSap } from "@/lib/usaint";
-import type { SupportedLanguage, StudentProfile } from "@/lib/types";
+import { authenticateUsaint, fetchStudentProfileFromSap, fetchTimetableFromSap } from "@/lib/usaint";
+import type { SupportedLanguage, StudentProfile, StudentTimetable } from "@/lib/types";
 
 const MESSAGES = {
   MISSING_FIELDS: {
@@ -87,13 +87,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 5. Xác thực thành công: Lấy thông tin sinh viên từ SAP WDA
+    // 5. Xác thực thành công: Lấy hồ sơ (ZCMW1001n) và thời khóa biểu (ZCMW2102) song song.
+    //    Mỗi màn hình dùng SapWdaClient riêng; lỗi thời khóa biểu không làm hỏng đăng nhập hay hồ sơ.
+    //    Cookie phiên u-SAINT chỉ dùng trong request này, không trả về trình duyệt.
     let profile: StudentProfile | null = null;
+    let timetable: StudentTimetable | null = null;
     if (authResult.sessionCookies) {
-      profile = await fetchStudentProfileFromSap(
-        authResult.sessionCookies,
-        String(studentId).trim(),
-      );
+      const [profileResult, timetableResult] = await Promise.allSettled([
+        fetchStudentProfileFromSap(authResult.sessionCookies, String(studentId).trim()),
+        fetchTimetableFromSap(authResult.sessionCookies),
+      ]);
+      profile = profileResult.status === "fulfilled" ? profileResult.value : null;
+      if (timetableResult.status === "fulfilled" && timetableResult.value.ok) {
+        timetable = timetableResult.value.timetable;
+      } else {
+        const reason =
+          timetableResult.status === "rejected"
+            ? String(timetableResult.reason)
+            : timetableResult.value.ok
+              ? ""
+              : timetableResult.value.reason;
+        console.warn("Không lấy được thời khóa biểu từ u-SAINT:", reason);
+      }
     }
 
     // Fallback profile nếu WDA không lấy được thông tin chi tiết
@@ -154,6 +169,8 @@ export async function POST(req: NextRequest) {
       profile,
       token: backendToken,
       userId: backendUserId,
+      timetable,
+      timetableStatus: timetable ? "success" : "unavailable",
     });
   } catch (error) {
     console.error("Lỗi hệ thống khi xử lý xác thực u-SAINT:", error);

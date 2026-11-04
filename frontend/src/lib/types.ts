@@ -62,6 +62,8 @@ export interface AuthState {
   isLoading: boolean;                                             // Trạng thái đang khôi phục phiên từ storage
   isLoginModalOpen: boolean;                                      // Trạng thái đóng/mở modal đăng nhập SSO
   redirectAfterLogin: string | null;                              // Đường dẫn cần chuyển đến sau khi đăng nhập
+  timetable: StudentTimetable | null;                             // Thời khóa biểu u-SAINT lấy cùng lúc đăng nhập (null nếu chưa có / lỗi)
+  timetableStatus: TimetableStatus;                               // Trạng thái thời khóa biểu (phân biệt lỗi với thời khóa biểu rỗng)
 
   // Actions
   setUser: (user: StudentProfile | null) => void;                 // Cập nhật thông tin sinh viên
@@ -113,8 +115,164 @@ export interface UsaintLoginApiResponse {
   profile?: StudentProfile; // Hồ sơ sinh viên đã bóc tách từ u-SAINT
   token?: string | null;    // JWT do Spring Boot cấp (null nếu Backend phản hồi lỗi)
   userId?: number | null;   // ID người dùng trong DB Backend (users.id), null nếu Backend không phản hồi
+  timetable?: StudentTimetable | null;               // Thời khóa biểu u-SAINT (null nếu không lấy được)
+  timetableStatus?: "success" | "unavailable";       // Kết quả lấy thời khóa biểu (lỗi không làm hỏng đăng nhập)
   errorCode?: string;       // Mã lỗi định danh (VD: INVALID_CREDENTIALS, MISSING_FIELDS)
   error?: string;           // Thông báo lỗi nếu thất bại
+}
+
+
+/* --------------------------------------------------------------------------
+   3b. U-SAINT TIMETABLE (Thời khóa biểu cá nhân - ZCMW2102 개인수업시간표조회)
+   -------------------------------------------------------------------------- */
+
+/**
+ * Thứ trong tuần của một buổi học (theo cột thời khóa biểu u-SAINT: 월 화 수 목 금 토).
+ */
+export type TimetableDay = "MON" | "TUE" | "WED" | "THU" | "FRI" | "SAT";
+
+/**
+ * Một tiết học (교시) trong thời khóa biểu, VD: ["2 교시", "(09:00-10:15)"].
+ */
+export interface TimetablePeriod {
+  number: number;           // Số tiết (1, 2, 3...)
+  start: string;            // Giờ bắt đầu "HH:mm"
+  end: string;              // Giờ kết thúc "HH:mm"
+}
+
+/**
+ * Một buổi học của một môn trong tuần.
+ */
+export interface TimetableSession {
+  day: TimetableDay;              // Thứ trong tuần
+  start: string;                  // Giờ bắt đầu thực tế của buổi học "HH:mm" (lấy từ ô, không suy từ tiết)
+  end: string;                    // Giờ kết thúc thực tế "HH:mm"
+  periods: number[];              // Các tiết mà buổi học chiếm (nhiều hơn 1 nếu kéo dài qua nhiều hàng)
+  building: string | null;        // Tên tòa nhà (VD: "정보과학관"), null nếu không nhận dạng chắc chắn
+  room: string | null;            // Số phòng 3–6 chữ số (VD: "21301"), null nếu không nhận dạng chắc chắn
+  locationDetail: string | null;  // Ghi chú trong ngoặc sau số phòng (VD: tên phòng thực hành), chưa rõ vai trò
+  locationText: string;           // Chuỗi địa điểm gốc từ u-SAINT, luôn được giữ nguyên
+}
+
+/**
+ * Một môn học (gom theo đúng tên môn + giảng viên).
+ */
+export interface TimetableCourse {
+  id: string;                     // ID ổn định, tính từ tên môn + giảng viên (dùng làm key và chọn màu)
+  name: string;                   // Tên môn học
+  instructor: string;             // Tên giảng viên (tách riêng khỏi ghi chú địa điểm)
+  sessions: TimetableSession[];   // Các buổi học trong tuần, sắp theo thứ và giờ
+}
+
+/**
+ * Năm học / học kỳ đang chọn trên màn hình u-SAINT.
+ */
+export interface TimetableTerm {
+  yearKey: string;          // Khóa năm học (VD: "2026")
+  yearLabel: string;        // Nhãn năm học gốc (VD: "2026학년도")
+  semesterKey: string;      // Khóa học kỳ SAP (VD: "092" = 2학기)
+  semesterLabel: string;    // Nhãn học kỳ gốc (VD: "2학기")
+}
+
+/**
+ * Thời khóa biểu đã chuẩn hóa của sinh viên (ảnh chụp tại thời điểm đăng nhập).
+ */
+export interface StudentTimetable {
+  term: TimetableTerm;              // Năm học / học kỳ
+  periods: TimetablePeriod[];       // Danh sách tiết học
+  hasSaturday: boolean;             // Có buổi học thứ Bảy hay không (chỉ hiện cột 토 khi true)
+  courses: TimetableCourse[];       // Danh sách môn học
+  fetchedAt: string;                // Thời điểm lấy từ u-SAINT (ISO-8601)
+}
+
+/**
+ * Trạng thái thời khóa biểu trong authStore:
+ * - loading: đang đăng nhập / lấy thời khóa biểu
+ * - success: đã lấy thành công (có thể rỗng nếu chưa đăng ký môn nào)
+ * - unavailable: lấy thất bại (khác với thời khóa biểu rỗng)
+ * - not_fetched: chưa từng lấy (VD: phiên cũ trong localStorage trước khi có tính năng này)
+ */
+export type TimetableStatus = "loading" | "success" | "unavailable" | "not_fetched";
+
+/**
+ * Kết quả lấy / phân tích thời khóa biểu phía server (BFF).
+ * `reason` chỉ mô tả quy tắc bị vi phạm, không chứa nội dung ô (không lộ dữ liệu cá nhân trong log).
+ */
+export type TimetableFetchResult =
+  | { ok: true; timetable: StudentTimetable }  // Thành công
+  | { ok: false; reason: string };              // Thất bại kèm lý do kỹ thuật
+
+/**
+ * Nút DOM tối thiểu (domhandler / cheerio) mà bộ trích xuất thời khóa biểu duyệt qua.
+ */
+export interface TimetableDomNode {
+  type: string;                             // "tag" | "text" | ...
+  name?: string;                            // Tên thẻ (VD: "td", "span", "br")
+  attribs?: Record<string, string>;         // Thuộc tính HTML (id, cc, rr...)
+  children?: TimetableDomNode[];            // Các nút con
+  data?: string;                            // Nội dung văn bản (nút text)
+  parent?: TimetableDomNode | null;         // Nút cha
+}
+
+/**
+ * Một điều khiển ô thời khóa biểu (…TABLE_<TOKEN>_EDITOR.<n>) đã trích xuất từ DOM.
+ */
+export interface TimetableRawCell {
+  id: string;                     // ID điều khiển SAP đầy đủ
+  token: string;                  // Token cột trong ID (MON...SAT hoặc cột tiết học)
+  n: number;                      // Chỉ số hàng trong ID (= số tiết)
+  cc: number | null;              // Chỉ số cột `cc` của ô <td> chứa điều khiển (nếu có)
+  headerByCc: string | null;      // Tiêu đề cột tương ứng với `cc` (VD: "월")
+  segments: string[];             // Các đoạn văn bản gốc theo thứ tự (tách tại <br>, khối, điều khiển)
+}
+
+/**
+ * Tùy chọn khi phân tích các ô thời khóa biểu.
+ */
+export interface TimetableParseOptions {
+  term: TimetableTerm;            // Năm học / học kỳ đã đọc từ combo box
+  expectedRows: number;           // Số hàng dữ liệu của bảng (phải bằng số tiết hợp lệ)
+  fetchedAt: string;              // Thời điểm lấy (ISO-8601)
+}
+
+/**
+ * Một buổi học đã đặt lên lưới tuần (giao diện), kèm vị trí làn khi trùng giờ.
+ */
+export interface TimetableBlock {
+  course: TimetableCourse;        // Môn học
+  session: TimetableSession;      // Buổi học
+  colorIndex: number;             // Chỉ số màu (theo thứ tự môn)
+  startMin: number;               // Giờ bắt đầu tính bằng phút trong ngày
+  endMin: number;                 // Giờ kết thúc tính bằng phút trong ngày
+  lane: number;                   // Làn (0-based) trong nhóm buổi học trùng giờ
+  lanes: number;                  // Tổng số làn của nhóm trùng giờ (1 nếu không trùng)
+}
+
+/**
+ * Props chung cho lưới tuần và danh sách theo ngày của thời khóa biểu.
+ */
+export interface TimetableViewProps {
+  blocksByDay: Record<TimetableDay, TimetableBlock[]>; // Các buổi học theo từng ngày
+  days: TimetableDay[];           // Các ngày hiển thị (T2–T6, thêm T7 khi có học)
+  today: TimetableDay | null;     // Hôm nay theo giờ Asia/Seoul (null nếu Chủ nhật / ngoài các ngày hiển thị)
+}
+
+/**
+ * Props cho khung skeleton khi thời khóa biểu đang tải (`app/mypage/TimetableCard.tsx`).
+ */
+export interface TimetableSkeletonProps {
+  label: string;                  // Nhãn trợ năng (aria-label) đã dịch, VD: "Đang tải thời khóa biểu…"
+}
+
+/**
+ * Props cho khung trạng thái của thời khóa biểu (rỗng / lỗi / chưa tải) trong `app/mypage/TimetableCard.tsx`.
+ */
+export interface TimetableStatePanelProps {
+  icon: React.ReactNode;          // Biểu tượng minh họa trạng thái
+  title: string;                  // Tiêu đề trạng thái đã dịch
+  description?: string;           // Mô tả bổ sung (tùy chọn)
+  action?: React.ReactNode;       // Nút hành động (VD: "Đăng nhập lại")
+  tone?: "neutral" | "error";     // Sắc thái: trung tính hoặc lỗi
 }
 
 
@@ -500,16 +658,6 @@ export interface NavItem {
   shortLabel?: string;                          // Tiêu đề rút gọn khi thu hẹp thanh bên
   href: string;                                 // Đường dẫn chuyển trang
   icon: React.ComponentType<{ className?: string }>; // Component biểu tượng Lucide
-}
-
-/**
- * Thông tin nhóm đồ án được ghim trong thanh bên Sidebar.
- */
-export interface PinnedGroup {
-  id: string;                                   // ID nhóm
-  code: string;                                 // Mã môn viết gọn (VD: "CS490")
-  name: string;                                 // Tên nhóm đồ án
-  status: string;                               // Trạng thái hoạt động
 }
 
 /**

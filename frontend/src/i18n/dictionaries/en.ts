@@ -78,6 +78,33 @@ export const en = {
     verified: "u-SAINT Verified",
     yearBadge: "Year {year}",
   },
+  // My Page header
+  myPage: {
+    breadcrumbRoot: "My Workspace",
+    breadcrumbCampus: "Soongsil Campus",
+    subtitle: "View your student profile and contact details, verified through u-SAINT.",
+  },
+  // My Timetable (My Page, u-SAINT ZCMW2102)
+  timetable: {
+    title: "My Timetable",
+    term: "{year} · {semester}",
+    secondSemester: "Semester 2",
+    fetchedAt: "Loaded from u-SAINT at sign-in · {time} (KST)",
+    days: { MON: "Mon", TUE: "Tue", WED: "Wed", THU: "Thu", FRI: "Fri", SAT: "Sat" },
+    daysLong: { MON: "Monday", TUE: "Tuesday", WED: "Wednesday", THU: "Thursday", FRI: "Friday", SAT: "Saturday" },
+    today: "Today",
+    period: "Period {n}",
+    daySelector: "Choose a day",
+    loading: "Loading your timetable…",
+    empty: "No classes are registered for {term}.",
+    dayEmpty: "No classes on {day}.",
+    unavailableTitle: "We couldn't load your timetable from u-SAINT.",
+    unavailableDesc: "Your profile and sign-in are not affected. Sign in again to try loading it.",
+    notFetchedTitle: "Your timetable isn't loaded yet",
+    notFetched: "Sign in again to load your timetable from u-SAINT.",
+    signInAgain: "Sign in again",
+    untimedNote: "Classes without a fixed time aren't shown in the u-SAINT timetable.",
+  },
   // My Group Card (My Page & Manage)
   myGroupCard: {
     leader: "Leader",

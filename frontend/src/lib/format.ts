@@ -26,6 +26,17 @@ const RELATIVE_UNITS: { unit: Intl.RelativeTimeFormatUnit; seconds: number }[] =
   { unit: "minute", seconds: 60 },
 ];
 
+// ISO-8601 → ngày giờ theo múi giờ Asia/Seoul (VD: "Nov 4, 2026, 9:30 AM"). Giữ nguyên chuỗi nếu không parse được.
+export const formatSeoulDateTime = (iso: string, language: SupportedLanguage): string => {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso;
+  return new Intl.DateTimeFormat(LOCALES[language], {
+    timeZone: "Asia/Seoul",
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(date);
+};
+
 // ISO-8601 → "2 hours ago" / "2시간 전" / "2 giờ trước". Giữ nguyên chuỗi nếu không parse được.
 export const formatRelativeTime = (iso: string, language: SupportedLanguage): string => {
   const time = new Date(iso).getTime();
