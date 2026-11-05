@@ -180,9 +180,9 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 ├───────────────────────────┤             ├───────────────────────────┤
 │ id (PK)                   │             │ group_id (PK, FK)         │
 │ group_id (FK)             │             │ user_id  (PK, FK)         │
-│ applicant_id (FK)         │             │ joined_at                 │
-│ statement                 │             └───────────────────────────┘
-│ status (PENDING...)       │
+│ applicant_id (FK)         │             │ role (LEADER, MEMBER)     │
+│ statement                 │             │ joined_at                 │
+│ status (PENDING...)       │             └───────────────────────────┘
 │ created_at                │
 └───────────────────────────┘
 ```
@@ -331,7 +331,7 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Đã thiết lập `SecurityConfig` và kiểm tra `HealthController`.
 - [x] Tạo file Entity `User.java`.
 - [x] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
-- [ ] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
+- [x] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
 - [ ] Tạo file Entity `GroupMember.java`.
 - [ ] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
 
