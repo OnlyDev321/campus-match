@@ -5,10 +5,19 @@
  * Chức năng:
  * 1. authenticateUsaint: Xác thực tài khoản với cổng trường u-SAINT SSO (MYSAPSSO2).
  * 2. fetchStudentProfileFromSap: Lấy thông tin sinh viên từ ứng dụng SAP WDA (ZCMW1001n).
+ * 3. fetchTimetableFromSap: Lấy thời khóa biểu cá nhân từ ứng dụng SAP WDA (ZCMW2102).
  */
 
 import { SapSsoClient, SapWdaClient } from "usaint-lib";
-import type { UsaintLoginResult, StudentProfile } from "@/lib/types";
+import type { SapComboBox, SapTable } from "usaint-lib";
+import { extractTimetableCells, parseTimetableCells } from "@/lib/timetableParser";
+import type {
+  UsaintLoginResult,
+  StudentProfile,
+  TimetableDomNode,
+  TimetableFetchResult,
+  TimetableTerm,
+} from "@/lib/types";
 
 export type { UsaintLoginResult };
 
@@ -321,5 +330,85 @@ export async function fetchStudentProfileFromSap(
   } catch (error) {
     console.error("Lỗi khi trích xuất thông tin sinh viên từ SAP WDA:", error);
     return null;
+  }
+}
+
+const TIMETABLE_APP = "ZCMW2102"; // 개인수업시간표조회 (학생용)
+const TIMETABLE_TIMEOUT_MS = 15_000;
+
+/**
+ * Đọc năm học / học kỳ đang chọn trên màn hình thời khóa biểu (VD: "2026"/"2026학년도", "092"/"2학기").
+ */
+function readTimetableTerm(wda: SapWdaClient): TimetableTerm | null {
+  const combos: { key: string; text: string }[] = [];
+  wda.$('[ct="CO"], [ct="CB"]').each((_, el) => {
+    const id = wda.$(el).attr("id");
+    const combo = id ? wda.getControlById<SapComboBox>(id) : null;
+    if (combo) combos.push({ key: combo.selectedKey.trim(), text: combo.selectedText.trim() });
+  });
+  const year = combos.find((c) => /^\d{4}$/.test(c.key) && c.text);
+  const semester = combos.find((c) => c.text.includes("학기") && c.key);
+  if (!year || !semester) return null;
+  return { yearKey: year.key, yearLabel: year.text, semesterKey: semester.key, semesterLabel: semester.text };
+}
+
+async function loadTimetable(sessionCookies: string): Promise<TimetableFetchResult> {
+  const wda = new SapWdaClient("https://ecc.ssu.ac.kr:8443", TIMETABLE_APP, sessionCookies);
+  const initResult = await wda.initialize();
+  if (!initResult.isSuccess) return { ok: false, reason: "timetable screen initialization failed" };
+
+  const term = readTimetableTerm(wda);
+  if (!term) return { ok: false, reason: "year/semester selectors not found" };
+
+  // Bảng thời khóa biểu: SapTable có tiêu đề "시간, 월, 화, 수, 목, 금, 토".
+  let table: SapTable | null = null;
+  let headers: string[] = [];
+  wda.$('[ct="ST"]').each((_, el) => {
+    const id = wda.$(el).attr("id");
+    const candidate = !table && id ? wda.getControlById<SapTable>(id) : null;
+    const candidateHeaders = candidate ? candidate.getHeaders() : [];
+    if (candidate && candidateHeaders.includes("시간") && candidateHeaders.includes("월")) {
+      table = candidate;
+      headers = candidateHeaders;
+    }
+  });
+  const found = table as SapTable | null;
+  if (!found) return { ok: false, reason: "timetable table not found" };
+
+  const tableNode = wda.$(`[id="${found.id}"]`).get(0) as unknown as TimetableDomNode | undefined;
+  if (!tableNode) return { ok: false, reason: "timetable table element missing" };
+
+  return parseTimetableCells(extractTimetableCells(tableNode, headers), headers, {
+    term,
+    expectedRows: found.getTotalRowCount(),
+    fetchedAt: new Date().toISOString(),
+  });
+}
+
+/**
+ * Lấy thời khóa biểu cá nhân từ ứng dụng SAP WDA (ZCMW2102) bằng phiên đăng nhập hiện tại.
+ * Dùng SapWdaClient riêng (cookie jar và sap-contextid riêng) nên chạy song song được với màn hình hồ sơ.
+ * Không bao giờ ném lỗi: mọi thất bại (khởi tạo, cấu trúc thay đổi, hết thời gian) trả về { ok: false, reason }.
+ *
+ * @param sessionCookies Chuỗi Cookie chứa MYSAPSSO2 nhận được sau khi đăng nhập thành công
+ */
+export async function fetchTimetableFromSap(sessionCookies: string): Promise<TimetableFetchResult> {
+  if (!sessionCookies) return { ok: false, reason: "no u-SAINT session" };
+
+  // Bắt lỗi ngay trên promise tải để lỗi xảy ra sau khi đã hết thời gian không thành unhandled rejection.
+  const work = loadTimetable(sessionCookies).catch(
+    (error: unknown): TimetableFetchResult => ({
+      ok: false,
+      reason: error instanceof Error ? error.message : "unknown error",
+    }),
+  );
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<TimetableFetchResult>((resolve) => {
+    timer = setTimeout(() => resolve({ ok: false, reason: "timed out" }), TIMETABLE_TIMEOUT_MS);
+  });
+  try {
+    return await Promise.race([work, timeout]);
+  } finally {
+    clearTimeout(timer);
   }
 }
