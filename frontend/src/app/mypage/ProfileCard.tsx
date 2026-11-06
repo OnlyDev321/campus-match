@@ -17,9 +17,9 @@ const ProfileHeading = ({ user }: ProfileCardProps) => {
   return (
     <div className="space-y-1">
       <div className="flex flex-wrap items-center gap-2.5">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
           {user.name}
-        </h1>
+        </h2>
         {user.academicYear && (
           <Badge variant="primary" size="sm" mono>
             {formatMessage(t.profile.yearBadge, { year: user.academicYear })}
