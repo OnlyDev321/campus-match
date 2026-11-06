@@ -490,7 +490,7 @@ body {
   }
 
   .app-main-content {
-    padding-bottom: 1.5rem;
+    padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 0px));
   }
 }
 
