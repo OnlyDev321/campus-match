@@ -1,3 +1,4 @@
+<div align="center">
 
 # 🎓 CampusMatch (캠퍼스매치)
 
