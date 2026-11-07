@@ -1,5 +1,3 @@
-<div align="center">
-
 # 🎓 CampusMatch (캠퍼스매치)
 
 ### Soongsil University Study Group & Project Team Matching Platform
