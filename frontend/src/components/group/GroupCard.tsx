@@ -11,8 +11,11 @@ import {
   CardTitle,
 } from "@/design-system";
 import type { GroupCardProps } from "@/lib/types";
+import { useLanguageStore } from "@/stores/languageStore";
 
 const GroupCard = ({ group, onJoin }: GroupCardProps) => {
+  const { t } = useLanguageStore();
+
   const {
     id,
     course,
@@ -31,6 +34,14 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const spotsLeft = Math.max(maxMembers - memberCount, 0);
   const isFull = spotsLeft === 0;
 
+  const recruitingText =
+    spotsLeft === 1
+      ? t.groupsPage.cardRecruitingSingle
+      : t.groupsPage.cardRecruiting.replace("{spots}", String(spotsLeft));
+
+  const yearText = t.groupsPage.cardYear.replace("{year}", String(postYear));
+  const membersText = t.groupsPage.cardMembers.replace("{max}", String(maxMembers));
+
   return (
     <Card className="h-full flex flex-col gap-4 p-6 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
       <CardHeader className="mb-0 flex-wrap items-center">
@@ -38,9 +49,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           {course}
         </Badge>
         <Badge variant={isFull ? "closed" : "recruiting"} dot>
-          {isFull
-            ? "Full"
-            : `Recruiting (${spotsLeft} ${spotsLeft === 1 ? "spot" : "spots"})`}
+          {isFull ? t.groupsPage.cardFull : recruitingText}
         </Badge>
       </CardHeader>
 
@@ -61,7 +70,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           {department}
         </span>
         <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
-          {postYear}년
+          {yearText}
         </span>
       </div>
 
@@ -87,7 +96,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
             {memberCount}
           </span>
           <span className="text-[11px] text-[var(--text-muted)]">
-            /{maxMembers} members
+            {membersText}
           </span>
         </div>
       </CardFooter>
@@ -98,14 +107,14 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           variant="outline"
           className="h-10 text-xs font-semibold"
         >
-          View Details
+          {t.groupsPage.viewDetails}
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
           disabled={isFull}
           onClick={() => onJoin?.(id)}
         >
-          Join
+          {t.groupsPage.join}
         </Button>
       </div>
     </Card>

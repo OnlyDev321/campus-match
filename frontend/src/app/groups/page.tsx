@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Network,
   UserPlus,
@@ -16,14 +17,13 @@ import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
 import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
 import type { GroupCardData, GroupDetailData } from "@/lib/types";
-
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import { useLanguageStore } from "@/stores/languageStore";
 
 const GroupPage = () => {
   const router = useRouter();
   const { isLoggedIn, isLoading, openLoginModal } = useAuthStore();
+  const { t } = useLanguageStore();
 
   // Yêu cầu đăng nhập trước khi vào xem trang Groups
   useEffect(() => {
@@ -34,10 +34,10 @@ const GroupPage = () => {
   }, [isLoggedIn, isLoading, openLoginModal, router]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCollege, setSelectedCollege] = useState("All Colleges");
-  const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
-  const [selectedYear, setSelectedYear] = useState("All Years");
-  const [sortBy, setSortBy] = useState("Most Recent");
+  const [selectedCollege, setSelectedCollege] = useState("ALL");
+  const [selectedDepartment, setSelectedDepartment] = useState("ALL");
+  const [selectedYear, setSelectedYear] = useState("ALL");
+  const [sortBy, setSortBy] = useState<"recent" | "spots">("recent");
 
   // Pagination State (6 items per page)
   const ITEMS_PER_PAGE = 6;
@@ -51,9 +51,9 @@ const GroupPage = () => {
 
   // Applied filter states (triggered on Search button click or Enter)
   const [appliedQuery, setAppliedQuery] = useState("");
-  const [appliedCollege, setAppliedCollege] = useState("All Colleges");
-  const [appliedDepartment, setAppliedDepartment] = useState("All Departments");
-  const [appliedYear, setAppliedYear] = useState("All Years");
+  const [appliedCollege, setAppliedCollege] = useState("ALL");
+  const [appliedDepartment, setAppliedDepartment] = useState("ALL");
+  const [appliedYear, setAppliedYear] = useState("ALL");
 
   // Dropdown open states
   const [isCollegeOpen, setIsCollegeOpen] = useState(false);
@@ -63,37 +63,34 @@ const GroupPage = () => {
 
   // Available colleges (단과대)
   const colleges = useMemo(() => {
-    const list = Array.from(new Set(mockGroupCards.map((g) => g.college)));
-    return ["All Colleges", ...list];
+    return Array.from(new Set(mockGroupCards.map((g) => g.college)));
   }, []);
 
   // Available departments (학부/학과 - cascaded by selected college)
   const departments = useMemo(() => {
     const pool =
-      selectedCollege === "All Colleges"
+      selectedCollege === "ALL"
         ? mockGroupCards
         : mockGroupCards.filter((g) => g.college === selectedCollege);
-    const list = Array.from(new Set(pool.map((g) => g.department)));
-    return ["All Departments", ...list];
+    return Array.from(new Set(pool.map((g) => g.department)));
   }, [selectedCollege]);
 
   // Available years (연도 / Năm đăng bài)
   const years = useMemo(() => {
-    const list = Array.from(new Set(mockGroupCards.map((g) => g.postYear))).sort(
+    return Array.from(new Set(mockGroupCards.map((g) => g.postYear))).sort(
       (a, b) => b - a,
     );
-    return ["All Years", ...list.map(String)];
   }, []);
 
   const handleSelectCollege = (col: string) => {
     setSelectedCollege(col);
     setIsCollegeOpen(false);
-    if (col !== "All Colleges") {
+    if (col !== "ALL") {
       const deptsInCollege = mockGroupCards
         .filter((g) => g.college === col)
         .map((g) => g.department);
       if (!deptsInCollege.includes(selectedDepartment)) {
-        setSelectedDepartment("All Departments");
+        setSelectedDepartment("ALL");
       }
     }
   };
@@ -132,16 +129,13 @@ const GroupPage = () => {
         }
 
         // College filter (단과대)
-        if (
-          appliedCollege !== "All Colleges" &&
-          group.college !== appliedCollege
-        ) {
+        if (appliedCollege !== "ALL" && group.college !== appliedCollege) {
           return false;
         }
 
         // Department filter (학부/학과)
         if (
-          appliedDepartment !== "All Departments" &&
+          appliedDepartment !== "ALL" &&
           group.department !== appliedDepartment
         ) {
           return false;
@@ -149,7 +143,7 @@ const GroupPage = () => {
 
         // Post Year filter (Năm đăng bài)
         if (
-          appliedYear !== "All Years" &&
+          appliedYear !== "ALL" &&
           String(group.postYear) !== appliedYear
         ) {
           return false;
@@ -158,10 +152,10 @@ const GroupPage = () => {
         return true;
       })
       .sort((a, b) => {
-        if (sortBy === "Most Recent") {
+        if (sortBy === "recent") {
           return b.postYear - a.postYear;
         }
-        if (sortBy === "Spots Left") {
+        if (sortBy === "spots") {
           const spotsA = a.maxMembers - a.memberCount;
           const spotsB = b.maxMembers - b.memberCount;
           return spotsB - spotsA;
@@ -189,20 +183,20 @@ const GroupPage = () => {
   ).length;
 
   const hasActiveFilters =
-    appliedCollege !== "All Colleges" ||
-    appliedDepartment !== "All Departments" ||
-    appliedYear !== "All Years" ||
+    appliedCollege !== "ALL" ||
+    appliedDepartment !== "ALL" ||
+    appliedYear !== "ALL" ||
     appliedQuery.trim() !== "";
 
   const handleClearAll = () => {
     setSearchQuery("");
-    setSelectedCollege("All Colleges");
-    setSelectedDepartment("All Departments");
-    setSelectedYear("All Years");
+    setSelectedCollege("ALL");
+    setSelectedDepartment("ALL");
+    setSelectedYear("ALL");
     setAppliedQuery("");
-    setAppliedCollege("All Colleges");
-    setAppliedDepartment("All Departments");
-    setAppliedYear("All Years");
+    setAppliedCollege("ALL");
+    setAppliedDepartment("ALL");
+    setAppliedYear("ALL");
     setCurrentPage(1);
   };
 
@@ -211,22 +205,21 @@ const GroupPage = () => {
       {/* 1. Breadcrumb / Directory path */}
       <div className="flex items-center gap-2 text-xs font-semibold tracking-wider">
         <span className="text-[var(--primary)] uppercase">
-          WORKSPACE DIRECTORY
+          {t.groupsPage.breadcrumbDirectory}
         </span>
         <span className="text-[var(--text-faint)]">/</span>
         <span className="text-[var(--text-muted)] font-normal">
-          SoongSil Campus
+          {t.groupsPage.breadcrumbCampus}
         </span>
       </div>
 
       {/* 2. Page Title & Subtitle */}
       <div className="space-y-1.5">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-          Find Your Group
+          {t.groupsPage.title}
         </h1>
         <p className="text-sm sm:text-base text-[var(--text-secondary)]">
-          Discover study groups, capstone design projects, and programming teams
-          across campus.
+          {t.groupsPage.subtitle}
         </p>
       </div>
 
@@ -242,7 +235,7 @@ const GroupPage = () => {
               {activeGroupsCount}
             </div>
             <div className="text-xs font-medium text-[var(--text-muted)] mt-1">
-              Active Groups
+              {t.groupsPage.activeGroups}
             </div>
           </div>
         </div>
@@ -257,7 +250,7 @@ const GroupPage = () => {
               {teamsRecruitingCount}
             </div>
             <div className="text-xs font-medium text-[var(--text-muted)] mt-1">
-              Teams Recruiting
+              {t.groupsPage.teamsRecruiting}
             </div>
           </div>
         </div>
@@ -267,7 +260,7 @@ const GroupPage = () => {
       <Card className="p-4 sm:p-5 space-y-4">
         {/* Design System SearchInput */}
         <SearchInput
-          placeholder="Search by group name, topic, or keyword..."
+          placeholder={t.groupsPage.searchPlaceholder}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           onKeyDown={(e) => {
@@ -299,13 +292,28 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  대학:
+                  {t.groupsPage.collegeLabel}
                 </span>
-                <span>{selectedCollege}</span>
+                <span>
+                  {selectedCollege === "ALL"
+                    ? t.groupsPage.allColleges
+                    : selectedCollege}
+                </span>
               </Button>
 
               {isCollegeOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-44 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                <div className="absolute top-full left-0 mt-1.5 w-48 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectCollege("ALL")}
+                    className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                      selectedCollege === "ALL"
+                        ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                        : "text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    {t.groupsPage.allColleges}
+                  </button>
                   {colleges.map((col) => (
                     <button
                       key={col}
@@ -341,13 +349,31 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  학과:
+                  {t.groupsPage.departmentLabel}
                 </span>
-                <span>{selectedDepartment}</span>
+                <span>
+                  {selectedDepartment === "ALL"
+                    ? t.groupsPage.allDepartments
+                    : selectedDepartment}
+                </span>
               </Button>
 
               {isDeptOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-48 max-h-56 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                <div className="absolute top-full left-0 mt-1.5 w-52 max-h-56 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedDepartment("ALL");
+                      setIsDeptOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                      selectedDepartment === "ALL"
+                        ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                        : "text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    {t.groupsPage.allDepartments}
+                  </button>
                   {departments.map((dept) => (
                     <button
                       key={dept}
@@ -386,30 +412,46 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  연도:
+                  {t.groupsPage.yearLabel}
                 </span>
                 <span>
-                  {selectedYear === "All Years" ? "All Years" : `${selectedYear}년`}
+                  {selectedYear === "ALL"
+                    ? t.groupsPage.allYears
+                    : t.groupsPage.yearFormat.replace("{year}", String(selectedYear))}
                 </span>
               </Button>
 
               {isYearOpen && (
                 <div className="absolute top-full left-0 mt-1.5 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedYear("ALL");
+                      setIsYearOpen(false);
+                    }}
+                    className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                      selectedYear === "ALL"
+                        ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                        : "text-[var(--text-secondary)]"
+                    }`}
+                  >
+                    {t.groupsPage.allYears}
+                  </button>
                   {years.map((yr) => (
                     <button
                       key={yr}
                       type="button"
                       onClick={() => {
-                        setSelectedYear(yr);
+                        setSelectedYear(String(yr));
                         setIsYearOpen(false);
                       }}
                       className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
-                        selectedYear === yr
+                        selectedYear === String(yr)
                           ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
                           : "text-[var(--text-secondary)]"
                       }`}
                     >
-                      {yr === "All Years" ? yr : `${yr}년`}
+                      {t.groupsPage.yearFormat.replace("{year}", String(yr))}
                     </button>
                   ))}
                 </div>
@@ -425,14 +467,14 @@ const GroupPage = () => {
               leftIcon={<Search className="w-3.5 h-3.5" />}
               className="px-4 font-semibold shadow-sm"
             >
-              Search
+              {t.groupsPage.searchBtn}
             </Button>
           </div>
 
           {/* Sort By Dropdown */}
           <div className="relative flex items-center gap-2">
             <span className="text-xs text-[var(--text-muted)] font-medium">
-              Sort by:
+              {t.groupsPage.sortByLabel}
             </span>
             <Button
               variant="outline"
@@ -448,28 +490,43 @@ const GroupPage = () => {
                 <ChevronDown className="w-3.5 h-3.5 text-[var(--text-faint)]" />
               }
             >
-              <span>{sortBy}</span>
+              <span>
+                {sortBy === "recent"
+                  ? t.groupsPage.mostRecent
+                  : t.groupsPage.spotsLeft}
+              </span>
             </Button>
 
             {isSortOpen && (
-              <div className="absolute top-full right-0 mt-1.5 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
-                {["Most Recent", "Spots Left"].map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => {
-                      setSortBy(item);
-                      setIsSortOpen(false);
-                    }}
-                    className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
-                      sortBy === item
-                        ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
-                        : "text-[var(--text-secondary)]"
-                    }`}
-                  >
-                    {item}
-                  </button>
-                ))}
+              <div className="absolute top-full right-0 mt-1.5 w-40 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortBy("recent");
+                    setIsSortOpen(false);
+                  }}
+                  className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                    sortBy === "recent"
+                      ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                      : "text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {t.groupsPage.mostRecent}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSortBy("spots");
+                    setIsSortOpen(false);
+                  }}
+                  className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                    sortBy === "spots"
+                      ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                      : "text-[var(--text-secondary)]"
+                  }`}
+                >
+                  {t.groupsPage.spotsLeft}
+                </button>
               </div>
             )}
           </div>
@@ -479,17 +536,19 @@ const GroupPage = () => {
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--border-muted)] text-xs">
             <span className="text-[var(--text-muted)] font-medium">
-              Active Filters:
+              {t.groupsPage.activeFiltersLabel}
             </span>
 
-            {appliedCollege !== "All Colleges" && (
+            {appliedCollege !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>대학: {appliedCollege}</span>
+                <span>
+                  {t.groupsPage.collegeLabel} {appliedCollege}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
-                    setAppliedCollege("All Colleges");
-                    setSelectedCollege("All Colleges");
+                    setAppliedCollege("ALL");
+                    setSelectedCollege("ALL");
                   }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
                   aria-label="Remove college filter"
@@ -499,14 +558,16 @@ const GroupPage = () => {
               </Badge>
             )}
 
-            {appliedDepartment !== "All Departments" && (
+            {appliedDepartment !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>학과: {appliedDepartment}</span>
+                <span>
+                  {t.groupsPage.departmentLabel} {appliedDepartment}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
-                    setAppliedDepartment("All Departments");
-                    setSelectedDepartment("All Departments");
+                    setAppliedDepartment("ALL");
+                    setSelectedDepartment("ALL");
                   }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
                   aria-label="Remove department filter"
@@ -516,14 +577,17 @@ const GroupPage = () => {
               </Badge>
             )}
 
-            {appliedYear !== "All Years" && (
+            {appliedYear !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>연도: {appliedYear}년</span>
+                <span>
+                  {t.groupsPage.yearLabel}{" "}
+                  {t.groupsPage.yearFormat.replace("{year}", appliedYear)}
+                </span>
                 <button
                   type="button"
                   onClick={() => {
-                    setAppliedYear("All Years");
-                    setSelectedYear("All Years");
+                    setAppliedYear("ALL");
+                    setSelectedYear("ALL");
                   }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
                   aria-label="Remove year filter"
@@ -535,7 +599,9 @@ const GroupPage = () => {
 
             {appliedQuery.trim() !== "" && (
               <Badge variant="neutral" size="md" className="gap-2">
-                <span>Search: &quot;{appliedQuery}&quot;</span>
+                <span>
+                  {t.groupsPage.filterSearchPrefix}&quot;{appliedQuery}&quot;
+                </span>
                 <button
                   type="button"
                   onClick={() => {
@@ -555,7 +621,7 @@ const GroupPage = () => {
               onClick={handleClearAll}
               className="text-[var(--primary)] font-semibold hover:underline ml-1 cursor-pointer"
             >
-              Clear All
+              {t.groupsPage.clearAll}
             </button>
           </div>
         )}
@@ -581,15 +647,9 @@ const GroupPage = () => {
           {/* Pagination Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[var(--border-muted)]">
             <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-              Showing{" "}
-              <span className="font-semibold text-[var(--text-primary)]">
-                {paginatedGroups.length}
-              </span>{" "}
-              of{" "}
-              <span className="font-semibold text-[var(--text-primary)]">
-                {filteredGroups.length}
-              </span>{" "}
-              groups
+              {t.groupsPage.showingCount
+                .replace("{current}", String(paginatedGroups.length))
+                .replace("{total}", String(filteredGroups.length))}
             </p>
 
             <div className="flex items-center gap-1.5">
@@ -629,7 +689,7 @@ const GroupPage = () => {
                 }
                 className="h-8 px-3 rounded-md text-xs font-medium flex items-center gap-1 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-container-low)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                <span>Next</span>
+                <span>{t.groupsPage.nextBtn}</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -639,11 +699,10 @@ const GroupPage = () => {
         <Card className="text-center py-16 px-4 border-dashed bg-[var(--surface-container-low)]">
           <SlidersHorizontal className="w-10 h-10 mx-auto text-[var(--text-faint)] mb-3" />
           <h3 className="text-base font-semibold text-[var(--text-primary)]">
-            No matching groups found
+            {t.groupsPage.noResultsTitle}
           </h3>
           <p className="text-xs text-[var(--text-muted)] mt-1 max-w-sm mx-auto">
-            Try adjusting your search query or removing active filters to see
-            more study groups.
+            {t.groupsPage.noResultsDesc}
           </p>
           <Button
             variant="primary"
@@ -651,7 +710,7 @@ const GroupPage = () => {
             onClick={handleClearAll}
             className="mt-4"
           >
-            Reset Filters
+            {t.groupsPage.resetFiltersBtn}
           </Button>
         </Card>
       )}
