@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PlusCircle, ArrowRight } from "lucide-react";
+import { PlusCircle, ArrowRight, Users, ShieldCheck } from "lucide-react";
 import { Badge, Button } from "@/design-system";
 import MyGroupCard from "@/components/group/MyGroupCard";
 import { CardSkeletonList, EmptyState, ErrorState } from "@/components/common/AsyncState";
@@ -16,8 +16,11 @@ import type { MyGroupColumnProps } from "@/lib/types";
 // - Nhóm tôi là thành viên: bấm vào để mở trang chi tiết /groups/[id].
 
 const MyGroupColumn = ({ title, groups, variant, emptyText, emptyAction }: MyGroupColumnProps) => (
-  <section className="space-y-4 min-w-0">
-    <div className="flex items-center gap-2">
+  <section className="space-y-5 min-w-0">
+    <div className="flex items-center gap-3 pb-4 border-b border-[var(--border)]">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--surface-container-low)] text-[var(--primary)]">
+        {variant === "lead" ? <ShieldCheck aria-hidden="true" className="h-4 w-4" /> : <Users aria-hidden="true" className="h-4 w-4" />}
+      </span>
       <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
         {title}
       </h3>
@@ -33,7 +36,7 @@ const MyGroupColumn = ({ title, groups, variant, emptyText, emptyAction }: MyGro
     ) : groups.length === 0 ? (
       <EmptyState text={emptyText} action={emptyAction} />
     ) : (
-      <div className="space-y-5">
+      <div className="grid gap-4">
         {groups.map((group) => (
           <MyGroupCard key={group.id} group={group} variant={variant} />
         ))}
@@ -64,13 +67,21 @@ const ManagePage = () => {
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+    <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wider">
+        <span className="text-[var(--primary)] uppercase">{t.myPage.breadcrumbRoot}</span>
+        <span aria-hidden="true" className="text-[var(--text-faint)]">/</span>
+        <span className="text-[var(--text-muted)] font-normal">{t.myPage.breadcrumbCampus}</span>
+      </div>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="space-y-1.5 min-w-0">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
           {t.manage.listTitle}
         </h1>
-        <p className="text-sm text-[var(--text-secondary)]">{t.manage.subtitle}</p>
+        <p className="text-sm sm:text-base text-[var(--text-secondary)]">{t.manage.subtitle}</p>
       </div>
+      <Button href="/create-group" leftIcon={<PlusCircle aria-hidden="true" className="h-4 w-4" />} className="shrink-0 self-start">{t.manage.createGroup}</Button>
+      </header>
 
       {/* My Groups: Groups I lead / Groups I'm a member of */}
       {status === "error" ? (
@@ -81,7 +92,7 @@ const ManagePage = () => {
           onRetry={reload}
         />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-10 items-start">
           <MyGroupColumn
             title={t.manage.ledColumnTitle}
             groups={ledGroups}
