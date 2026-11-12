@@ -332,16 +332,16 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Tạo file Entity `User.java`.
 - [x] Tạo file Entity `StudyGroup.java` (gồm 3 trường phân loại u-SAINT: `college`, `department`, `post_year`) và Enum `GroupStatus`.
 - [x] Tạo file Entity `Application.java` và Enum `ApplicationStatus`.
-- [ ] Tạo file Entity `GroupMember.java`.
-- [ ] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
+- [x] Tạo file Entity `GroupMember.java` (kèm `GroupMemberId.java` và `GroupRole.java`).
+- [x] Chạy server để Hibernate tự động sinh ra các bảng chuẩn trên Neon PostgreSQL.
 
 ### 📍 Giai đoạn 2: Cơ chế Xác thực & Cấp phát JWT (Backend + Frontend)
 
-- [ ] Thêm thư viện `jjwt-api`, `jjwt-impl`, `jjwt-jackson` vào `build.gradle`.
-- [ ] Viết `JwtTokenProvider.java` (tạo token, validate token, trích xuất studentId).
-- [ ] Viết `JwtAuthenticationFilter.java` chặn và đọc header `Authorization: Bearer <token>`.
-- [ ] Viết `AuthController.java` xử lý endpoint `POST /api/auth/sso/usaint`.
-- [ ] Cập nhật hàm `login()` trong `frontend/src/context/AuthContext.tsx` gọi trực tiếp sang Backend thật thay vì dùng mock timer.
+- [x] Thêm thư viện `jjwt-api`, `jjwt-impl`, `jjwt-jackson` vào `build.gradle`.
+- [x] Viết `JwtTokenProvider.java` (tạo token, validate token, trích xuất studentId, role, claims) và `JwtUtil.java`.
+- [x] Viết `JwtAuthenticationFilter.java` chặn và đọc header `Authorization: Bearer <token>`, tích hợp vào `SecurityConfig.java`.
+- [x] Viết `AuthController.java` xử lý endpoint `POST /api/auth/sso/usaint` và `UserController.java` xử lý `GET /api/users/me`.
+- [x] Cập nhật hàm `login()` trong Frontend (`useAuthStore` & `frontend/src/context/AuthContext.tsx`) gọi trực tiếp sang BFF `/api/auth/usaint` và chuyển tiếp Backend thật `POST /api/auth/sso/usaint`.
 
 ### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
 
