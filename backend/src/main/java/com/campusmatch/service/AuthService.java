@@ -4,7 +4,7 @@ import com.campusmatch.dto.AuthResponse;
 import com.campusmatch.dto.UsaintLoginRequest;
 import com.campusmatch.entity.User;
 import com.campusmatch.repository.UserRepository;
-import com.campusmatch.security.JwtUtil;
+import com.campusmatch.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final JwtUtil jwtUtil;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public AuthResponse processUsaintLogin(UsaintLoginRequest request) {
@@ -72,14 +72,14 @@ public class AuthService {
                 });
 
         // 2. Ký tạo mã JWT Token
-        String token = jwtUtil.generateToken(user.getStudentId(), user.getRole(), user.getName());
+        String token = jwtTokenProvider.generateToken(user.getStudentId(), user.getRole(), user.getName());
 
         // 3. Đóng gói kết quả trả về
         return AuthResponse.builder()
                 .success(true)
                 .token(token)
                 .tokenType("Bearer")
-                .expiresIn(jwtUtil.getExpirationMs())
+                .expiresIn(jwtTokenProvider.getExpirationMs())
                 .user(AuthResponse.UserSummary.builder()
                         .id(user.getId())
                         .studentId(user.getStudentId())
