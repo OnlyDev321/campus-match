@@ -613,6 +613,8 @@ export interface ManageGroupPageProps {
  * Dữ liệu trang duyệt đơn `/manage/[groupId]`.
  */
 export interface ManageGroupData {
+  /** Lỗi tải đơn riêng biệt, không che thông tin nhóm đã tải được. */
+  applicationsErrorCode?: ApiErrorCode;
   group: MyGroupSummary | null;                 // Nhóm tôi làm Leader (null nếu không tồn tại / không phải Leader)
   applications: GroupApplication[];             // Toàn bộ đơn ứng tuyển của nhóm
 }
@@ -621,6 +623,38 @@ export interface ManageGroupData {
  * Hành động duyệt đơn của Leader.
  */
 export type ApplicationAction = "accept" | "reject";
+
+/** Lựa chọn duyệt đơn đang chờ xác nhận của Leader. */
+export interface ManageApplicationConfirmation {
+  /** Mã đơn cần xử lý. */
+  applicationId: number;
+  /** Hành động chấp thuận hoặc từ chối. */
+  action: ApplicationAction;
+}
+
+/** Bản nháp chỉnh sửa; chưa phải hợp đồng request backend. */
+export interface ManageGroupDraft {
+  /** Tiêu đề tối đa 150 ký tự. */
+  title: string;
+  /** Mô tả mục tiêu và yêu cầu. */
+  description: string;
+  /** Tổng sĩ số nhập dưới dạng chuỗi. */
+  maxMembers: string;
+  /** Trạng thái tuyển dụng dự kiến. */
+  status: GroupStatusCode;
+}
+
+/** Props biểu mẫu chỉnh sửa nhóm. */
+export interface ManageGroupEditorProps {
+  /** Nhóm hiện tại dùng để khởi tạo bản nháp và kiểm tra sĩ số. */
+  group: MyGroupSummary;
+}
+
+/** Props nội dung quản lý, được khởi tạo lại khi đổi đường dẫn nhóm. */
+export interface ManageGroupContentProps {
+  /** Mã nhóm gốc từ đường dẫn, chưa chuyển sang số. */
+  groupIdParam: string;
+}
 
 /**
  * Props cho component ApplicationCard (dành cho Leader duyệt đơn).

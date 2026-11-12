@@ -1,10 +1,10 @@
-import { apiRequest } from "@/lib/api";
+import { ApiError, apiRequest } from "@/lib/api";
+import { MANAGE_MUTATIONS_AVAILABLE } from "@/services/groupService";
 import type { GroupApplication } from "@/lib/types";
 import {
   USE_MOCK,
   mockDelay,
   mockGetGroupApplications,
-  mockUpdateApplicationStatus,
 } from "@/services/mocks/groupMocks";
 
 // Các hàm gọi API liên quan tới đơn ứng tuyển (Application module).
@@ -28,10 +28,7 @@ export async function getGroupApplications(groupId: number): Promise<GroupApplic
  * Endpoint: PUT /api/applications/{id}/accept → GroupApplication
  */
 export async function acceptApplication(applicationId: number): Promise<GroupApplication> {
-  if (USE_MOCK) {
-    await mockDelay();
-    return mockUpdateApplicationStatus(applicationId, "ACCEPTED");
-  }
+  if (!MANAGE_MUTATIONS_AVAILABLE || USE_MOCK) throw new ApiError("FORBIDDEN", 403);
   return apiRequest<GroupApplication>(`/applications/${applicationId}/accept`, {
     method: "PUT",
   });
@@ -42,10 +39,7 @@ export async function acceptApplication(applicationId: number): Promise<GroupApp
  * Endpoint: PUT /api/applications/{id}/reject → GroupApplication
  */
 export async function rejectApplication(applicationId: number): Promise<GroupApplication> {
-  if (USE_MOCK) {
-    await mockDelay();
-    return mockUpdateApplicationStatus(applicationId, "REJECTED");
-  }
+  if (!MANAGE_MUTATIONS_AVAILABLE || USE_MOCK) throw new ApiError("FORBIDDEN", 403);
   return apiRequest<GroupApplication>(`/applications/${applicationId}/reject`, {
     method: "PUT",
   });

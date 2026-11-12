@@ -3,10 +3,11 @@
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { Badge, Card, RoleQuota, type BadgeVariant } from "@/design-system";
+import { Avatar, Badge, Button, Card, RoleQuota, type BadgeVariant } from "@/design-system";
+import ManageGroupEditor from "@/components/group/ManageGroupEditor";
 import ApplicationCard from "@/components/application/ApplicationCard";
 import { CardSkeletonList, EmptyState, ErrorState } from "@/components/common/AsyncState";
-import { getMyGroups } from "@/services/groupService";
+import { getMyGroups, MANAGE_MUTATIONS_AVAILABLE, MANAGE_USES_SAMPLE_DATA } from "@/services/groupService";
 import {
   acceptApplication,
   getGroupApplications,
@@ -21,6 +22,8 @@ import type {
   GroupStatusCode,
   ManageGroupData,
   ManageGroupPageProps,
+  ManageApplicationConfirmation,
+  ManageGroupContentProps,
 } from "@/lib/types";
 
 // Trang duyệt đơn xin gia nhập của một nhóm tôi làm Leader (/manage/[groupId]).
@@ -43,23 +46,36 @@ const backLinkClass =
 
 export default function ManageGroupPage({ params }: ManageGroupPageProps) {
   const { groupId: groupIdParam } = use(params);
+  return <ManageGroupContent key={groupIdParam} groupIdParam={groupIdParam} />;
+}
+
+function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
   const groupId = Number(groupIdParam);
   const { t } = useLanguageStore();
   const isReady = useRequireLogin(`/manage/${groupIdParam}`);
 
   const loadGroupData = useCallback(async (): Promise<ManageGroupData> => {
+    if (!/^[1-9]\d*$/.test(groupIdParam) || !Number.isSafeInteger(groupId)) return { group: null, applications: [] };
     const groups = await getMyGroups();
     const group = groups.find((g) => g.id === groupId && g.myRole === "LEADER") ?? null;
     if (!group) return { group: null, applications: [] };
-    const applications = await getGroupApplications(groupId);
-    return { group, applications };
-  }, [groupId]);
+    try {
+      const applications = await getGroupApplications(groupId);
+      return { group, applications };
+    } catch (error) {
+      return { group, applications: [], applicationsErrorCode: toApiErrorCode(error) };
+    }
+  }, [groupId, groupIdParam]);
 
   const { status, data, errorCode, reload, setData } = useServiceData(loadGroupData, isReady);
   const [pendingActions, setPendingActions] = useState<Record<number, ApplicationAction>>({});
   const [actionErrors, setActionErrors] = useState<Record<number, ApiErrorCode>>({});
+  const [confirmation, setConfirmation] = useState<ManageApplicationConfirmation | null>(null);
 
   const handleAction = async (applicationId: number, action: ApplicationAction) => {
+    if (!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
+    if (action === "accept" && (data.group.status !== "RECRUITING" || data.group.memberCount >= data.group.maxMembers)) return;
+    setConfirmation(null);
     setPendingActions((prev) => ({ ...prev, [applicationId]: action }));
     setActionErrors((prev) => omitKey(prev, applicationId));
     try {
@@ -152,12 +168,32 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
             <h2 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
               {group.title}
             </h2>
+            <p className="text-sm whitespace-pre-wrap break-words text-[var(--text-secondary)]">{group.description}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{group.college} · {group.department}</p>
             <RoleQuota
               current={group.memberCount}
               max={group.maxMembers}
               label={t.myGroupCard.membersLabel}
             />
           </Card>
+
+          <Card className="space-y-4">
+            <h2 className="font-semibold">{t.manageDetails.members}</h2>
+            {group.members.length === 0 ? <EmptyState text={t.manageDetails.membersEmpty} /> : (
+              <ul className="divide-y divide-[var(--border)]">
+                {group.members.map((member) => (
+                  <li key={member.userId} className="flex items-center gap-3 py-3 min-w-0">
+                    <Avatar name={member.name} size="sm" />
+                    <span className="flex-1 min-w-0 break-words">{member.name}</span>
+                    <Badge variant={member.role === "LEADER" ? "primary" : "neutral"}>
+                      {member.role === "LEADER" ? t.myGroupCard.leader : t.myGroupCard.member}
+                    </Badge>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+          <ManageGroupEditor key={group.id} group={group} />
 
           {/* Pending applications */}
           <section className="space-y-4">
@@ -170,7 +206,9 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
               </Badge>
             </div>
 
-            {pendingApplications.length === 0 ? (
+            {data?.applicationsErrorCode ? (
+              <ErrorState title={t.manage.applicationsError} message={t.apiErrors[data.applicationsErrorCode]} retryLabel={t.manage.retry} onRetry={reload} />
+            ) : pendingApplications.length === 0 ? (
               <EmptyState text={t.manage.pendingEmpty} />
             ) : (
               <div className="space-y-4">
@@ -180,13 +218,25 @@ export default function ManageGroupPage({ params }: ManageGroupPageProps) {
                     application={application}
                     pendingAction={pendingActions[application.id] ?? null}
                     errorCode={actionErrors[application.id] ?? null}
-                    onAccept={(id) => handleAction(id, "accept")}
-                    onReject={(id) => handleAction(id, "reject")}
+                    onAccept={(id) => setConfirmation({ applicationId: id, action: "accept" })}
+                    onReject={(id) => setConfirmation({ applicationId: id, action: "reject" })}
                   />
                 ))}
               </div>
             )}
           </section>
+          {confirmation && (
+            <Card role="region" aria-labelledby="confirm-action-title" className="space-y-3">
+              <h2 id="confirm-action-title" className="font-semibold">{confirmation.action === "accept" ? t.manageDetails.confirmAccept : t.manageDetails.confirmReject}</h2>
+              <p className="break-words">{data?.applications.find((a) => a.id === confirmation.applicationId)?.applicant.name}</p>
+              <p id="action-blocked" className="text-sm text-[var(--text-secondary)]">{t.manageDetails.blocked}</p>
+              <div className="flex flex-wrap gap-3">
+                <Button autoFocus variant="outline" onClick={() => setConfirmation(null)}>{t.manageDetails.cancel}</Button>
+                <Button disabled={!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || Object.keys(pendingActions).length > 0 || (confirmation.action === "accept" && (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers))}
+                  aria-describedby="action-blocked" onClick={() => handleAction(confirmation.applicationId, confirmation.action)}>{t.manageDetails.confirm}</Button>
+              </div>
+            </Card>
+          )}
         </>
       )}
     </div>
