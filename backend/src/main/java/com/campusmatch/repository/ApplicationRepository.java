@@ -13,6 +13,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     List<Application> findByGroupId(Long groupId);
 
+    List<Application> findByGroupIdOrderByCreatedAtDesc(Long groupId);
+
     List<Application> findByApplicantId(Long applicantId);
 
     Optional<Application> findByGroupIdAndApplicantId(Long groupId, Long applicantId);
