@@ -317,7 +317,7 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 1. **Design System First:** Tất cả nút bấm, thẻ bài, popup, badge đều phải dùng component từ `src/design-system/` (`Button`, `Card`, `Badge`, `Modal`, `Input`).
 2. **Tokens & Theme:** Tuyệt đối không hardcode màu sắc; sử dụng biến CSS token trong `globals.css` (`var(--primary)`, `var(--surface)`, `var(--border)`).
-3. **State Management:** Dùng `AuthContext` để nắm giữ thông tin sinh viên đăng nhập và token toàn cục.
+3. **State Management:** Dùng `useAuthStore` (Zustand) để nắm giữ thông tin sinh viên đăng nhập và token toàn cục.
 
 ---
 
@@ -341,7 +341,7 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Viết `JwtTokenProvider.java` (tạo token, validate token, trích xuất studentId, role, claims) và `JwtUtil.java`.
 - [x] Viết `JwtAuthenticationFilter.java` chặn và đọc header `Authorization: Bearer <token>`, tích hợp vào `SecurityConfig.java`.
 - [x] Viết `AuthController.java` xử lý endpoint `POST /api/auth/sso/usaint` và `UserController.java` xử lý `GET /api/users/me`.
-- [x] Cập nhật hàm `login()` trong Frontend (`useAuthStore` & `frontend/src/context/AuthContext.tsx`) gọi trực tiếp sang BFF `/api/auth/usaint` và chuyển tiếp Backend thật `POST /api/auth/sso/usaint`.
+- [x] Cập nhật hàm `login()` trong `frontend/src/stores/authStore.ts` (Zustand) gọi trực tiếp sang BFF `/api/auth/usaint` và chuyển tiếp Backend thật `POST /api/auth/sso/usaint`.
 
 ### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
 
