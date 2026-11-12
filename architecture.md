@@ -275,13 +275,14 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 ### 2. Groups (Quản lý nhóm)
 
-| Method   | Endpoint       | Mô tả                                                                     | Quyền truy cập  |
-| :------- | :------------- | :------------------------------------------------------------------------ | :-------------- |
-| `GET`    | `/groups`      | Tìm kiếm & lọc nhóm (`search`, `college`, `department`, `year`, `status`) | Public / Bearer |
-| `GET`    | `/groups/{id}` | Xem chi tiết nhóm, danh sách thành viên hiện tại                          | Public / Bearer |
-| `POST`   | `/groups`      | Tạo một nhóm học tập mới (Người tạo tự động là Leader)                    | Bearer Token    |
-| `PUT`    | `/groups/{id}` | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)                            | Chỉ Leader nhóm |
-| `DELETE` | `/groups/{id}` | Đóng đợt tuyển hoặc xóa nhóm                                              | Chỉ Leader nhóm |
+| Method   | Endpoint           | Mô tả                                                                     | Quyền truy cập  |
+| :------- | :----------------- | :------------------------------------------------------------------------ | :-------------- |
+| `GET`    | `/groups`          | Tìm kiếm & lọc nhóm (`search`, `college`, `department`, `year`, `status`) | Public / Bearer |
+| `GET`    | `/groups/{id}`     | Xem chi tiết nhóm, danh sách thành viên hiện tại                          | Public / Bearer |
+| `POST`   | `/groups`          | Tạo một nhóm học tập mới (Người tạo tự động là Leader)                    | Bearer Token    |
+| `GET`    | `/users/me/groups` | Lấy danh sách nhóm của sinh viên hiện tại (kèm `myRole`, `pendingCount`)  | Bearer Token    |
+| `PUT`    | `/groups/{id}`     | Cập nhật thông tin nhóm (Tên, mô tả, chỉ tiêu)                            | Chỉ Leader nhóm |
+| `DELETE` | `/groups/{id}`     | Đóng đợt tuyển hoặc xóa nhóm                                              | Chỉ Leader nhóm |
 
 ---
 
@@ -345,27 +346,38 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 
 ### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
 
-- [ ] Viết `GroupRepository.java` hỗ trợ tìm kiếm theo từ khóa và lọc theo 3 mục chuẩn u-SAINT: 단과대 (`college`), 학부/학과 (`department`), năm đăng bài (`post_year`).
-- [ ] Viết `GroupService.java` xử lý nghiệp vụ tạo nhóm (tự động gắn `college`, `department` của user và `post_year` từ thời điểm tạo), giới hạn số lượng thành viên.
-- [ ] Viết `GroupController.java` cho các endpoint `GET /api/groups`, `GET /api/groups/{id}`, `POST /api/groups`.
+- [x] Viết `GroupRepository.java` (tìm kiếm từ khóa, lọc theo 3 mục chuẩn u-SAINT: `college`, `department`, `post_year`) và `GroupMemberRepository.java`.
+- [x] Thiết kế DTOs: `CreateGroupRequest.java`, `GroupSummaryResponse.java` (kèm `memberCount`, `leaderInfo`), `GroupDetailResponse.java` (danh sách `members`), `MyGroupSummaryResponse.java` (kèm `myRole`, `pendingApplicationCount`).
+- [x] Viết `GroupService.java` xử lý nghiệp vụ:
+  - Tạo nhóm: tự động gắn `college`, `department` của user và `post_year` từ thời điểm tạo, đồng thời thêm người tạo làm `LEADER` trong `group_members`.
+  - Lấy danh sách nhóm & lọc theo tiêu chí.
+  - Xem chi tiết nhóm kèm danh sách thành viên.
+  - Lấy danh sách nhóm của tôi (`GET /api/users/me/groups`) chia theo `LEADER` và `MEMBER`.
+- [x] Viết `GroupController.java` cho các endpoint: `GET /api/groups`, `GET /api/groups/{id}`, `POST /api/groups`, `GET /api/users/me/groups`.
 
 ### 📍 Giai đoạn 4: Ứng tuyển & Duyệt thành viên (Backend Application Module)
 
-- [ ] Viết `ApplicationRepository.java` & `ApplicationService.java`.
-- [ ] Xử lý logic nghiệp vụ:
-  - Khi Leader bấm **Accept**: Chuyển trạng thái đơn thành `ACCEPTED`, tự động thêm bản ghi vào `group_members`, kiểm tra nếu nhóm đã đầy thì tự đổi trạng thái nhóm sang `COMPLETED`.
-  - Khi Leader bấm **Reject**: Chuyển trạng thái đơn thành `REJECTED`.
+- [ ] Viết `ApplicationRepository.java` (tìm theo `groupId`, kiểm tra đơn trùng lặp `applicantId + groupId`).
+- [ ] Thiết kế DTOs: `ApplyRequest.java`, `ApplicationResponse.java`.
+- [ ] Viết `ApplicationService.java` xử lý logic nghiệp vụ:
+  - Sinh viên nộp đơn (`POST /api/groups/{id}/applications`): Kiểm tra nhóm còn nhận người (`RECRUITING`), kiểm tra không cho Leader tự ứng tuyển vào nhóm mình, không nộp đơn trùng lặp.
+  - Leader xem danh sách đơn (`GET /api/groups/{id}/applications`): Chỉ Leader nhóm mới có quyền xem.
+  - Leader bấm **Accept** (`PUT /api/applications/{id}/accept`): Chuyển trạng thái đơn thành `ACCEPTED`, tự động thêm bản ghi vào `group_members`, kiểm tra nếu nhóm đã đủ `max_members` thì tự đổi trạng thái nhóm sang `COMPLETED`.
+  - Leader bấm **Reject** (`PUT /api/applications/{id}/reject`): Chuyển trạng thái đơn thành `REJECTED`.
+  - Ứng viên rút đơn (`DELETE /api/applications/{id}`): Chỉ người nộp đơn được rút khi đơn còn `PENDING`.
 - [ ] Viết `ApplicationController.java`.
 
-### 📍 Giai đoạn 5: Tích hợp Frontend với Backend API
+### 📍 Giai đoạn 5: Tích hợp Frontend & Thay thế Mock Data
 
-- [ ] Viết các hàm fetch API trong `frontend/src/lib/api.ts` kết nối tới backend `http://localhost:8080/api`.
-- [ ] Thay thế dữ liệu tĩnh trong `mockData.ts` bằng dữ liệu gọi thật từ API trong các trang:
-  - `frontend/src/app/groups/page.tsx` (Hiển thị danh sách nhóm thật từ Neon DB).
-  - `frontend/src/app/create-group/page.tsx` (Form tạo nhóm gửi POST sang backend).
-  - `frontend/src/app/manage/page.tsx` (My Groups — mục Manage trên Sidebar: nhóm tôi làm Leader & nhóm tôi là thành viên).
-  - `frontend/src/app/manage/[groupId]/page.tsx` (Leader duyệt danh sách đơn ứng tuyển của một nhóm).
-  - `frontend/src/app/mypage/page.tsx` (Hồ sơ cá nhân u-SAINT, chỉ đọc).
+- [ ] Bổ sung các hàm gọi API trong `frontend/src/services/`:
+  - `groupService.ts`: Bổ sung `getGroups(params)`, `getGroupDetail(id)`, `createGroup(data)`.
+  - `applicationService.ts`: Bổ sung `applyToGroup(groupId, statement)`.
+- [ ] Xây dựng hoàn chỉnh giao diện Form tạo nhóm trong `frontend/src/app/create-group/page.tsx` sử dụng Design System và gắn kết nối API `createGroup`.
+- [ ] Chuyển đổi dữ liệu sang API thật (`USE_MOCK = false` trong `frontend/src/services/mocks/groupMocks.ts`):
+  - `frontend/src/app/groups/page.tsx`: Danh sách & bộ lọc nhóm lấy trực tiếp từ Neon DB qua Backend.
+  - `frontend/src/app/groups/[id]/page.tsx` & `ApplyModal.tsx`: Chi tiết nhóm thật & nộp đơn ứng tuyển thật.
+  - `frontend/src/app/manage/page.tsx`: My Groups (nhóm tôi làm Leader & thành viên).
+  - `frontend/src/app/manage/[groupId]/page.tsx`: Leader duyệt danh sách đơn ứng tuyển thật.
 
 ---
 

@@ -1,8 +1,10 @@
 package com.campusmatch.controller;
 
 import com.campusmatch.dto.AuthResponse;
+import com.campusmatch.dto.MyGroupSummaryResponse;
 import com.campusmatch.entity.User;
 import com.campusmatch.repository.UserRepository;
+import com.campusmatch.service.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,12 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserRepository userRepository;
+    private final GroupService groupService;
 
     /**
      * Endpoint lấy profile của sinh viên đang đăng nhập dựa trên JWT Bearer token
@@ -48,5 +53,19 @@ public class UserController {
 
         return ResponseEntity.ok(summary);
     }
-}
 
+    /**
+     * Endpoint lấy danh sách nhóm của sinh viên đang đăng nhập (Leader & Member)
+     * GET /api/users/me/groups
+     */
+    @GetMapping("/me/groups")
+    public ResponseEntity<List<MyGroupSummaryResponse>> getMyGroups(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Chưa xác thực người dùng");
+        }
+
+        String studentId = authentication.getName();
+        List<MyGroupSummaryResponse> myGroups = groupService.getMyGroups(studentId);
+        return ResponseEntity.ok(myGroups);
+    }
+}
