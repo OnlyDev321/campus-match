@@ -2,76 +2,88 @@
 
 import React from "react";
 import { Mail, Phone, ShieldCheck } from "lucide-react";
-import { Avatar, Badge } from "@/design-system";
+import { Avatar, Badge, Card } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
 import { formatMessage } from "@/lib/format";
 import type { ProfileCardProps } from "@/lib/types";
 
 // Khung hồ sơ trên My Page (Chế độ chỉ đọc từ tài khoản trường u-SAINT SSO).
-// Thông tin sinh viên (Tên, MSSV, Trường/Viện, Khoa, Năm học, Email, SĐT) lấy từ hồ sơ đăng nhập trong authStore.
-
-const ProfileHeading = ({ user }: ProfileCardProps) => {
-  const { t } = useLanguageStore();
-  const affiliation = [user.faculty, user.department].filter(Boolean).join(" · ");
-
-  return (
-    <div className="space-y-1">
-      <div className="flex flex-wrap items-center gap-2.5">
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-          {user.name}
-        </h2>
-        {user.academicYear && (
-          <Badge variant="primary" size="sm" mono>
-            {formatMessage(t.profile.yearBadge, { year: user.academicYear })}
-          </Badge>
-        )}
-        <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--success-text)] bg-[var(--success-bg)] px-2 py-0.5 rounded border border-[var(--success-border)]">
-          <ShieldCheck className="w-3.5 h-3.5" />
-          {t.profile.verified}
-        </span>
-      </div>
-      <p className="text-xs font-mono text-[var(--text-muted)]">
-        {user.studentId}
-        {affiliation && ` • ${affiliation}`}
-      </p>
-    </div>
-  );
-};
+// Thiết kế đồng bộ hệ thống Design System Card và các badge/pill tương tự GroupCard.
 
 const ProfileCard = ({ user }: ProfileCardProps) => {
+  const { t } = useLanguageStore();
+
   return (
-    <section className="relative rounded-[var(--radius-card)] p-6 sm:p-8 border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-1)] overflow-hidden">
-      <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-(--primary-container)/10 blur-3xl pointer-events-none" />
+    <Card className="relative p-6 sm:p-8 overflow-hidden hover:border-(--border-strong) transition-all">
+      {/* Hiệu ứng hào quang trang trí góc phải */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-(--primary)/5 blur-3xl pointer-events-none" />
 
-      <div className="relative z-10 flex flex-col sm:flex-row sm:items-start gap-5">
-        <Avatar src={user.avatarUrl} name={user.name} size="xl" />
+      <div className="relative z-10 flex flex-col sm:flex-row sm:items-start gap-6">
+        <Avatar
+          src={user.avatarUrl}
+          name={user.name}
+          size="xl"
+          className="ring-2 ring-(--primary-soft-border) shadow-xs shrink-0"
+        />
 
-        <div className="flex-1 min-w-0 space-y-3">
-          <ProfileHeading user={user} />
+        <div className="flex-1 min-w-0 space-y-3.5">
+          {/* Tên sinh viên và các huy hiệu xác thực */}
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-(--text-primary)">
+              {user.name}
+            </h2>
+            {user.academicYear && (
+              <Badge variant="primary" size="sm" mono>
+                {formatMessage(t.profile.yearBadge, { year: user.academicYear })}
+              </Badge>
+            )}
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--success-text) bg-(--success-bg) px-2.5 py-1 rounded-md border border-(--success-border)">
+              <ShieldCheck className="w-3.5 h-3.5 text-(--success)" />
+              {t.profile.verified}
+            </span>
+          </div>
 
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 pt-1">
+          {/* Các thẻ thông tin học vụ (Đồng bộ thị giác với GroupCard) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-mono font-medium bg-(--surface-container-low) text-(--text-secondary) border border-(--border)">
+              {user.studentId}
+            </span>
+            {user.faculty && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-(--primary-soft) text-(--primary) border border-(--primary-soft-border)">
+                {user.faculty}
+              </span>
+            )}
+            {user.department && (
+              <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-(--surface-container-low) text-(--text-secondary) border border-(--border)">
+                {user.department}
+              </span>
+            )}
+          </div>
+
+          {/* Thông tin liên hệ sinh viên */}
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             {user.email && (
               <a
                 href={`mailto:${user.email}`}
-                className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors"
+                className="inline-flex items-center gap-2 text-xs font-mono text-(--text-muted) hover:text-(--primary) hover:border-(--primary-soft-border) bg-(--surface-container-low) px-3 py-1.5 rounded-md border border-(--border) transition-colors"
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-3.5 h-3.5 text-(--text-faint)" />
                 {user.email}
               </a>
             )}
             {user.phone && (
               <a
                 href={`tel:${user.phone.replace(/[^\d+]/g, "")}`}
-                className="inline-flex items-center gap-1.5 text-xs font-mono text-[var(--text-muted)] hover:text-[var(--primary)] transition-colors"
+                className="inline-flex items-center gap-2 text-xs font-mono text-(--text-muted) hover:text-(--primary) hover:border-(--primary-soft-border) bg-(--surface-container-low) px-3 py-1.5 rounded-md border border-(--border) transition-colors"
               >
-                <Phone className="w-3.5 h-3.5" />
+                <Phone className="w-3.5 h-3.5 text-(--text-faint)" />
                 {user.phone}
               </a>
             )}
           </div>
         </div>
       </div>
-    </section>
+    </Card>
   );
 };
 

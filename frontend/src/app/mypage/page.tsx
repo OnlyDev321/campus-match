@@ -8,7 +8,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
 
 // Trang My Page.
-// - Page header (breadcrumb, tiêu đề, mô tả) theo cùng kiểu với trang Find Your Group (/groups).
+// - Bố cục, kích thước container và nhịp điệu typography đồng nhất 100% với trang Groups (/groups).
 // - Hồ sơ sinh viên lấy từ phiên đăng nhập u-SAINT (authStore), không dùng dữ liệu giả.
 // - Thời khóa biểu u-SAINT (ZCMW2102) lấy cùng lúc đăng nhập, hiển thị bên dưới hồ sơ (TimetableCard).
 // - Danh sách nhóm của tôi (Leader / Member) nằm ở trang Manage (/manage), truy cập từ Sidebar.
@@ -21,34 +21,32 @@ const MyPage = () => {
   if (!isReady || !user) return null;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-8">
-      <header className="space-y-6">
-        {/* Breadcrumb / Directory path */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs font-semibold tracking-wider">
-          <span className="text-[var(--primary)] uppercase">
-            {t.myPage.breadcrumbRoot}
-          </span>
-          <span className="text-[var(--text-faint)]">/</span>
-          <span className="text-[var(--text-muted)] font-normal">
-            {t.myPage.breadcrumbCampus}
-          </span>
-        </div>
+    <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      {/* 1. Breadcrumb / Directory path - Đồng nhất với Groups page */}
+      <div className="flex items-center gap-2 text-xs font-semibold tracking-wider">
+        <span className="text-[var(--primary)] uppercase">
+          {t.myPage.breadcrumbRoot}
+        </span>
+        <span className="text-[var(--text-faint)]">/</span>
+        <span className="text-[var(--text-muted)] font-normal">
+          {t.myPage.breadcrumbCampus}
+        </span>
+      </div>
 
-        {/* Page Title & Subtitle */}
-        <div className="space-y-1.5">
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-            {t.nav.myPage}
-          </h1>
-          <p className="text-sm sm:text-base text-[var(--text-secondary)] break-keep">
-            {t.myPage.subtitle}
-          </p>
-        </div>
-      </header>
+      {/* 2. Page Title & Subtitle */}
+      <div className="space-y-1.5">
+        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
+          {t.nav.myPage}
+        </h1>
+        <p className="text-sm sm:text-base text-[var(--text-secondary)]">
+          {t.myPage.subtitle}
+        </p>
+      </div>
 
-      {/* Profile (Read-only u-SAINT verified) */}
+      {/* 3. Profile Card (Chế độ chỉ đọc từ u-SAINT SSO) */}
       <ProfileCard user={user} />
 
-      {/* My Timetable (u-SAINT) */}
+      {/* 4. My Timetable (u-SAINT ZCMW2102) */}
       <TimetableCard />
     </div>
   );
