@@ -357,15 +357,15 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 
 ### 📍 Giai đoạn 4: Ứng tuyển & Duyệt thành viên (Backend Application Module)
 
-- [ ] Viết `ApplicationRepository.java` (tìm theo `groupId`, kiểm tra đơn trùng lặp `applicantId + groupId`).
-- [ ] Thiết kế DTOs: `ApplyRequest.java`, `ApplicationResponse.java`.
-- [ ] Viết `ApplicationService.java` xử lý logic nghiệp vụ:
+- [x] Viết `ApplicationRepository.java` (tìm theo `groupId`, kiểm tra đơn trùng lặp `applicantId + groupId`).
+- [x] Thiết kế DTOs: `ApplyRequest.java`, `ApplicationResponse.java`.
+- [x] Viết `ApplicationService.java` xử lý logic nghiệp vụ:
   - Sinh viên nộp đơn (`POST /api/groups/{id}/applications`): Kiểm tra nhóm còn nhận người (`RECRUITING`), kiểm tra không cho Leader tự ứng tuyển vào nhóm mình, không nộp đơn trùng lặp.
   - Leader xem danh sách đơn (`GET /api/groups/{id}/applications`): Chỉ Leader nhóm mới có quyền xem.
   - Leader bấm **Accept** (`PUT /api/applications/{id}/accept`): Chuyển trạng thái đơn thành `ACCEPTED`, tự động thêm bản ghi vào `group_members`, kiểm tra nếu nhóm đã đủ `max_members` thì tự đổi trạng thái nhóm sang `COMPLETED`.
   - Leader bấm **Reject** (`PUT /api/applications/{id}/reject`): Chuyển trạng thái đơn thành `REJECTED`.
   - Ứng viên rút đơn (`DELETE /api/applications/{id}`): Chỉ người nộp đơn được rút khi đơn còn `PENDING`.
-- [ ] Viết `ApplicationController.java`.
+- [x] Viết `ApplicationController.java`.
 
 ### 📍 Giai đoạn 5: Tích hợp Frontend & Thay thế Mock Data
 
