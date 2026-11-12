@@ -2,6 +2,11 @@ import { apiRequest } from "@/lib/api";
 import type { MyGroupSummary } from "@/lib/types";
 import { USE_MOCK, mockDelay, mockGetMyGroups } from "@/services/mocks/groupMocks";
 
+// Chỉ bật sau khi backend có API và kiểm tra JWT/quyền Leader phía server.
+// Đây là cờ khả năng tích hợp, không phải cơ chế phân quyền.
+export const MANAGE_MUTATIONS_AVAILABLE: boolean = false;
+export const MANAGE_USES_SAMPLE_DATA = USE_MOCK;
+
 // Các hàm gọi API liên quan tới nhóm học tập (Group module).
 
 /**

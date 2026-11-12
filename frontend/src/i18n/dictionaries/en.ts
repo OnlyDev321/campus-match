@@ -143,10 +143,31 @@ export const en = {
   // Application Card (Leader view)
   applicationCard: {
     applied: "Applied {time}",
-    accept: "Accept Application",
+    accept: "Accept",
     reject: "Reject",
   },
   // Normalized API errors (lib/api.ts → ApiErrorCode)
+  manageDetails: {
+    "blocked": "Management changes are unavailable until the backend supports these APIs and verifies the group leader. No changes will be saved.",
+    "members": "Group members",
+    "membersEmpty": "No members are listed.",
+    "editTitle": "Review group changes",
+    "groupTitle": "Group title",
+    "description": "Description",
+    "capacity": "Member capacity",
+    "recruitment": "Recruitment status",
+    "titleRule": "Required. Use 150 characters or fewer.",
+    "descriptionRule": "Required. Describe the group’s goals and requirements.",
+    "capacityRule": "Enter a positive whole number, at least the current member count, up to 2,147,483,647.",
+    "statusRule": "Recruiting requires an available seat. Completed requires capacity to equal the current member count.",
+    "invalidDraft": "Please check the fields marked invalid and follow their instructions.",
+    "save": "Save changes",
+    "notSaved": "Saving and recruitment changes are pending backend integration. Leaving or refreshing discards this draft.",
+    "confirmAccept": "Confirm accepting this applicant",
+    "confirmReject": "Confirm rejecting this applicant",
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
   apiErrors: {
     NETWORK_ERROR: "Can't reach the server. Please check your connection.",
     UNAUTHORIZED: "Your session has expired. Please sign in again.",
