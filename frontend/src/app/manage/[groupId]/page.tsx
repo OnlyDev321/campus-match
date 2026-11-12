@@ -116,7 +116,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
     : "";
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-10 space-y-6">
+    <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Link href="/manage" className={backLinkClass}>
         <ArrowLeft className="w-3.5 h-3.5" />
         {t.manage.backToManage}
