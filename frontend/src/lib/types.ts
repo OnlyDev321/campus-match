@@ -506,6 +506,66 @@ export interface GroupFilterParams {
 
 
 /* --------------------------------------------------------------------------
+   5b. CREATE GROUP TYPES (Biểu mẫu & Tạo nhóm học tập mới)
+   -------------------------------------------------------------------------- */
+
+/**
+ * Payload gửi lên Backend Spring Boot khi tạo nhóm học tập mới (POST /api/groups).
+ */
+export interface CreateGroupPayload {
+  title: string;                        // Tiêu đề nhóm (tối đa 150 ký tự)
+  description: string;                  // Mô tả chi tiết mục tiêu và yêu cầu
+  courseCode?: string;                  // Mã môn học (VD: "CS490", tùy chọn)
+  courseName?: string;                  // Tên môn học (VD: "Capstone Design", tùy chọn)
+  maxMembers: number;                   // Số lượng thành viên tối đa (từ 2 đến 20)
+}
+
+/**
+ * Dữ liệu phản hồi chi tiết từ Backend sau khi tạo nhóm thành công.
+ */
+export interface CreateGroupResponse {
+  id: number;                           // ID nhóm vừa tạo (study_groups.id)
+  title: string;                        // Tiêu đề nhóm
+  description: string;                  // Mô tả nhóm
+  college: string;                      // Trường / Viện (단과대학) kế thừa từ u-SAINT
+  department: string;                   // Khoa / Ngành (학부/학과) kế thừa từ u-SAINT
+  postYear: number;                     // Năm đăng bài
+  courseCode?: string | null;           // Mã môn học
+  courseName?: string | null;           // Tên môn học
+  maxMembers: number;                   // Sĩ số tối đa
+  memberCount: number;                  // Số lượng thành viên ban đầu (= 1, trưởng nhóm)
+  status: GroupStatusCode;              // Trạng thái nhóm (RECRUITING)
+  leader: UserSummary;                  // Thông tin trưởng nhóm
+  createdAt: string;                    // Ngày tạo nhóm (ISO-8601)
+  updatedAt?: string | null;            // Ngày cập nhật gần nhất
+}
+
+/**
+ * Trạng thái dữ liệu biểu mẫu tạo nhóm trong `frontend/src/app/create-group/page.tsx`.
+ */
+export interface CreateGroupFormData {
+  title: string;                        // Tiêu đề bài đăng
+  description: string;                  // Mô tả mục tiêu, yêu cầu
+  courseCode: string;                   // Mã môn học
+  courseName: string;                   // Tên môn học
+  maxMembers: number;                   // Sĩ số tối đa mong muốn (2 - 20)
+  meetingFormat: MeetingFormat;         // Hình thức họp (Online / Offline / Hybrid)
+  tags: string[];                       // Thẻ kỹ năng / từ khóa (tùy chọn)
+}
+
+/**
+ * Trạng thái lỗi validation biểu mẫu tạo nhóm.
+ */
+export interface CreateGroupFormErrors {
+  title?: string;                       // Lỗi tiêu đề
+  description?: string;                 // Lỗi mô tả
+  maxMembers?: string;                  // Lỗi sĩ số tối đa
+  courseCode?: string;                  // Lỗi mã môn học
+  courseName?: string;                  // Lỗi tên môn học
+}
+
+
+/* --------------------------------------------------------------------------
    6. GROUP DETAIL & PAGE PROPS (Trang chi tiết nhóm `/groups/[id]`)
    -------------------------------------------------------------------------- */
 

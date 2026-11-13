@@ -232,6 +232,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   max-width: 100vw;
   overflow-x: hidden;
+  background-color: var(--background);
 }
 
 /* Base Body Styles */
@@ -243,6 +244,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   max-width: 100vw;
   overflow-x: hidden;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Card inner reflection in dark mode for tactile depth */
