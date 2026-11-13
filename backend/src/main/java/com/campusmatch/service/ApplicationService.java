@@ -30,6 +30,7 @@ public class ApplicationService {
     private final GroupRepository groupRepository;
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     /**
      * Sinh viên nộp đơn xin gia nhập nhóm
@@ -89,6 +90,18 @@ public class ApplicationService {
 
         Application saved = applicationRepository.save(application);
         log.info("Đã gửi đơn ứng tuyển thành công. Mã đơn: {}", saved.getId());
+
+        // Gửi thông báo cho Leader nhóm
+        notificationService.createNotification(
+                group.getLeader(),
+                applicant,
+                NotificationType.APPLICATION_RECEIVED,
+                "Đơn ứng tuyển mới",
+                applicant.getName() + " vừa nộp đơn ứng tuyển vào nhóm '" + group.getTitle() + "'.",
+                "/manage/" + group.getId(),
+                group
+        );
+
         return mapToResponse(saved);
     }
 
@@ -173,7 +186,29 @@ public class ApplicationService {
             log.info("Nhóm ID: {} đã đủ số lượng ({}). Tự động cập nhật trạng thái nhóm sang COMPLETED.", group.getId(), currentMembers);
             group.setStatus(GroupStatus.COMPLETED);
             groupRepository.save(group);
+
+            // Thông báo cho Leader nhóm đã đủ thành viên
+            notificationService.createNotification(
+                    leader,
+                    null,
+                    NotificationType.GROUP_FULL,
+                    "Nhóm đã đủ sĩ số",
+                    "Nhóm '" + group.getTitle() + "' đã đạt sĩ số tối đa (" + currentMembers + "/" + group.getMaxMembers() + ").",
+                    "/manage/" + group.getId(),
+                    group
+            );
         }
+
+        // 7. Gửi thông báo cho Ứng viên được duyệt
+        notificationService.createNotification(
+                applicant,
+                leader,
+                NotificationType.APPLICATION_ACCEPTED,
+                "Đơn ứng tuyển được chấp thuận",
+                "Chúc mừng! Đơn ứng tuyển của bạn vào nhóm '" + group.getTitle() + "' đã được chấp thuận.",
+                "/groups/" + group.getId(),
+                group
+        );
 
         return mapToResponse(saved);
     }
@@ -202,6 +237,17 @@ public class ApplicationService {
         application.setStatus(ApplicationStatus.REJECTED);
         application.setUpdatedAt(LocalDateTime.now());
         Application saved = applicationRepository.save(application);
+
+        // Gửi thông báo từ chối cho Ứng viên
+        notificationService.createNotification(
+                application.getApplicant(),
+                leader,
+                NotificationType.APPLICATION_REJECTED,
+                "Đơn ứng tuyển chưa được chấp thuận",
+                "Rất tiếc, đơn ứng tuyển của bạn vào nhóm '" + group.getTitle() + "' chưa phù hợp lần này.",
+                "/groups",
+                group
+        );
 
         return mapToResponse(saved);
     }

@@ -6,12 +6,13 @@ import Link from "next/link";
 import { ThemeToggle } from "@/design-system";
 import { CommandBar } from "@/design-system";
 import { Avatar } from "@/design-system";
-import { Bell, ChevronDown, User, LogOut } from "lucide-react";
+import { ChevronDown, User, LogOut } from "lucide-react";
 
 import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import NotificationDropdown from "@/components/layout/NotificationDropdown";
 import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function Header() {
@@ -63,15 +64,8 @@ export default function Header() {
 
             {isLoggedIn ? (
               <>
-                {/* Notification Button */}
-                <button
-                  type="button"
-                  className="relative p-1.5 sm:p-2 rounded-[var(--radius-button)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] border border-transparent hover:border-[var(--border)] cursor-pointer"
-                  aria-label="Notifications"
-                >
-                  <Bell className="w-4 h-4" />
-                  <span className="absolute top-1 right-1 sm:top-1.5 sm:right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-500 ring-2 ring-[var(--surface)]" />
-                </button>
+                {/* Notification Dropdown */}
+                <NotificationDropdown />
 
                 {/* User Dropdown Trigger */}
                 <div className="relative ml-0.5 sm:ml-1" ref={userMenuRef}>

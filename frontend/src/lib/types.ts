@@ -844,6 +844,14 @@ export interface CardSkeletonListProps {
 }
 
 /**
+ * Dữ liệu dịch thuật vai trò và trách nhiệm.
+ */
+export interface GroupRoleTranslation {
+  role: string;
+  description?: string;
+}
+
+/**
  * Props cho nút dịch thuật đa ngữ TranslateButton.
  */
 export interface GroupTranslationContent {
@@ -855,6 +863,8 @@ export interface GroupTranslationContent {
   objectives?: string[];
   /** Lịch họp và trao đổi tiến độ hàng tuần do người tạo nhập. */
   meetingSchedule?: string;
+  /** Danh sách vai trò và mô tả nhiệm vụ do người tạo nhập. */
+  rolesQuota?: GroupRoleTranslation[];
 }
 
 export interface GroupTranslationState extends GroupTranslationContent {
@@ -928,4 +938,31 @@ export interface TranslationCacheEntry {
   content: GroupTranslationContent;
   /** Thời điểm hết hạn, tính bằng mili giây Unix. */
   expires: number;
+}
+
+/**
+ * Phân loại các sự kiện thông báo trong hệ thống.
+ */
+export type NotificationType =
+  | "APPLICATION_RECEIVED"   // Có đơn ứng tuyển mới (dành cho Leader)
+  | "APPLICATION_ACCEPTED"   // Đơn ứng tuyển được duyệt (dành cho Ứng viên)
+  | "APPLICATION_REJECTED"   // Đơn ứng tuyển bị từ chối (dành cho Ứng viên)
+  | "NEW_MEMBER_JOINED"      // Thành viên mới gia nhập nhóm
+  | "GROUP_UPDATED"          // Nhóm cập nhật thông tin (mục tiêu, lịch họp)
+  | "GROUP_FULL";            // Nhóm đã đủ người
+
+/**
+ * Cấu trúc một thông báo trong hệ thống.
+ */
+export interface AppNotification {
+  id: string;                 // Mã định danh thông báo
+  type: NotificationType;     // Loại thông báo
+  title: string;              // Tiêu đề thông báo
+  message: string;            // Nội dung chi tiết
+  link?: string;              // Đường dẫn điều hướng khi click
+  groupId?: number;           // ID nhóm liên quan
+  groupTitle?: string;        // Tên nhóm liên quan
+  actorName?: string;         // Người thực hiện hành động
+  isRead: boolean;            // Trạng thái đã đọc hay chưa
+  createdAt: string;          // Thời gian tạo (ISO-8601)
 }

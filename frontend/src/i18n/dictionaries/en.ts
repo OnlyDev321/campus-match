@@ -469,6 +469,30 @@ export const en = {
         "Please sign in with your u-SAINT account to create a group.",
     },
   },
+  notifications: {
+    title: "Notifications",
+    unreadBadge: "{count} new",
+    markAllRead: "Mark all as read",
+    allTab: "All",
+    unreadTab: "Unread",
+    emptyAll: "No notifications yet",
+    emptyUnread: "No unread notifications",
+    emptyAllDesc: "When someone applies to your group or your team updates, it will appear here.",
+    emptyUnreadDesc: "You are all caught up!",
+    clearAll: "Clear all",
+    justNow: "Just now",
+    minutesAgo: "{count}m ago",
+    hoursAgo: "{count}h ago",
+    daysAgo: "{count}d ago",
+    types: {
+      applicationReceived: "New Application",
+      applicationAccepted: "Application Accepted",
+      applicationRejected: "Application Rejected",
+      newMemberJoined: "New Member Joined",
+      groupUpdated: "Group Updated",
+      groupFull: "Team Capacity Reached",
+    },
+  },
 };
 
 export type TranslationDict = typeof en;

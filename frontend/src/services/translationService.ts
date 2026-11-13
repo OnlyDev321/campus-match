@@ -44,6 +44,17 @@ export async function translateGroupContent(
       meetingSchedule: typeof data.content.meetingSchedule === "string"
         ? data.content.meetingSchedule
         : undefined,
+      rolesQuota: Array.isArray(data.content.rolesQuota)
+        ? data.content.rolesQuota
+            .filter(
+              (r: unknown): r is { role: string; description?: string } =>
+                Boolean(r && typeof r === "object" && typeof (r as any).role === "string")
+            )
+            .map((r: any) => ({
+              role: String(r.role),
+              description: typeof r.description === "string" ? r.description : undefined,
+            }))
+        : undefined,
     };
   } catch (error) {
     if (error instanceof TranslationError) throw error;

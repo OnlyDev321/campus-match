@@ -32,7 +32,6 @@ import {
   CardTitle,
   Input,
   Modal,
-  Radio,
   RoleQuota,
 } from "@/design-system";
 import { createGroup } from "@/services/groupService";
@@ -581,7 +580,7 @@ export default function CreateGroupPage() {
                 <legend className="block text-xs font-semibold text-[var(--text-secondary)]">
                   <ScrambleText text={copy.meetingFormatLabel} />
                 </legend>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3 gap-3">
                   {[
                     {
                       id: "Online" as MeetingFormat,
@@ -606,28 +605,59 @@ export default function CreateGroupPage() {
                     const IconComponent = format.icon;
 
                     return (
-                      <div
+                      <label
                         key={format.id}
-                        className={`p-3.5 rounded-[var(--radius-input)] border transition-colors ${isSelected ? "border-[var(--primary)] bg-[var(--primary-soft)]" : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]"}`}
+                        htmlFor={`meeting-format-${format.id}`}
+                        className={`group relative flex items-start gap-3 p-3.5 rounded-[var(--radius-input)] border cursor-pointer transition-all duration-150
+                          sm:flex-col sm:items-stretch sm:gap-2
+                          lg:flex-row lg:items-center lg:gap-3
+                          xl:flex-col xl:items-stretch xl:gap-2
+                          ${isSelected
+                            ? "border-[var(--primary)] bg-[var(--primary-soft)] shadow-sm ring-1 ring-[var(--primary)]/20"
+                            : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-container-low)]"
+                          }`}
                       >
-                        <Radio
+                        {/* Hidden native radio */}
+                        <input
                           id={`meeting-format-${format.id}`}
+                          type="radio"
                           name="meetingFormat"
                           value={format.id}
                           checked={isSelected}
                           onChange={() =>
                             updateField("meetingFormat", format.id)
                           }
-                          label={
-                            <span className="flex items-center gap-2">
-                              <IconComponent className="h-4 w-4 text-[var(--primary)]" />
-                              {format.label}
-                            </span>
-                          }
-                          description={format.desc}
-                          className="peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)]"
+                          className="peer sr-only"
                         />
-                      </div>
+
+                        {/* Custom radio indicator */}
+                        <div className="relative flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                          <div
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                              isSelected
+                                ? "border-[var(--primary)] bg-[var(--primary)]"
+                                : "border-[var(--border-strong)] bg-[var(--surface)]"
+                            } peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)]`}
+                          >
+                            <span
+                              className={`w-1.5 h-1.5 rounded-full bg-white transition-transform duration-150 ${
+                                isSelected ? "scale-100" : "scale-0"
+                              }`}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex flex-col gap-0.5 min-w-0">
+                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
+                            <IconComponent className="h-4 w-4 text-[var(--primary)] shrink-0" />
+                            {format.label}
+                          </span>
+                          <span className="text-xs text-[var(--text-muted)] leading-relaxed">
+                            {format.desc}
+                          </span>
+                        </div>
+                      </label>
                     );
                   })}
                 </div>
@@ -1123,7 +1153,7 @@ export default function CreateGroupPage() {
                   className="space-y-2.5"
                 />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2 pt-1">
                   {formData.rolesQuota.map((r, i) => {
                     const isLeaderRole = selectedLeaderRoleIndex === i;
                     return (

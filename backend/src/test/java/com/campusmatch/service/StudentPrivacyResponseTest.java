@@ -51,7 +51,7 @@ class StudentPrivacyResponseTest {
         var applications = mock(ApplicationRepository.class);
         var groups = mock(GroupRepository.class);
         var users = mock(UserRepository.class);
-        var service = new ApplicationService(applications, groups, mock(GroupMemberRepository.class), users);
+        var service = new ApplicationService(applications, groups, mock(GroupMemberRepository.class), users, mock(NotificationService.class));
         var leader = User.builder().id(1L).studentId("20260020").build();
         var applicant = User.builder().id(2L).studentId("20260021").email("20260021@soongsil.ac.kr").build();
         var group = StudyGroup.builder().id(10L).leader(leader).build();

@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import { use, useState } from "react";
+import { use, useState, useMemo } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -53,11 +53,27 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
     group?.longDescription || group?.description,
     group?.objectives,
     group?.meetingSchedule,
+    group?.rolesQuota?.map((r) => ({ role: r.role, description: r.description })),
   ]);
   const translatedTitle = translation?.context === translationContext ? translation.title : null;
   const translatedDesc = translation?.context === translationContext ? translation.description : null;
   const translatedObjectives = translation?.context === translationContext ? translation.objectives : null;
   const translatedMeetingSchedule = translation?.context === translationContext ? translation.meetingSchedule : null;
+  const translatedRolesQuota = translation?.context === translationContext ? translation.rolesQuota : null;
+
+  const displayRolesQuota = useMemo(() => {
+    if (!group?.rolesQuota) return [];
+    if (!translatedRolesQuota) return group.rolesQuota;
+    return group.rolesQuota.map((r, i) => {
+      const translatedRole = translatedRolesQuota[i];
+      if (!translatedRole) return r;
+      return {
+        ...r,
+        role: translatedRole.role || r.role,
+        description: translatedRole.description ?? r.description,
+      };
+    });
+  }, [group?.rolesQuota, translatedRolesQuota]);
 
   if (!group) {
     return (
@@ -227,6 +243,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                   description: group.longDescription || group.description,
                   objectives: group.objectives,
                   meetingSchedule: group.meetingSchedule,
+                  rolesQuota: group.rolesQuota?.map((r) => ({
+                    role: r.role,
+                    description: r.description,
+                  })),
                 }}
                 onTranslated={(translated) => setTranslation(translated ? { ...translated, context: translationContext } : null)}
               />
@@ -328,16 +348,16 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 </span>
               </div>
 
-              {group.rolesQuota && group.rolesQuota.length > 0 ? (
+              {displayRolesQuota && displayRolesQuota.length > 0 ? (
                 <div className="space-y-4 pt-1 min-w-0">
                   <RoleQuota
                     variant="detailed"
-                    roles={group.rolesQuota}
+                    roles={displayRolesQuota}
                     className="space-y-3"
                   />
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3 pt-2 min-w-0">
-                    {group.rolesQuota.map((r, i) => (
+                    {displayRolesQuota.map((r, i) => (
                       <div
                         key={i}
                         className="p-3 rounded-xl border border-[var(--border)] bg-[var(--surface-container-low)] space-y-1.5 min-w-0"
