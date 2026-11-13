@@ -8,7 +8,7 @@
  * 3. fetchTimetableFromSap: Lấy thời khóa biểu cá nhân từ ứng dụng SAP WDA (ZCMW2102).
  */
 
-import { SapSsoClient, SapWdaClient } from "usaint-lib";
+import { SapSsoClient, SapWdaClient, SapEventQueue } from "usaint-lib";
 import type { SapComboBox, SapTable } from "usaint-lib";
 import { extractTimetableCells, parseTimetableCells } from "@/lib/timetableParser";
 import type {
@@ -47,9 +47,11 @@ export const SAP_STUDENT_INFO_CONTROL_IDS = {
  */
 function getControlValue(wda: SapWdaClient, id: string): string {
   try {
-    const control = wda.getControlById<any>(id);
+    const control = wda.getControlById(id);
     if (!control) return "";
-    const val = control.value || control.text || "";
+    const value = "value" in control ? control.value : "";
+    const text = "text" in control ? control.text : "";
+    const val = value || text || "";
     return String(val).trim();
   } catch {
     return "";
@@ -244,7 +246,6 @@ export async function fetchStudentProfileFromSap(
         }
 
         if (targetTabId) {
-          const { SapEventQueue } = require("usaint-lib/dist/core/event-queue");
           const queue = new SapEventQueue();
           queue.addEvent(
             "ClientInspector_Notify",
@@ -261,7 +262,7 @@ export async function fetchStudentProfileFromSap(
           );
           queue.addFormRequest(`@{"sFocussedId":"${targetTabId}"}`);
 
-          await (wda as any).dispatchEvents(queue);
+          await wda.dispatchEvents(queue);
 
           wda.$("input, span, td, div, p").each((_, el) => {
             if (phoneNumber) return;

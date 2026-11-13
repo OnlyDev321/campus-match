@@ -1,7 +1,6 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React from "react";
 import ProfileCard from "./ProfileCard";
 import TimetableCard from "./TimetableCard";
 import { useRequireLogin } from "@/lib/hooks";

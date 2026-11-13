@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React, { use, useState } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
+import type { GroupTranslationState } from "@/lib/types";
 import TranslateButton from "@/components/common/TranslateButton";
 import { getGroupDetailForView } from "@/services/groupService";
 import { formatMessage, visibleStudentId, visibleStudentEmail } from "@/lib/format";
@@ -31,7 +32,7 @@ import type { GroupDetailPageProps } from "@/lib/types";
 
 export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const { id } = use(params);
-  const { t } = useLanguageStore();
+  const { t, language } = useLanguageStore();
   const copy = t.groupDetail;
   const { user, isLoggedIn, openLoginModal } = useAuthStore();
 
@@ -44,8 +45,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Translation States
-  const [translatedTitle, setTranslatedTitle] = useState<string | null>(null);
-  const [translatedDesc, setTranslatedDesc] = useState<string | null>(null);
+  const [translation, setTranslation] = useState<GroupTranslationState | null>(null);
+  const translationContext = JSON.stringify([language, id, group?.title, group?.longDescription || group?.description]);
+  const translatedTitle = translation?.context === translationContext ? translation.title : null;
+  const translatedDesc = translation?.context === translationContext ? translation.description : null;
 
   if (!group) {
     return (
@@ -208,17 +211,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             </h1>
             <div className="shrink-0 self-start sm:pt-1">
               <TranslateButton
-                originalText={`${group.title}\n${group.longDescription || group.description}`}
-                onTranslated={(translated) => {
-                  if (translated) {
-                    const parts = translated.split("\n");
-                    setTranslatedTitle(parts[0]);
-                    setTranslatedDesc(parts.slice(1).join("\n"));
-                  } else {
-                    setTranslatedTitle(null);
-                    setTranslatedDesc(null);
-                  }
-                }}
+                key={translationContext}
+                isTranslated={translatedTitle !== null}
+                originalContent={{ title: group.title, description: group.longDescription || group.description }}
+                onTranslated={(translated) => setTranslation(translated ? { ...translated, context: translationContext } : null)}
               />
             </div>
           </div>

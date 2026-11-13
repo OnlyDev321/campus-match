@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useSyncExternalStore } from "react";
+import { useSyncExternalStore } from "react";
 import { useTheme } from "./ThemeProvider";
 import { Sun, Moon, Laptop } from "lucide-react";
 import type { ThemeToggleProps } from "@/lib/types";

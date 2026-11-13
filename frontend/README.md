@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CampusMatch frontend
 
-## Getting Started
-
-First, run the development server:
+Ứng dụng Next.js cho CampusMatch. Chạy các lệnh sau trong thư mục `frontend`:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở http://localhost:3000. Backend mặc định ở http://localhost:8080/api;
+có thể cấu hình lại qua `NEXT_PUBLIC_API_BASE_URL` trong `.env.local`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Kiểm tra và build:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit
+npm run lint
+npm run build
+```
 
-## Learn More
+### Group content translation (SSU FactChat)
 
-To learn more about Next.js, take a look at the following resources:
+Configure these **server-only** variables in `.env.local` (or your hosting environment):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```dotenv
+FACTCHAT_API_KEY=your_school_key
+FACTCHAT_MODEL=gpt-5.4-mini
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Restart Next.js after changing environment variables. Only `FACTCHAT_API_KEY` is
+used for authentication. Never prefix this key with `NEXT_PUBLIC_`.
 
-## Deploy on Vercel
+`POST /api/translate` accepts `{ content: { title, description }, targetLang }`.
+It translates only these creator-entered fields into `en`, `ko`, or `vi` through
+SSU FactChat Chat Completions. Source content is never overwritten. UI labels use
+local dictionaries; identities, student IDs, and other group fields are not sent.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Successful translations are cached by model, source text and target language for
+one hour, up to 128 entries per server process. Cache is temporary and not shared
+between instances. Quota, insufficient credits, access denial and overload have
+separate localized messages; there is no simulated translation fallback.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Reference: https://docs.mindlogic.ai/docs/ssu/api-gateway/reference/chat-completions

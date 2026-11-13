@@ -2,7 +2,7 @@
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState } from "react";
-import { Modal, Input, Button, Badge } from "@/design-system";
+import { Modal, Input, Button } from "@/design-system";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
 import { ShieldCheck, User, Lock, AlertCircle } from "lucide-react";

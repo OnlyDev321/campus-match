@@ -6,7 +6,6 @@ import { Search } from "lucide-react";
 export interface SearchInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type"> {
   shortcut?: string;
-  onShortcutTrigger?: () => void;
 }
 
 export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
@@ -14,7 +13,6 @@ export const SearchInput = forwardRef<HTMLInputElement, SearchInputProps>(
     {
       placeholder = "Search groups, courses, skills...",
       shortcut = "⌘K",
-      onShortcutTrigger,
       className = "",
       style,
       ...props

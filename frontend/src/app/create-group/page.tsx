@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -17,10 +17,8 @@ import {
   MapPin,
   Minus,
   Plus,
-  Radio as RadioIcon,
   ShieldCheck,
   Sparkles,
-  Users,
 } from "lucide-react";
 import {
   Avatar,

@@ -841,10 +841,27 @@ export interface CardSkeletonListProps {
 /**
  * Props cho nút dịch thuật đa ngữ TranslateButton.
  */
+export interface GroupTranslationContent {
+  /** Tiêu đề do người tạo nhóm nhập. */
+  title: string;
+  /** Mô tả do người tạo nhóm nhập, giữ xuống dòng. */
+  description: string;
+}
+
+export interface GroupTranslationState extends GroupTranslationContent {
+  /** Nội dung và ngôn ngữ tương ứng để tránh hiển thị bản dịch cũ. */
+  context: string;
+}
+
 export interface TranslateButtonProps {
-  originalText: string;                                 // Đoạn văn bản gốc cần dịch
-  onTranslated: (translated: string | null) => void;    // Callback nhận về bản dịch (hoặc null khi hoàn tác)
-  className?: string;                                   // Class CSS tùy chỉnh
+  /** Hai trường nội dung gốc được phép dịch. */
+  originalContent: GroupTranslationContent;
+  /** Trạng thái hiển thị bản dịch, do trang chi tiết quản lý. */
+  isTranslated: boolean;
+  /** Nhận bản dịch hoặc null khi người xem chọn bản gốc. */
+  onTranslated: (translated: GroupTranslationContent | null) => void;
+  /** Class tùy chỉnh của nút dịch. */
+  className?: string;
 }
 
 /**
@@ -885,4 +902,21 @@ export interface AcademicCollege {
   sourceUrl: string;
   /** Tên các khoa/ngành chính thức, không tự dịch. */
   departments: string[];
+}
+
+/** Mã lỗi dịch để giao diện ánh xạ sang từ điển hiện tại. */
+export type TranslationErrorCode =
+  | "TRANSLATION_BUSY"
+  | "TRANSLATION_CREDITS_EXHAUSTED"
+  | "TRANSLATION_ACCESS_DENIED"
+  | "TRANSLATION_NOT_CONFIGURED"
+  | "TRANSLATION_RATE_LIMITED"
+  | "TRANSLATION_FAILED";
+
+/** Bản dịch tạm trong cache giới hạn của server. */
+export interface TranslationCacheEntry {
+  /** Nội dung dịch đã xác thực. */
+  content: GroupTranslationContent;
+  /** Thời điểm hết hạn, tính bằng mili giây Unix. */
+  expires: number;
 }

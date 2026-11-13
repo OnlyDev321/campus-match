@@ -16,8 +16,6 @@ export function CompatibilityTag({
   className = "",
   ...props
 }: CompatibilityTagProps) {
-  const displayText = score !== undefined ? `${score}% ${label}` : label;
-
   return (
     <span
       style={{ borderRadius: "var(--radius-badge)" }}

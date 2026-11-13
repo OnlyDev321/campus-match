@@ -164,10 +164,17 @@ export const en = {
   },
   // Translate on Demand
   translate: {
+    provider: "FactChat",
+    creditsExhausted: "The FactChat account has insufficient credits. Please contact the site administrator.",
+    accessDenied: "FactChat access was denied. Please contact the site administrator.",
+    busy: "FactChat is currently busy. Please try again in a few minutes.",
+    notConfigured: "Translation is not configured yet. Please try again later.",
+    rateLimited: "Translation limit reached. Please try again later.",
+    failed: "Translation failed. Please try again.",
+
     btn: "Translate to English",
-    translating: "Translating with Gemini...",
+    translating: "Translating…",
     showOriginal: "Show Original",
-    translatedBy: "Translated by Google Gemini AI",
   },
   // Profile Card (My Page)
   profile: {

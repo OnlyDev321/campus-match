@@ -165,10 +165,17 @@ export const vi: TranslationDict = {
       "Lỗi kết nối mạng. Vui lòng kiểm tra lại đường truyền internet.",
   },
   translate: {
+    provider: "FactChat",
+    creditsExhausted: "Tài khoản FactChat không đủ credit. Vui lòng liên hệ quản trị viên website.",
+    accessDenied: "Không có quyền truy cập FactChat. Vui lòng liên hệ quản trị viên website.",
+    busy: "FactChat đang quá tải. Vui lòng thử lại sau ít phút.",
+    notConfigured: "Chức năng dịch chưa được cấu hình. Vui lòng thử lại sau.",
+    rateLimited: "Đã đạt giới hạn dịch. Vui lòng thử lại sau.",
+    failed: "Không dịch được nội dung. Vui lòng thử lại.",
+
     btn: "Dịch sang Tiếng Việt",
-    translating: "Đang dịch bằng Gemini...",
+    translating: "Đang dịch…",
     showOriginal: "Xem bản gốc",
-    translatedBy: "Dịch tự động bởi Google Gemini AI",
   },
   profile: {
     verified: "Đã xác thực u-SAINT",

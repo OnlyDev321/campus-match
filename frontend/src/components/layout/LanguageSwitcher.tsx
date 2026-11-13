@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useLanguageStore } from "@/stores/languageStore";
 import type { LanguageOption } from "@/lib/types";
 import { Globe, Check, ChevronDown } from "lucide-react";

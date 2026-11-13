@@ -1,9 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React from "react";
 import PublicStatistics from "@/components/common/PublicStatistics";
-import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
 import { Button, Badge } from "@/design-system";
@@ -15,9 +13,6 @@ import {
   Lock,
   Code2,
   CheckCircle2,
-  Users,
-  Compass,
-  Trophy,
 } from "lucide-react";
 
 export default function LandingPage() {

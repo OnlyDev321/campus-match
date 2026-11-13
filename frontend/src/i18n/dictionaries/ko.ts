@@ -163,10 +163,17 @@ export const ko: TranslationDict = {
     errorNetwork: "서버와의 통신에 실패했습니다. 네트워크 상태를 확인해주세요.",
   },
   translate: {
+    provider: "FactChat",
+    creditsExhausted: "FactChat 크레딧이 부족합니다. 사이트 관리자에게 문의해 주세요.",
+    accessDenied: "FactChat 접근이 거부되었습니다. 사이트 관리자에게 문의해 주세요.",
+    busy: "FactChat 요청이 일시적으로 많습니다. 잠시 후 다시 시도해 주세요.",
+    notConfigured: "번역 기능이 아직 설정되지 않았습니다. 나중에 다시 시도해 주세요.",
+    rateLimited: "번역 요청 한도에 도달했습니다. 나중에 다시 시도해 주세요.",
+    failed: "번역하지 못했습니다. 다시 시도해 주세요.",
+
     btn: "한국어로 번역",
-    translating: "Gemini로 번역 중...",
+    translating: "번역 중…",
     showOriginal: "원문 보기",
-    translatedBy: "Google Gemini AI 자동 번역",
   },
   profile: {
     verified: "u-SAINT 인증",

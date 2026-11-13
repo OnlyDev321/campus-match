@@ -1,7 +1,6 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React from "react";
 import { Mail, Phone, ShieldCheck } from "lucide-react";
 import { Avatar, Badge, Card } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";

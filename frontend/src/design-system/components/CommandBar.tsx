@@ -17,7 +17,11 @@ export interface CommandBarProps {
   items?: CommandItem[];
 }
 
-export function CommandBar({ isOpen, onClose, items }: CommandBarProps) {
+export function CommandBar(props: CommandBarProps) {
+  return <CommandBarContent key={props.isOpen ? "open" : "closed"} {...props} />;
+}
+
+function CommandBarContent({ isOpen, onClose, items }: CommandBarProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,10 +61,9 @@ export function CommandBar({ isOpen, onClose, items }: CommandBarProps) {
   );
 
   useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 50);
-      setSelectedIndex(0);
-    }
+    if (!isOpen) return;
+    const timeout = setTimeout(() => inputRef.current?.focus(), 50);
+    return () => clearTimeout(timeout);
   }, [isOpen]);
 
   useEffect(() => {
