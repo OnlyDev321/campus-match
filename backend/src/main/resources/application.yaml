@@ -6,9 +6,9 @@ spring:
     name: campus-match-backend
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://ep-late-mode-a1gfpw2c.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
-    username: ${DB_USERNAME:neondb_owner}
-    password: ${DB_PASSWORD:REDACTED_DB_PASSWORD}
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -21,5 +21,5 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 jwt:
-  secret: ${JWT_SECRET:REDACTED_JWT_SECRET}
+  secret: ${JWT_SECRET}
   expiration-ms: 86400000 # 24 Hours
