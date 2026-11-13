@@ -1,8 +1,8 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { use, useState, useMemo } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
   Calendar,
@@ -19,18 +19,20 @@ import {
   UserPlus,
   Compass,
   AlertCircle,
-  ExternalLink,
 } from "lucide-react";
 import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
 import TranslateButton from "@/components/common/TranslateButton";
 import { getGroupDetail } from "@/lib/mockData";
+import { formatMessage, visibleStudentId, visibleStudentEmail } from "@/lib/format";
+import { useLanguageStore } from "@/stores/languageStore";
 import { useAuthStore } from "@/stores/authStore";
 import type { GroupDetailPageProps } from "@/lib/types";
 
 export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const { id } = use(params);
-  const router = useRouter();
+  const { t } = useLanguageStore();
+  const copy = t.groupDetail;
   const { user, isLoggedIn, openLoginModal } = useAuthStore();
 
   const group = useMemo(() => getGroupDetail(id), [id]);
@@ -52,11 +54,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
         </div>
         <div className="space-y-2">
           <h1 className="text-2xl font-bold text-[var(--text-primary)]">
-            Group Not Found
+            <ScrambleText text={copy.notFoundTitle} />
           </h1>
           <p className="text-sm text-[var(--text-secondary)]">
-            The group with ID <code className="font-mono text-xs">{id}</code>{" "}
-            could not be found or may have been deleted.
+            <ScrambleText text={formatMessage(copy.notFoundDescription, { id })} protectedValues={[...Object.values({ id })]} />
           </p>
         </div>
         <Button
@@ -64,7 +65,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
           variant="outline"
           leftIcon={<ArrowLeft className="w-4 h-4" />}
         >
-          Back to Groups
+          <ScrambleText text={copy.backToGroups} />
         </Button>
       </div>
     );
@@ -73,6 +74,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const spotsLeft = Math.max(group.maxMembers - group.memberCount, 0);
   const isFull = spotsLeft === 0;
   const isLeader = Boolean(user && user.name === group.leaderName);
+  const leaderEmail = visibleStudentEmail(group.leaderEmail, group.leaderStudentId, user?.studentId);
 
   const handleShare = async () => {
     try {
@@ -111,7 +113,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               className="inline-flex items-center gap-1 text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors py-1 shrink-0"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Groups</span>
+              <span><ScrambleText text={t.nav.groups} /></span>
             </Link>
             <span className="text-[var(--border-strong)] shrink-0">/</span>
             <span className="text-[var(--text-muted)] truncate min-w-0 max-w-[110px] sm:max-w-none">
@@ -140,10 +142,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               className="text-xs px-2.5 sm:px-3 h-8 sm:h-9"
             >
               <span className="hidden sm:inline">
-                {copiedLink ? "Link Copied!" : "Share"}
+                <ScrambleText text={copiedLink ? copy.linkCopied : copy.share} />
               </span>
               <span className="sm:hidden">
-                {copiedLink ? "Copied" : "Share"}
+                <ScrambleText text={copiedLink ? copy.copied : copy.share} />
               </span>
             </Button>
 
@@ -155,7 +157,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 leftIcon={<UserPlus className="w-3.5 h-3.5 shrink-0" />}
                 className="text-xs font-semibold px-2.5 sm:px-3 h-8 sm:h-9 sm:hidden shrink-0"
               >
-                Join
+                <ScrambleText text={copy.join} />
               </Button>
             )}
           </div>
@@ -181,18 +183,18 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               pulse={!isFull}
               className="sm:text-xs font-medium"
             >
-              {isFull
-                ? "Full • Recruitment Closed"
-                : `Recruiting (${spotsLeft} ${spotsLeft === 1 ? "spot left" : "spots left"})`}
+              <ScrambleText text={isFull
+                ? copy.fullClosed
+                : formatMessage(spotsLeft === 1 ? copy.recruitingOne : copy.recruitingMany, { count: spotsLeft })} protectedValues={[...Object.values({ count: spotsLeft })]} />
             </Badge>
 
             <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)]">
               <Laptop className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
-              <span>{group.meetingFormat || "Hybrid Meeting"}</span>
+              <span>{group.meetingFormat || <ScrambleText text={copy.meetingFormatFallback} />}</span>
             </span>
 
             <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
-              {group.postYear} Academic Year
+              <ScrambleText text={formatMessage(copy.academicYear, { year: group.postYear })} protectedValues={[...Object.values({ year: group.postYear })]} />
             </span>
           </div>
 
@@ -232,14 +234,14 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             <div className="flex items-center gap-1.5 shrink-0">
               <Calendar className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
               <span>
-                Semester: {group.semester || `${group.postYear} Spring`}
+                <ScrambleText text={copy.semesterLabel} />: {group.semester || <ScrambleText text={copy.notProvided} />}
               </span>
             </div>
 
             <div className="flex items-center gap-1.5 shrink-0">
               <Clock className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
               <span>
-                Posted on {group.createdAt || `${group.postYear}-03-01`}
+                <ScrambleText text={formatMessage(copy.postedOn, { date: group.createdAt || copy.notProvided })} protectedValues={[...Object.values({ date: group.createdAt || copy.notProvided })]} />
               </span>
             </div>
           </div>
@@ -254,7 +256,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <div className="flex items-center gap-2 sm:gap-2.5 pb-2 border-b border-[var(--border-muted)]">
                 <Compass className="w-5 h-5 text-[var(--primary)] shrink-0" />
                 <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
-                  About This Project
+                  <ScrambleText text={copy.about} />
                 </h2>
               </div>
 
@@ -266,7 +268,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               {group.objectives && group.objectives.length > 0 && (
                 <div className="pt-3 sm:pt-4 space-y-2.5 sm:space-y-3">
                   <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider">
-                    Target Objectives & Team Goals
+                    <ScrambleText text={copy.objectives} />
                   </h3>
                   <div className="space-y-2 sm:space-y-2.5">
                     {group.objectives.map((goal, idx) => (
@@ -287,11 +289,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 <Clock className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
                 <div className="space-y-0.5 sm:space-y-1 text-xs min-w-0 flex-1">
                   <span className="font-semibold text-[var(--text-primary)] block">
-                    Weekly Meeting & Sync-up Schedule
+                    <ScrambleText text={copy.meetingSchedule} />
                   </span>
                   <span className="text-[var(--text-secondary)] block break-words">
-                    {group.meetingSchedule ||
-                      "Weekly on Wednesdays 18:30 (Hybrid Zoom / IT Hall)"}
+                    {group.meetingSchedule || <ScrambleText text={copy.notProvided} />}
                   </span>
                 </div>
               </div>
@@ -302,12 +303,12 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <div className="flex items-center justify-between pb-2 border-b border-[var(--border-muted)] gap-2">
                 <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
                   <Users className="w-5 h-5 text-[var(--primary)] shrink-0" />
-                  <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] truncate">
-                    Team Composition & Role Quotas
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)] break-words">
+                    <ScrambleText text={copy.rolesTitle} />
                   </h2>
                 </div>
                 <span className="text-xs font-mono text-[var(--text-muted)] shrink-0">
-                  {group.memberCount}/{group.maxMembers} Members
+                  {group.memberCount}/{group.maxMembers} <ScrambleText text={copy.members} />
                 </span>
               </div>
 
@@ -336,7 +337,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                             size="sm"
                             className="shrink-0"
                           >
-                            {r.current >= r.max ? "Filled" : "Open"}
+                            <ScrambleText text={r.current >= r.max ? copy.filled : copy.open} />
                           </Badge>
                         </div>
                         {r.description && (
@@ -350,8 +351,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 </div>
               ) : (
                 <p className="text-xs text-[var(--text-muted)]">
-                  Standard team slots: {group.memberCount} of {group.maxMembers}{" "}
-                  filled.
+                  <ScrambleText text={formatMessage(copy.slotsSummary, { current: group.memberCount, max: group.maxMembers })} protectedValues={[...Object.values({ current: group.memberCount, max: group.maxMembers })]} />
                 </p>
               )}
             </Card>
@@ -361,7 +361,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <div className="flex items-center gap-2 sm:gap-2.5 pb-2 border-b border-[var(--border-muted)]">
                 <Sparkles className="w-5 h-5 text-[var(--primary)] shrink-0" />
                 <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
-                  Tech Stack & Required Skills
+                  <ScrambleText text={copy.skillsTitle} />
                 </h2>
               </div>
 
@@ -378,15 +378,13 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     ))
                   ) : (
                     <span className="text-xs text-[var(--text-muted)]">
-                      General development tools (Git, GitHub, VS Code)
+                      <ScrambleText text={copy.skillsFallback} />
                     </span>
                   )}
                 </div>
 
                 <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--primary-soft)] border border-[var(--primary-soft-border)] text-xs text-[var(--primary)] leading-relaxed min-w-0 break-words">
-                  💡 <strong>Notice:</strong> Don&apos;t worry if you don&apos;t
-                  meet 100% of the tech stack! Our team values enthusiasm,
-                  consistent weekly participation, and the eagerness to learn.
+                  <strong><ScrambleText text={copy.noticeTitle} /></strong> <ScrambleText text={copy.noticeBody} />
                 </div>
               </div>
             </Card>
@@ -398,7 +396,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             <Card className="p-4 sm:p-6 space-y-4 sm:space-y-5 border-2 border-[var(--border-interactive)]/40 shadow-sm min-w-0">
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-secondary)]">
-                  <span>Recruitment Progress</span>
+                  <span><ScrambleText text={copy.recruitmentProgress} /></span>
                   <span className="font-mono text-[var(--primary)]">
                     {Math.round((group.memberCount / group.maxMembers) * 100)}%
                   </span>
@@ -419,17 +417,16 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     <strong className="text-[var(--text-primary)] font-mono">
                       {group.memberCount}
                     </strong>{" "}
-                    / {group.maxMembers} Members
+                    / {group.maxMembers} <ScrambleText text={copy.members} />
                   </span>
                   <span>
                     {isFull ? (
                       <span className="text-[var(--error)] font-medium">
-                        No open spots
+                        <ScrambleText text={copy.noSpots} />
                       </span>
                     ) : (
                       <span className="text-[var(--success-text)] font-medium">
-                        {spotsLeft}{" "}
-                        {spotsLeft === 1 ? "spot remaining" : "spots remaining"}
+                        <ScrambleText text={formatMessage(spotsLeft === 1 ? copy.remainingOne : copy.remainingMany, { count: spotsLeft })} protectedValues={[...Object.values({ count: spotsLeft })]} />
                       </span>
                     )}
                   </span>
@@ -446,7 +443,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     className="h-11 font-semibold"
                     leftIcon={<Users className="w-4 h-4" />}
                   >
-                    Manage Applications
+                    <ScrambleText text={copy.manageApplications} />
                   </Button>
                 ) : hasApplied ? (
                   <Button
@@ -457,11 +454,11 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                       <CheckCircle2 className="w-4 h-4 text-[var(--success)]" />
                     }
                   >
-                    Application Submitted
+                    <ScrambleText text={copy.applicationSubmitted} />
                   </Button>
                 ) : isFull ? (
                   <Button disabled fullWidth className="h-11 font-semibold">
-                    Group Is Full
+                    <ScrambleText text={copy.groupFull} />
                   </Button>
                 ) : (
                   <Button
@@ -471,15 +468,14 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     leftIcon={<UserPlus className="w-4 h-4" />}
                     className="h-11 font-semibold shadow-sm hover:shadow-md transition-all text-sm"
                   >
-                    Apply to Join Group
+                    <ScrambleText text={copy.apply} />
                   </Button>
                 )}
               </div>
 
               <div className="pt-1 text-center">
                 <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                  Verified with Soongsil u-SAINT SSO. Applications are reviewed
-                  directly by the group leader.
+                  <ScrambleText text={copy.verificationNote} />
                 </p>
               </div>
             </Card>
@@ -488,10 +484,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             <Card className="p-4 sm:p-5 space-y-3.5 sm:space-y-4 min-w-0">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--border-muted)]">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-                  Group Leader
+                  <ScrambleText text={copy.leader} />
                 </span>
                 <Badge variant="primary" size="sm">
-                  Organizer
+                  <ScrambleText text={copy.organizer} />
                 </Badge>
               </div>
 
@@ -511,19 +507,19 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                   </p>
                   {group.leaderStudentId && (
                     <p className="text-[11px] font-mono text-[var(--text-muted)] truncate">
-                      ID: {group.leaderStudentId}
+                      <ScrambleText text={formatMessage(copy.studentId, { id: visibleStudentId(group.leaderStudentId, user?.studentId) })} protectedValues={[...Object.values({ id: visibleStudentId(group.leaderStudentId, user?.studentId) })]} />
                     </p>
                   )}
                 </div>
               </div>
 
-              {group.leaderEmail && (
+              {leaderEmail && (
                 <a
-                  href={`mailto:${group.leaderEmail}`}
+                  href={`mailto:${leaderEmail}`}
                   className="inline-flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl text-xs font-medium text-[var(--text-secondary)] bg-[var(--surface-container-low)] border border-[var(--border)] hover:bg-[var(--surface-container)] hover:text-[var(--text-primary)] transition-colors min-w-0 overflow-hidden"
                 >
                   <Mail className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
-                  <span className="truncate">{group.leaderEmail}</span>
+                  <span className="truncate">{leaderEmail}</span>
                 </a>
               )}
             </Card>
@@ -532,10 +528,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             <Card className="p-4 sm:p-5 space-y-3 min-w-0">
               <div className="flex items-center justify-between pb-2 border-b border-[var(--border-muted)]">
                 <span className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">
-                  Roster ({group.memberCount}/{group.maxMembers})
+                  <ScrambleText text={formatMessage(copy.roster, { current: group.memberCount, max: group.maxMembers })} protectedValues={[...Object.values({ current: group.memberCount, max: group.maxMembers })]} />
                 </span>
                 <span className="text-[11px] text-[var(--text-muted)]">
-                  {spotsLeft} open
+                  <ScrambleText text={formatMessage(copy.openCount, { count: spotsLeft })} protectedValues={[...Object.values({ count: spotsLeft })]} />
                 </span>
               </div>
 
@@ -559,7 +555,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                           </span>
                           {member.isLeader && (
                             <span className="text-[10px] font-mono text-[var(--primary)] bg-[var(--primary-soft)] px-1.5 py-0.2 rounded border border-[var(--primary-soft-border)] shrink-0">
-                              Leader
+                              <ScrambleText text={t.myGroupCard.leader} />
                             </span>
                           )}
                         </div>
@@ -577,23 +573,23 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
             <Card className="p-4 space-y-2.5 bg-[var(--surface-container-low)] border border-[var(--border)] min-w-0">
               <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-primary)] pb-1 border-b border-[var(--border)]">
                 <GraduationCap className="w-4 h-4 text-[var(--primary)] shrink-0" />
-                <span>u-SAINT Academic Classification</span>
+                <span><ScrambleText text={copy.academicClassification} /></span>
               </div>
               <div className="space-y-1.5 text-xs text-[var(--text-secondary)]">
                 <div className="flex justify-between items-center gap-2 min-w-0">
-                  <span className="text-[var(--text-muted)] shrink-0">College:</span>
+                  <span className="text-[var(--text-muted)] shrink-0"><ScrambleText text={copy.college} /></span>
                   <span className="font-medium text-[var(--text-primary)] truncate text-right">
                     {group.college}
                   </span>
                 </div>
                 <div className="flex justify-between items-center gap-2 min-w-0">
-                  <span className="text-[var(--text-muted)] shrink-0">Department:</span>
+                  <span className="text-[var(--text-muted)] shrink-0"><ScrambleText text={copy.department} /></span>
                   <span className="font-medium text-[var(--text-primary)] truncate text-right">
                     {group.department}
                   </span>
                 </div>
                 <div className="flex justify-between items-center gap-2 min-w-0">
-                  <span className="text-[var(--text-muted)] shrink-0">Post Year:</span>
+                  <span className="text-[var(--text-muted)] shrink-0"><ScrambleText text={copy.postYear} /></span>
                   <span className="font-mono text-[var(--text-primary)] shrink-0">
                     {group.postYear}
                   </span>
@@ -601,7 +597,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 {group.courseCode && (
                   <div className="flex justify-between items-center gap-2 min-w-0">
                     <span className="text-[var(--text-muted)] shrink-0">
-                      Course Code:
+                      <ScrambleText text={copy.courseCode} />
                     </span>
                     <span className="font-mono text-[var(--primary)] shrink-0">
                       {group.courseCode}

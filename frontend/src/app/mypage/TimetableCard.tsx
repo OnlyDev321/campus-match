@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useEffect, useState } from "react";
 import {
   CalendarCheck2,
@@ -136,10 +137,10 @@ const TimetableGrid = ({ blocksByDay, days, today }: TimetableViewProps) => {
               day === today ? "text-(--primary)" : "text-(--text-secondary)"
             }`}
           >
-            <span>{t.timetable.days[day]}</span>
+            <span><ScrambleText text={t.timetable.days[day]} /></span>
             {day === today && (
               <span className="rounded-full bg-(--primary-soft) px-1.5 py-px text-[10px] font-semibold leading-4 text-(--primary) ring-1 ring-inset ring-(--primary-soft-border)">
-                {t.timetable.today}
+                <ScrambleText text={t.timetable.today} />
               </span>
             )}
           </div>
@@ -269,7 +270,7 @@ const TimetableDayList = ({ blocksByDay, days, today }: TimetableViewProps) => {
                   active ? "text-(--primary)" : "text-(--text-secondary)"
                 }`}
               >
-                {t.timetable.days[day]}
+                <ScrambleText text={t.timetable.days[day]} />
                 {day === today && (
                   <span
                     aria-hidden="true"
@@ -291,7 +292,7 @@ const TimetableDayList = ({ blocksByDay, days, today }: TimetableViewProps) => {
       {blocks.length === 0 ? (
         <div className="flex items-center justify-center gap-2 rounded-(--radius-sm) bg-(--surface-container-low) px-4 py-8 text-sm text-(--text-secondary)">
           <CalendarCheck2 className="h-4 w-4 text-(--text-muted)" aria-hidden="true" />
-          {formatMessage(t.timetable.dayEmpty, { day: t.timetable.daysLong[selected] })}
+          <ScrambleText text={formatMessage(t.timetable.dayEmpty, { day: t.timetable.daysLong[selected] })} protectedValues={[...Object.values({ day: t.timetable.daysLong[selected] })]} />
         </div>
       ) : (
         <ol className="space-y-2" aria-label={t.timetable.daysLong[selected]}>
@@ -306,17 +307,12 @@ const TimetableDayList = ({ blocksByDay, days, today }: TimetableViewProps) => {
                 <p className="text-(--course-ink-muted)">{block.session.end}</p>
               </div>
               <div className="min-w-0 flex-1 space-y-1.5">
-                <div className="flex items-start justify-between gap-2">
-                  <p className="break-keep text-sm font-semibold leading-5 tracking-[-0.005em] text-(--course-ink)">
-                    {block.course.name}
-                  </p>
-                  <span className="mt-0.5 shrink-0 rounded-full bg-(--surface) px-1.5 py-px font-mono text-[10px] leading-4 text-(--course-ink-muted) ring-1 ring-inset ring-(--course-border)">
-                    {block.session.periods.map((n) => formatMessage(t.timetable.period, { n })).join(", ")}
-                  </span>
-                </div>
+                <p className="break-words text-sm font-semibold leading-5 tracking-[-0.005em] text-(--course-ink)">
+                  {block.course.name}
+                </p>
                 <p className="flex items-start gap-1.5 text-xs leading-4 text-(--course-ink-muted)">
                   <MapPin className="mt-px h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span className="min-w-0 break-keep">
+                  <span className="min-w-0 break-words">
                     {formatSessionLocation(block.session)}
                     {block.session.locationDetail && <> · {block.session.locationDetail}</>}
                   </span>
@@ -421,7 +417,7 @@ const TimetableCard = () => {
         description={t.timetable.unavailableDesc}
         action={
           <Button size="sm" variant="outline" onClick={signInAgain} leftIcon={<LogIn className="h-3.5 w-3.5" />}>
-            {t.timetable.signInAgain}
+            <ScrambleText text={t.timetable.signInAgain} />
           </Button>
         }
       />
@@ -434,7 +430,7 @@ const TimetableCard = () => {
         description={t.timetable.notFetched}
         action={
           <Button size="sm" onClick={signInAgain} leftIcon={<LogIn className="h-3.5 w-3.5" />}>
-            {t.timetable.signInAgain}
+            <ScrambleText text={t.timetable.signInAgain} />
           </Button>
         }
       />
@@ -475,11 +471,11 @@ const TimetableCard = () => {
           </span>
           <div className="min-w-0 space-y-0.5">
             <h2 className="text-lg font-semibold leading-6 tracking-[-0.015em] text-(--text-primary)">
-              {t.timetable.title}
+              <ScrambleText text={t.timetable.title} />
             </h2>
             {loaded && (
               <p className="break-keep text-xs leading-5 text-(--text-muted)">
-                {formatMessage(t.timetable.fetchedAt, { time: formatSeoulDateTime(loaded.fetchedAt, language) })}
+                <ScrambleText text={formatMessage(t.timetable.fetchedAt, { time: formatSeoulDateTime(loaded.fetchedAt, language) })} protectedValues={[...Object.values({ time: formatSeoulDateTime(loaded.fetchedAt, language) })]} />
               </p>
             )}
           </div>
@@ -496,7 +492,7 @@ const TimetableCard = () => {
       {loaded && loaded.courses.length > 0 && (
         <p className="flex items-start gap-1.5 break-keep text-xs leading-5 text-(--text-muted)">
           <Info className="mt-[3px] h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          {t.timetable.untimedNote}
+          <ScrambleText text={t.timetable.untimedNote} />
         </p>
       )}
     </Card>

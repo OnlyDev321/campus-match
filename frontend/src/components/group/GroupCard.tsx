@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import {
   Avatar,
   Badge,
@@ -49,7 +50,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           {course}
         </Badge>
         <Badge variant={isFull ? "closed" : "recruiting"} dot>
-          {isFull ? t.groupsPage.cardFull : recruitingText}
+          <ScrambleText text={isFull ? t.groupsPage.cardFull : recruitingText} />
         </Badge>
       </CardHeader>
 
@@ -70,7 +71,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           {department}
         </span>
         <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
-          {yearText}
+          <ScrambleText text={yearText} />
         </span>
       </div>
 
@@ -96,7 +97,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
             {memberCount}
           </span>
           <span className="text-[11px] text-[var(--text-muted)]">
-            {membersText}
+            <ScrambleText text={membersText} />
           </span>
         </div>
       </CardFooter>
@@ -107,14 +108,14 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
           variant="outline"
           className="h-10 text-xs font-semibold"
         >
-          {t.groupsPage.viewDetails}
+          <ScrambleText text={t.groupsPage.viewDetails} />
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
           disabled={isFull}
           onClick={() => onJoin?.(id)}
         >
-          {t.groupsPage.join}
+          <ScrambleText text={t.groupsPage.join} />
         </Button>
       </div>
     </Card>

@@ -2,6 +2,7 @@ package com.campusmatch.service;
 
 import com.campusmatch.dto.*;
 import com.campusmatch.entity.*;
+import com.campusmatch.security.StudentIdPrivacy;
 import com.campusmatch.repository.ApplicationRepository;
 import com.campusmatch.repository.GroupMemberRepository;
 import com.campusmatch.repository.GroupRepository;
@@ -226,7 +227,7 @@ public class GroupService {
         User u = member.getUser();
         return GroupMemberSummaryResponse.builder()
                 .userId(u.getId())
-                .studentId(u.getStudentId())
+                .studentId(StudentIdPrivacy.visibleStudentId(u.getStudentId()))
                 .name(u.getName())
                 .department(u.getDepartment())
                 .faculty(u.getFaculty())
@@ -240,11 +241,11 @@ public class GroupService {
         if (user == null) return null;
         return AuthResponse.UserSummary.builder()
                 .id(user.getId())
-                .studentId(user.getStudentId())
+                .studentId(StudentIdPrivacy.visibleStudentId(user.getStudentId()))
                 .name(user.getName())
                 .department(user.getDepartment())
                 .faculty(user.getFaculty())
-                .email(user.getEmail())
+                .email(StudentIdPrivacy.visibleEmail(user.getEmail(), user.getStudentId()))
                 .academicYear(user.getAcademicYear())
                 .phoneNumber(user.getPhoneNumber())
                 .avatarUrl(user.getAvatarUrl())

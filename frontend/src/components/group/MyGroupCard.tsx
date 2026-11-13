@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import {
@@ -49,7 +50,7 @@ const MyGroupCard = ({ group, variant }: MyGroupCardProps) => {
             pulse={group.status === "RECRUITING"}
             mono
           >
-            {t.groupStatus[group.status]}
+            <ScrambleText text={t.groupStatus[group.status]} />
           </Badge>
         </CardHeader>
 
@@ -59,13 +60,15 @@ const MyGroupCard = ({ group, variant }: MyGroupCardProps) => {
         <CardContent className="flex-1">
           <div className="flex flex-wrap items-center gap-1.5 py-1">
             <Badge variant={group.myRole === "LEADER" ? "primary" : "neutral"} size="sm">
-              {group.myRole === "LEADER" ? t.myGroupCard.leader : t.myGroupCard.member}
+              <ScrambleText text={group.myRole === "LEADER" ? t.myGroupCard.leader : t.myGroupCard.member} />
             </Badge>
             {isLead && group.pendingApplicationCount > 0 && (
               <Badge variant="pending" size="sm" mono>
-                {formatMessage(t.myGroupCard.pendingCount, {
+                <ScrambleText text={formatMessage(t.myGroupCard.pendingCount, {
                   count: group.pendingApplicationCount,
-                })}
+                })} protectedValues={[...Object.values({
+                  count: group.pendingApplicationCount,
+                })]} />
               </Badge>
             )}
           </div>
@@ -87,7 +90,7 @@ const MyGroupCard = ({ group, variant }: MyGroupCardProps) => {
           </AvatarGroup>
 
           <span className="inline-flex items-center gap-1 text-xs font-medium text-[var(--text-secondary)]">
-            {isLead ? t.myGroupCard.reviewApplications : t.myGroupCard.open}
+            <ScrambleText text={isLead ? t.myGroupCard.reviewApplications : t.myGroupCard.open} />
             <ArrowRight className="w-3.5 h-3.5" />
           </span>
         </CardFooter>

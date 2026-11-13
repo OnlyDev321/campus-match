@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -119,11 +120,11 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
     <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <Link href="/manage" className={backLinkClass}>
         <ArrowLeft className="w-3.5 h-3.5" />
-        {t.manage.backToManage}
+        <ScrambleText text={t.manage.backToManage} />
       </Link>
 
       <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-        {t.manage.title}
+        <ScrambleText text={t.manage.title} />
       </h1>
 
       {status === "loading" ? (
@@ -136,7 +137,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
               href="/manage"
               className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
             >
-              {t.manage.backToManage}
+              <ScrambleText text={t.manage.backToManage} />
             </Link>
           }
         />
@@ -162,7 +163,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
                 pulse={group.status === "RECRUITING"}
                 mono
               >
-                {t.groupStatus[group.status]}
+                <ScrambleText text={t.groupStatus[group.status]} />
               </Badge>
             </div>
             <h2 className="text-lg font-bold tracking-tight text-[var(--text-primary)]">
@@ -178,7 +179,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
           </Card>
 
           <Card className="space-y-4">
-            <h2 className="font-semibold">{t.manageDetails.members}</h2>
+            <h2 className="font-semibold"><ScrambleText text={t.manageDetails.members} /></h2>
             {group.members.length === 0 ? <EmptyState text={t.manageDetails.membersEmpty} /> : (
               <ul className="divide-y divide-[var(--border)]">
                 {group.members.map((member) => (
@@ -186,7 +187,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
                     <Avatar name={member.name} size="sm" />
                     <span className="flex-1 min-w-0 break-words">{member.name}</span>
                     <Badge variant={member.role === "LEADER" ? "primary" : "neutral"}>
-                      {member.role === "LEADER" ? t.myGroupCard.leader : t.myGroupCard.member}
+                      <ScrambleText text={member.role === "LEADER" ? t.myGroupCard.leader : t.myGroupCard.member} />
                     </Badge>
                   </li>
                 ))}
@@ -199,7 +200,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
           <section className="space-y-4">
             <div className="flex items-center gap-2">
               <h2 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
-                {t.manage.applicationsTitle}
+                <ScrambleText text={t.manage.applicationsTitle} />
               </h2>
               <Badge variant="neutral" size="sm" mono>
                 {pendingApplications.length}
@@ -227,13 +228,13 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
           </section>
           {confirmation && (
             <Card role="region" aria-labelledby="confirm-action-title" className="space-y-3">
-              <h2 id="confirm-action-title" className="font-semibold">{confirmation.action === "accept" ? t.manageDetails.confirmAccept : t.manageDetails.confirmReject}</h2>
+              <h2 id="confirm-action-title" className="font-semibold"><ScrambleText text={confirmation.action === "accept" ? t.manageDetails.confirmAccept : t.manageDetails.confirmReject} /></h2>
               <p className="break-words">{data?.applications.find((a) => a.id === confirmation.applicationId)?.applicant.name}</p>
-              <p id="action-blocked" className="text-sm text-[var(--text-secondary)]">{t.manageDetails.blocked}</p>
+              <p id="action-blocked" className="text-sm text-[var(--text-secondary)]"><ScrambleText text={t.manageDetails.blocked} /></p>
               <div className="flex flex-wrap gap-3">
-                <Button autoFocus variant="outline" onClick={() => setConfirmation(null)}>{t.manageDetails.cancel}</Button>
+                <Button autoFocus variant="outline" onClick={() => setConfirmation(null)}><ScrambleText text={t.manageDetails.cancel} /></Button>
                 <Button disabled={!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || Object.keys(pendingActions).length > 0 || (confirmation.action === "accept" && (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers))}
-                  aria-describedby="action-blocked" onClick={() => handleAction(confirmation.applicationId, confirmation.action)}>{t.manageDetails.confirm}</Button>
+                  aria-describedby="action-blocked" onClick={() => handleAction(confirmation.applicationId, confirmation.action)}><ScrambleText text={t.manageDetails.confirm} /></Button>
               </div>
             </Card>
           )}

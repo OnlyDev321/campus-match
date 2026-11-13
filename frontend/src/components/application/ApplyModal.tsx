@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState } from "react";
 import {
   CheckCircle2,
@@ -9,21 +10,29 @@ import {
   Code2,
   Globe,
   ShieldCheck,
-  UserCheck,
 } from "lucide-react";
 import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
+import { useLanguageStore } from "@/stores/languageStore";
+import { formatMessage } from "@/lib/format";
 import { useAuthStore } from "@/stores/authStore";
 import type { ApplyModalProps } from "@/lib/types";
 
-export default function ApplyModal({
+export default function ApplyModal(props: ApplyModalProps) {
+  if (!props.isOpen || !props.group) return null;
+  return <ApplyModalContent key={props.group.id} {...props} />;
+}
+
+function ApplyModalContent({
   isOpen,
   onClose,
   group,
   onSuccess,
 }: ApplyModalProps) {
   const { user, isLoggedIn, openLoginModal } = useAuthStore();
+  const { t } = useLanguageStore();
+  const copy = t.applyModal;
 
-  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [selectedRole, setSelectedRole] = useState<string>(() => group?.rolesQuota?.[0]?.role || "Frontend Developer");
   const [statement, setStatement] = useState<string>("");
   const [skills, setSkills] = useState<string>("");
   const [githubUrl, setGithubUrl] = useState<string>("");
@@ -48,18 +57,9 @@ export default function ApplyModal({
     ];
   }, [group]);
 
-  // Set default role and reset state only when modal opens
-  React.useEffect(() => {
-    if (isOpen) {
-      setIsSuccess(false);
-      setErrorMsg(null);
-      if (group?.rolesQuota && group.rolesQuota.length > 0) {
-        setSelectedRole(group.rolesQuota[0].role);
-      } else {
-        setSelectedRole("Core Developer");
-      }
-    }
-  }, [isOpen, group?.id]);
+  const selectedRoleLabel = group?.rolesQuota?.length
+    ? selectedRole
+    : copy.defaultRoles[availableRoles.indexOf(selectedRole)] ?? selectedRole;
 
   if (!group) return null;
 
@@ -71,14 +71,12 @@ export default function ApplyModal({
     }
 
     if (!selectedRole) {
-      setErrorMsg("Please select a target role.");
+      setErrorMsg("roleRequired");
       return;
     }
 
     if (!statement.trim() || statement.trim().length < 10) {
-      setErrorMsg(
-        "Please write a short introduction (at least 10 characters).",
-      );
+      setErrorMsg("statementRequired");
       return;
     }
 
@@ -109,10 +107,10 @@ export default function ApplyModal({
       title={
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[var(--primary)] shrink-0" />
-          <span>Apply to Join Group</span>
+          <span><ScrambleText text={copy.title} /></span>
         </div>
       }
-      description={`Submit your application for "${group.title}" (${group.course})`}
+      description={formatMessage(copy.description, { title: group.title, course: group.course })}
     >
       {isSuccess ? (
         /* Success Screen */
@@ -123,24 +121,22 @@ export default function ApplyModal({
 
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-[var(--text-primary)]">
-              Application Submitted!
+              <ScrambleText text={copy.successTitle} />
             </h3>
             <p className="text-sm text-[var(--text-secondary)] max-w-md mx-auto leading-relaxed">
-              Your application has been delivered to{" "}
-              <strong>{group.leaderName}</strong>. You will be notified once the
-              group leader reviews your profile.
+              <ScrambleText text={formatMessage(copy.successDescription, { leader: group.leaderName })} protectedValues={[...Object.values({ leader: group.leaderName })]} />
             </p>
           </div>
 
           <div className="p-3.5 rounded-lg bg-[var(--surface-container-low)] border border-[var(--border)] max-w-sm mx-auto text-xs text-[var(--text-muted)] space-y-1">
             <div className="flex justify-between">
-              <span>Target Role:</span>
+              <span><ScrambleText text={copy.targetRole} /></span>
               <strong className="text-[var(--text-primary)]">
-                {selectedRole}
+                {selectedRoleLabel}
               </strong>
             </div>
             <div className="flex justify-between">
-              <span>Target Group:</span>
+              <span><ScrambleText text={copy.targetGroup} /></span>
               <span className="text-[var(--text-primary)] truncate max-w-[200px]">
                 {group.title}
               </span>
@@ -149,7 +145,7 @@ export default function ApplyModal({
 
           <div className="pt-2">
             <Button onClick={handleFinish} className="px-8 font-semibold">
-              Done & Return
+              <ScrambleText text={copy.done} />
             </Button>
           </div>
         </div>
@@ -160,14 +156,14 @@ export default function ApplyModal({
           <div className="p-3.5 rounded-lg border border-[var(--border)] bg-[var(--surface-container-low)] flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Avatar
-                name={user?.name || "Student"}
+                name={user?.name || copy.student}
                 size="md"
                 className="ring-1 ring-[var(--border)]"
               />
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-[var(--text-primary)] truncate">
-                    {user?.name || "Soongsil Student"}
+                    {user?.name || <ScrambleText text={copy.student} />}
                   </span>
                   <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[var(--success-text)] bg-[var(--success-bg)] px-2 py-0.5 rounded border border-[var(--success-border)]">
                     <ShieldCheck className="w-3 h-3" />
@@ -175,27 +171,27 @@ export default function ApplyModal({
                   </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)] truncate">
-                  {user?.studentId || "2021****"} •{" "}
+                  {user?.studentId || <ScrambleText text={t.groupDetail.notProvided} />} •{" "}
                   {user?.department || group.department} •{" "}
-                  {user?.academicYear
-                    ? `Year ${user.academicYear}`
-                    : "Undergraduate"}
+                  <ScrambleText text={user?.academicYear
+                    ? formatMessage(t.profile.yearBadge, { year: user.academicYear })
+                    : copy.undergraduate} protectedValues={[user?.academicYear ?? ""]} />
                 </p>
               </div>
             </div>
             <Badge variant="neutral" size="sm" mono>
-              Applicant
+              <ScrambleText text={copy.applicant} />
             </Badge>
           </div>
 
           {/* Role Selection */}
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
-              Desired Role in Group{" "}
+              <ScrambleText text={copy.desiredRole} />{" "}
               <span className="text-[var(--error)]">*</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {availableRoles.map((role) => {
+              {availableRoles.map((role, index) => {
                 const isSelected = selectedRole === role;
                 return (
                   <button
@@ -208,7 +204,7 @@ export default function ApplyModal({
                         : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--surface-container)] hover:border-[var(--border-strong)]"
                     }`}
                   >
-                    {role}
+                    <ScrambleText text={group.rolesQuota?.length ? role : copy.defaultRoles[index]} />
                   </button>
                 );
               })}
@@ -222,11 +218,11 @@ export default function ApplyModal({
                 htmlFor="apply-statement"
                 className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider"
               >
-                Introduction & Motivation{" "}
+                <ScrambleText text={copy.introduction} />{" "}
                 <span className="text-[var(--error)]">*</span>
               </label>
               <span className="text-[11px] text-[var(--text-muted)]">
-                {statement.length}/500 chars
+                <ScrambleText text={formatMessage(copy.characterCount, { count: statement.length })} protectedValues={[...Object.values({ count: statement.length })]} />
               </span>
             </div>
             <textarea
@@ -235,7 +231,7 @@ export default function ApplyModal({
               maxLength={500}
               value={statement}
               onChange={(e) => setStatement(e.target.value)}
-              placeholder="Briefly introduce your relevant coursework, skills, or what you want to achieve with the team (e.g. Aiming for an A+, available for weekly meetings on weekends)..."
+              placeholder={copy.statementPlaceholder}
               style={{ borderRadius: "var(--radius-input)" }}
               className="w-full p-3 text-sm bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] placeholder:text-[var(--text-faint)] focus:outline-none focus:border-[var(--primary-container)] focus:ring-2 focus:ring-[var(--focus-ring)] transition-all resize-none"
             />
@@ -244,26 +240,26 @@ export default function ApplyModal({
           {/* Relevant Skills (Free-form text input) */}
           <div className="space-y-1.5">
             <Input
-              label="Relevant Skills / Tech Stack"
-              placeholder="e.g. React, Next.js, Go, Spring Boot, Python, Figma, Docker..."
+              label={copy.skillsLabel}
+              placeholder={copy.skillsPlaceholder}
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
-              helperText="Feel free to freely list your programming languages, frameworks, or tools."
+              helperText={copy.skillsHelp}
             />
           </div>
 
           {/* Optional Links */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Input
-              label="GitHub Link (Optional)"
-              placeholder="github.com/username"
+              label={copy.githubLabel}
+              placeholder={copy.githubPlaceholder}
               leftIcon={<Code2 className="w-3.5 h-3.5" />}
               value={githubUrl}
               onChange={(e) => setGithubUrl(e.target.value)}
             />
             <Input
-              label="Portfolio / Website (Optional)"
-              placeholder="https://myportfolio.dev"
+              label={copy.portfolioLabel}
+              placeholder={copy.portfolioPlaceholder}
               leftIcon={<Globe className="w-3.5 h-3.5" />}
               value={portfolioUrl}
               onChange={(e) => setPortfolioUrl(e.target.value)}
@@ -273,7 +269,7 @@ export default function ApplyModal({
           {errorMsg && (
             <div className="p-3 rounded-md bg-[var(--error-bg)] border border-[var(--error-border)] text-xs text-[var(--error-text)] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+              <span><ScrambleText text={errorMsg === "roleRequired" ? copy.roleRequired : copy.statementRequired} /></span>
             </div>
           )}
 
@@ -285,7 +281,7 @@ export default function ApplyModal({
               onClick={onClose}
               disabled={isSubmitting}
             >
-              Cancel
+              <ScrambleText text={copy.cancel} />
             </Button>
             <Button
               type="submit"
@@ -293,7 +289,7 @@ export default function ApplyModal({
               isLoading={isSubmitting}
               leftIcon={<Send className="w-3.5 h-3.5" />}
             >
-              Submit Application
+              <ScrambleText text={copy.submit} />
             </Button>
           </div>
         </form>

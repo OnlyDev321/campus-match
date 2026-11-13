@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -205,21 +206,21 @@ const GroupPage = () => {
       {/* 1. Breadcrumb / Directory path */}
       <div className="flex items-center gap-2 text-xs font-semibold tracking-wider">
         <span className="text-[var(--primary)] uppercase">
-          {t.groupsPage.breadcrumbDirectory}
+          <ScrambleText text={t.groupsPage.breadcrumbDirectory} />
         </span>
         <span className="text-[var(--text-faint)]">/</span>
         <span className="text-[var(--text-muted)] font-normal">
-          {t.groupsPage.breadcrumbCampus}
+          <ScrambleText text={t.groupsPage.breadcrumbCampus} />
         </span>
       </div>
 
       {/* 2. Page Title & Subtitle */}
       <div className="space-y-1.5">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-          {t.groupsPage.title}
+          <ScrambleText text={t.groupsPage.title} />
         </h1>
         <p className="text-sm sm:text-base text-[var(--text-secondary)]">
-          {t.groupsPage.subtitle}
+          <ScrambleText text={t.groupsPage.subtitle} />
         </p>
       </div>
 
@@ -235,7 +236,7 @@ const GroupPage = () => {
               {activeGroupsCount}
             </div>
             <div className="text-xs font-medium text-[var(--text-muted)] mt-1">
-              {t.groupsPage.activeGroups}
+              <ScrambleText text={t.groupsPage.activeGroups} />
             </div>
           </div>
         </div>
@@ -250,7 +251,7 @@ const GroupPage = () => {
               {teamsRecruitingCount}
             </div>
             <div className="text-xs font-medium text-[var(--text-muted)] mt-1">
-              {t.groupsPage.teamsRecruiting}
+              <ScrambleText text={t.groupsPage.teamsRecruiting} />
             </div>
           </div>
         </div>
@@ -292,12 +293,12 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  {t.groupsPage.collegeLabel}
+                  <ScrambleText text={t.groupsPage.collegeLabel} />
                 </span>
                 <span>
-                  {selectedCollege === "ALL"
+                  <ScrambleText text={selectedCollege === "ALL"
                     ? t.groupsPage.allColleges
-                    : selectedCollege}
+                    : selectedCollege} />
                 </span>
               </Button>
 
@@ -312,7 +313,7 @@ const GroupPage = () => {
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
-                    {t.groupsPage.allColleges}
+                    <ScrambleText text={t.groupsPage.allColleges} />
                   </button>
                   {colleges.map((col) => (
                     <button
@@ -349,12 +350,12 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  {t.groupsPage.departmentLabel}
+                  <ScrambleText text={t.groupsPage.departmentLabel} />
                 </span>
                 <span>
-                  {selectedDepartment === "ALL"
+                  <ScrambleText text={selectedDepartment === "ALL"
                     ? t.groupsPage.allDepartments
-                    : selectedDepartment}
+                    : selectedDepartment} />
                 </span>
               </Button>
 
@@ -372,7 +373,7 @@ const GroupPage = () => {
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
-                    {t.groupsPage.allDepartments}
+                    <ScrambleText text={t.groupsPage.allDepartments} />
                   </button>
                   {departments.map((dept) => (
                     <button
@@ -412,12 +413,12 @@ const GroupPage = () => {
                 }
               >
                 <span className="text-[var(--text-muted)] font-normal mr-1">
-                  {t.groupsPage.yearLabel}
+                  <ScrambleText text={t.groupsPage.yearLabel} />
                 </span>
                 <span>
-                  {selectedYear === "ALL"
+                  <ScrambleText text={selectedYear === "ALL"
                     ? t.groupsPage.allYears
-                    : t.groupsPage.yearFormat.replace("{year}", String(selectedYear))}
+                    : t.groupsPage.yearFormat.replace("{year}", String(selectedYear))} />
                 </span>
               </Button>
 
@@ -435,7 +436,7 @@ const GroupPage = () => {
                         : "text-[var(--text-secondary)]"
                     }`}
                   >
-                    {t.groupsPage.allYears}
+                    <ScrambleText text={t.groupsPage.allYears} />
                   </button>
                   {years.map((yr) => (
                     <button
@@ -451,7 +452,7 @@ const GroupPage = () => {
                           : "text-[var(--text-secondary)]"
                       }`}
                     >
-                      {t.groupsPage.yearFormat.replace("{year}", String(yr))}
+                      <ScrambleText text={t.groupsPage.yearFormat.replace("{year}", String(yr))} />
                     </button>
                   ))}
                 </div>
@@ -467,14 +468,14 @@ const GroupPage = () => {
               leftIcon={<Search className="w-3.5 h-3.5" />}
               className="px-4 font-semibold shadow-sm"
             >
-              {t.groupsPage.searchBtn}
+              <ScrambleText text={t.groupsPage.searchBtn} />
             </Button>
           </div>
 
           {/* Sort By Dropdown */}
           <div className="relative flex items-center gap-2">
             <span className="text-xs text-[var(--text-muted)] font-medium">
-              {t.groupsPage.sortByLabel}
+              <ScrambleText text={t.groupsPage.sortByLabel} />
             </span>
             <Button
               variant="outline"
@@ -491,9 +492,9 @@ const GroupPage = () => {
               }
             >
               <span>
-                {sortBy === "recent"
+                <ScrambleText text={sortBy === "recent"
                   ? t.groupsPage.mostRecent
-                  : t.groupsPage.spotsLeft}
+                  : t.groupsPage.spotsLeft} />
               </span>
             </Button>
 
@@ -511,7 +512,7 @@ const GroupPage = () => {
                       : "text-[var(--text-secondary)]"
                   }`}
                 >
-                  {t.groupsPage.mostRecent}
+                  <ScrambleText text={t.groupsPage.mostRecent} />
                 </button>
                 <button
                   type="button"
@@ -525,7 +526,7 @@ const GroupPage = () => {
                       : "text-[var(--text-secondary)]"
                   }`}
                 >
-                  {t.groupsPage.spotsLeft}
+                  <ScrambleText text={t.groupsPage.spotsLeft} />
                 </button>
               </div>
             )}
@@ -536,13 +537,13 @@ const GroupPage = () => {
         {hasActiveFilters && (
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[var(--border-muted)] text-xs">
             <span className="text-[var(--text-muted)] font-medium">
-              {t.groupsPage.activeFiltersLabel}
+              <ScrambleText text={t.groupsPage.activeFiltersLabel} />
             </span>
 
             {appliedCollege !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
                 <span>
-                  {t.groupsPage.collegeLabel} {appliedCollege}
+                  <ScrambleText text={t.groupsPage.collegeLabel} /> {appliedCollege}
                 </span>
                 <button
                   type="button"
@@ -561,7 +562,7 @@ const GroupPage = () => {
             {appliedDepartment !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
                 <span>
-                  {t.groupsPage.departmentLabel} {appliedDepartment}
+                  <ScrambleText text={t.groupsPage.departmentLabel} /> {appliedDepartment}
                 </span>
                 <button
                   type="button"
@@ -580,8 +581,8 @@ const GroupPage = () => {
             {appliedYear !== "ALL" && (
               <Badge variant="neutral" size="md" className="gap-2">
                 <span>
-                  {t.groupsPage.yearLabel}{" "}
-                  {t.groupsPage.yearFormat.replace("{year}", appliedYear)}
+                  <ScrambleText text={t.groupsPage.yearLabel} />{" "}
+                  <ScrambleText text={t.groupsPage.yearFormat.replace("{year}", appliedYear)} />
                 </span>
                 <button
                   type="button"
@@ -600,7 +601,7 @@ const GroupPage = () => {
             {appliedQuery.trim() !== "" && (
               <Badge variant="neutral" size="md" className="gap-2">
                 <span>
-                  {t.groupsPage.filterSearchPrefix}&quot;{appliedQuery}&quot;
+                  <ScrambleText text={t.groupsPage.filterSearchPrefix} />&quot;{appliedQuery}&quot;
                 </span>
                 <button
                   type="button"
@@ -621,7 +622,7 @@ const GroupPage = () => {
               onClick={handleClearAll}
               className="text-[var(--primary)] font-semibold hover:underline ml-1 cursor-pointer"
             >
-              {t.groupsPage.clearAll}
+              <ScrambleText text={t.groupsPage.clearAll} />
             </button>
           </div>
         )}
@@ -647,9 +648,9 @@ const GroupPage = () => {
           {/* Pagination Bar */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[var(--border-muted)]">
             <p className="text-xs sm:text-sm text-[var(--text-muted)]">
-              {t.groupsPage.showingCount
+              <ScrambleText text={t.groupsPage.showingCount
                 .replace("{current}", String(paginatedGroups.length))
-                .replace("{total}", String(filteredGroups.length))}
+                .replace("{total}", String(filteredGroups.length))} />
             </p>
 
             <div className="flex items-center gap-1.5">
@@ -689,7 +690,7 @@ const GroupPage = () => {
                 }
                 className="h-8 px-3 rounded-md text-xs font-medium flex items-center gap-1 border border-[var(--border)] text-[var(--text-secondary)] hover:bg-[var(--surface-container-low)] disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
               >
-                <span>{t.groupsPage.nextBtn}</span>
+                <span><ScrambleText text={t.groupsPage.nextBtn} /></span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -699,10 +700,10 @@ const GroupPage = () => {
         <Card className="text-center py-16 px-4 border-dashed bg-[var(--surface-container-low)]">
           <SlidersHorizontal className="w-10 h-10 mx-auto text-[var(--text-faint)] mb-3" />
           <h3 className="text-base font-semibold text-[var(--text-primary)]">
-            {t.groupsPage.noResultsTitle}
+            <ScrambleText text={t.groupsPage.noResultsTitle} />
           </h3>
           <p className="text-xs text-[var(--text-muted)] mt-1 max-w-sm mx-auto">
-            {t.groupsPage.noResultsDesc}
+            <ScrambleText text={t.groupsPage.noResultsDesc} />
           </p>
           <Button
             variant="primary"
@@ -710,7 +711,7 @@ const GroupPage = () => {
             onClick={handleClearAll}
             className="mt-4"
           >
-            {t.groupsPage.resetFiltersBtn}
+            <ScrambleText text={t.groupsPage.resetFiltersBtn} />
           </Button>
         </Card>
       )}

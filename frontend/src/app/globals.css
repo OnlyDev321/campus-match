@@ -35,6 +35,9 @@
   --motion-fast: 150ms;
   --motion-normal: 200ms;
   --motion-page: 280ms;
+  /* Thời gian tính bằng ms cho hiệu ứng chạy chữ khi đổi ngôn ngữ. */
+  --motion-language-duration: 450;
+  --motion-language-interval: 45;
   --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 
   /* Canvas & Surfaces - Light Mode */
@@ -318,6 +321,11 @@ body {
   body {
     transition: none;
   }
+}
+
+/* Tách lớp chữ hiển thị khỏi nội dung thật, không sửa text node do React quản lý. */
+.scramble-text-visual::after {
+  content: attr(data-text);
 }
 
 /* Chỉ animate khi nội dung được gắn vào DOM, không animate lại khi render. */

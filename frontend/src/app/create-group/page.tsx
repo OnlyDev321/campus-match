@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -192,21 +193,21 @@ export default function CreateGroupPage() {
             className="hover:text-[var(--primary)] flex items-center gap-1 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>{copy.breadcrumbDirectory}</span>
+            <span><ScrambleText text={copy.breadcrumbDirectory} /></span>
           </Link>
           <ChevronRight className="w-3.5 h-3.5" />
           <span className="text-[var(--text-primary)] font-semibold">
-            {copy.breadcrumbCreate}
+            <ScrambleText text={copy.breadcrumbCreate} />
           </span>
         </nav>
 
         <div className="border-b border-[var(--border)] pb-6">
           <div className="space-y-1">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
-              {copy.title}
+              <ScrambleText text={copy.title} />
             </h1>
             <p className="text-sm text-[var(--text-secondary)] max-w-2xl">
-              {copy.subtitle}
+              <ScrambleText text={copy.subtitle} />
             </p>
           </div>
         </div>
@@ -235,10 +236,10 @@ export default function CreateGroupPage() {
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-                    {copy.basicInfoTitle}
+                    <ScrambleText text={copy.basicInfoTitle} />
                   </h2>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {copy.basicInfoSubtitle}
+                    <ScrambleText text={copy.basicInfoSubtitle} />
                   </p>
                 </div>
               </div>
@@ -250,7 +251,7 @@ export default function CreateGroupPage() {
                     htmlFor="group-title"
                     className="block text-xs font-semibold text-[var(--text-secondary)]"
                   >
-                    {copy.groupTitleLabel}{" "}
+                    <ScrambleText text={copy.groupTitleLabel} />{" "}
                     <span className="text-[var(--error)]">*</span>
                   </label>
                   <span className="text-[11px] font-mono text-[var(--text-faint)]">
@@ -269,7 +270,7 @@ export default function CreateGroupPage() {
                 />
                 {!errors.title && (
                   <p className="text-xs text-[var(--text-muted)]">
-                    {copy.groupTitleHelp}
+                    <ScrambleText text={copy.groupTitleHelp} />
                   </p>
                 )}
               </div>
@@ -281,7 +282,7 @@ export default function CreateGroupPage() {
                     htmlFor="group-description"
                     className="block text-xs font-semibold text-[var(--text-secondary)]"
                   >
-                    {copy.descriptionLabel}{" "}
+                    <ScrambleText text={copy.descriptionLabel} />{" "}
                     <span className="text-[var(--error)]">*</span>
                   </label>
                   <span
@@ -314,7 +315,7 @@ export default function CreateGroupPage() {
                   </p>
                 ) : (
                   <p className="text-xs text-[var(--text-muted)]">
-                    {copy.descriptionHelp}
+                    <ScrambleText text={copy.descriptionHelp} />
                   </p>
                 )}
               </div>
@@ -325,7 +326,7 @@ export default function CreateGroupPage() {
                   htmlFor="group-tags"
                   className="block text-xs font-semibold text-[var(--text-secondary)]"
                 >
-                  {copy.tagsLabel}
+                  <ScrambleText text={copy.tagsLabel} />
                 </label>
                 <div className="flex flex-wrap items-center gap-1.5 p-2 bg-[var(--surface-container-low)] border border-[var(--border)] rounded-[var(--radius-input)]">
                   {formData.tags.map((tag) => (
@@ -360,7 +361,7 @@ export default function CreateGroupPage() {
                   )}
                 </div>
                 <p className="text-xs text-[var(--text-muted)]">
-                  {copy.tagsHelp}
+                  <ScrambleText text={copy.tagsHelp} />
                 </p>
               </div>
             </Card>
@@ -373,10 +374,10 @@ export default function CreateGroupPage() {
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-                    {copy.academicInfoTitle}
+                    <ScrambleText text={copy.academicInfoTitle} />
                   </h2>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {copy.academicInfoSubtitle}
+                    <ScrambleText text={copy.academicInfoSubtitle} />
                   </p>
                 </div>
               </div>
@@ -413,7 +414,7 @@ export default function CreateGroupPage() {
               {/* Meeting Format Selector */}
               <div className="space-y-2.5 pt-2">
                 <label className="block text-xs font-semibold text-[var(--text-secondary)]">
-                  {copy.meetingFormatLabel}
+                  <ScrambleText text={copy.meetingFormatLabel} />
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
@@ -502,10 +503,10 @@ export default function CreateGroupPage() {
                 </div>
                 <div>
                   <h2 className="text-base font-semibold text-[var(--text-primary)] tracking-tight">
-                    {copy.capacityTitle}
+                    <ScrambleText text={copy.capacityTitle} />
                   </h2>
                   <p className="text-xs text-[var(--text-muted)]">
-                    {copy.capacitySubtitle}
+                    <ScrambleText text={copy.capacitySubtitle} />
                   </p>
                 </div>
               </div>
@@ -517,10 +518,10 @@ export default function CreateGroupPage() {
                       htmlFor="max-members-input"
                       className="text-sm font-semibold text-[var(--text-primary)] block"
                     >
-                      {copy.maxMembersLabel}
+                      <ScrambleText text={copy.maxMembersLabel} />
                     </label>
                     <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                      {copy.maxMembersHelp}
+                      <ScrambleText text={copy.maxMembersHelp} />
                     </p>
                   </div>
 
@@ -601,12 +602,12 @@ export default function CreateGroupPage() {
               </div>
               <div className="space-y-1">
                 <h3 className="text-xs font-semibold text-[var(--text-primary)]">
-                  {copy.leaderNoticeTitle}
+                  <ScrambleText text={copy.leaderNoticeTitle} />
                 </h3>
                 <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                  {copy.leaderNoticeDesc
+                  <ScrambleText text={copy.leaderNoticeDesc
                     .replace("{college}", collegeDisplay)
-                    .replace("{department}", departmentDisplay)}
+                    .replace("{department}", departmentDisplay)} />
                 </p>
               </div>
             </div>
@@ -619,7 +620,7 @@ export default function CreateGroupPage() {
                 onClick={() => router.push("/groups")}
                 disabled={isSubmitting}
               >
-                {copy.cancelBtn}
+                <ScrambleText text={copy.cancelBtn} />
               </Button>
               <Button
                 type="submit"
@@ -628,7 +629,7 @@ export default function CreateGroupPage() {
                 className="px-6 font-semibold"
                 leftIcon={<Sparkles className="w-4 h-4" />}
               >
-                {isSubmitting ? copy.submittingBtn : copy.submitBtn}
+                <ScrambleText text={isSubmitting ? copy.submittingBtn : copy.submitBtn} />
               </Button>
             </div>
           </form>
@@ -640,11 +641,11 @@ export default function CreateGroupPage() {
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
               <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">
-                {copy.previewTitle}
+                <ScrambleText text={copy.previewTitle} />
               </h3>
             </div>
             <p className="text-xs text-[var(--text-muted)]">
-              {copy.previewSubtitle}
+              <ScrambleText text={copy.previewSubtitle} />
             </p>
           </div>
 
@@ -724,7 +725,7 @@ export default function CreateGroupPage() {
                     1
                   </span>
                   <span className="text-[11px] text-[var(--text-muted)]">
-                    /{formData.maxMembers} {copy.membersUnit}
+                    /{formData.maxMembers} <ScrambleText text={copy.membersUnit} />
                   </span>
                 </div>
               </CardFooter>
@@ -732,10 +733,10 @@ export default function CreateGroupPage() {
               {/* Mock Action Buttons */}
               <div className="grid grid-cols-2 gap-2 pt-1 opacity-75 pointer-events-none">
                 <Button variant="outline" size="sm" className="w-full text-xs">
-                  {t.groupsPage.viewDetails}
+                  <ScrambleText text={t.groupsPage.viewDetails} />
                 </Button>
                 <Button variant="primary" size="sm" className="w-full text-xs">
-                  {t.groupsPage.join}
+                  <ScrambleText text={t.groupsPage.join} />
                 </Button>
               </div>
             </Card>
@@ -770,7 +771,7 @@ export default function CreateGroupPage() {
               onClick={() => router.push("/groups")}
               className="text-xs font-semibold"
             >
-              {copy.viewGroupBtn}
+              <ScrambleText text={copy.viewGroupBtn} />
             </Button>
             <Button
               variant="primary"
@@ -778,7 +779,7 @@ export default function CreateGroupPage() {
               className="text-xs font-semibold"
               leftIcon={<CheckCircle2 className="w-4 h-4" />}
             >
-              {copy.goToManageBtn}
+              <ScrambleText text={copy.goToManageBtn} />
             </Button>
           </div>
         }
@@ -793,7 +794,7 @@ export default function CreateGroupPage() {
                 {createdGroup?.title || formData.title}
               </h4>
               <p className="text-xs text-[var(--text-muted)] mt-0.5">
-                {createdGroup?.college || collegeDisplay} · {createdGroup?.department || departmentDisplay} · {formData.maxMembers} {copy.membersUnit}
+                {createdGroup?.college || collegeDisplay} · {createdGroup?.department || departmentDisplay} · {formData.maxMembers} <ScrambleText text={copy.membersUnit} />
               </p>
             </div>
           </div>

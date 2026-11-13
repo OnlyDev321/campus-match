@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React from "react";
 import { Mail, Phone, ShieldCheck } from "lucide-react";
 import { Avatar, Badge, Card } from "@/design-system";
@@ -34,12 +35,12 @@ const ProfileCard = ({ user }: ProfileCardProps) => {
             </h2>
             {user.academicYear && (
               <Badge variant="primary" size="sm" mono>
-                {formatMessage(t.profile.yearBadge, { year: user.academicYear })}
+                <ScrambleText text={formatMessage(t.profile.yearBadge, { year: user.academicYear })} protectedValues={[...Object.values({ year: user.academicYear })]} />
               </Badge>
             )}
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-(--success-text) bg-(--success-bg) px-2.5 py-1 rounded-md border border-(--success-border)">
               <ShieldCheck className="w-3.5 h-3.5 text-(--success)" />
-              {t.profile.verified}
+              <ScrambleText text={t.profile.verified} />
             </span>
           </div>
 

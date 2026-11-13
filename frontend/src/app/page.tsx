@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React from "react";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
@@ -34,22 +35,22 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[var(--surface)] border border-[var(--border)] shadow-xs">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-semibold text-[var(--text-secondary)]">
-              {t.landing.badge}
+              <ScrambleText text={t.landing.badge} />
             </span>
           </div>
 
           {/* Main Headline */}
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[var(--text-primary)] leading-[1.18]">
-            {t.landing.heroTitlePrefix} <br className="hidden sm:inline" />
+            <ScrambleText text={t.landing.heroTitlePrefix} /> <br className="hidden sm:inline" />
             <span className="bg-gradient-to-r from-[var(--primary)] via-[var(--primary-container)] to-blue-500 bg-clip-text text-transparent">
-              {t.landing.heroTitleHighlight}
+              <ScrambleText text={t.landing.heroTitleHighlight} />
             </span>{" "}
-            {t.landing.heroTitleSuffix}
+            <ScrambleText text={t.landing.heroTitleSuffix} />
           </h1>
 
           {/* Subtitle */}
           <p className="max-w-2xl mx-auto text-base sm:text-lg text-[var(--text-secondary)] font-normal leading-relaxed">
-            {t.landing.heroSubtitle}
+            <ScrambleText text={t.landing.heroSubtitle} />
           </p>
 
           {/* Action CTAs */}
@@ -62,7 +63,7 @@ export default function LandingPage() {
                 className="w-full sm:w-auto shadow-md h-12 px-7 text-sm font-semibold rounded-xl"
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
-                {t.landing.seeGroupsBtn}
+                <ScrambleText text={t.landing.seeGroupsBtn} />
               </Button>
             ) : (
               <>
@@ -73,7 +74,7 @@ export default function LandingPage() {
                   className="w-full sm:w-auto shadow-md h-12 px-7 text-sm font-semibold rounded-xl"
                   leftIcon={<GraduationCap className="w-5 h-5" />}
                 >
-                  {t.landing.startBtn}
+                  <ScrambleText text={t.landing.startBtn} />
                 </Button>
               </>
             )}
@@ -83,14 +84,14 @@ export default function LandingPage() {
           <div className="pt-6 flex flex-wrap items-center justify-center gap-6 sm:gap-8 text-xs text-[var(--text-muted)] font-medium">
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />{" "}
-              {t.landing.trustBadge1}
+              <ScrambleText text={t.landing.trustBadge1} />
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Lock className="w-4 h-4 text-blue-500" /> {t.landing.trustBadge2}
+              <Lock className="w-4 h-4 text-blue-500" /> <ScrambleText text={t.landing.trustBadge2} />
             </span>
             <span className="inline-flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-amber-500" />{" "}
-              {t.landing.trustBadge3}
+              <ScrambleText text={t.landing.trustBadge3} />
             </span>
           </div>
         </div>
@@ -104,10 +105,10 @@ export default function LandingPage() {
               CORE FEATURES
             </Badge>
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-              {t.landing.coreFeaturesTitle}
+              <ScrambleText text={t.landing.coreFeaturesTitle} />
             </h2>
             <p className="text-sm sm:text-base text-[var(--text-secondary)] max-w-2xl mx-auto leading-relaxed">
-              {t.landing.coreFeaturesSubtitle}
+              <ScrambleText text={t.landing.coreFeaturesSubtitle} />
             </p>
           </div>
 
@@ -122,18 +123,18 @@ export default function LandingPage() {
                 </div>
                 {/* Title */}
                 <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight mb-2.5">
-                  {t.landing.feature1Title}
+                  <ScrambleText text={t.landing.feature1Title} />
                 </h3>
                 {/* Description */}
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {t.landing.feature1Desc}
+                  <ScrambleText text={t.landing.feature1Desc} />
                 </p>
               </div>
 
               {/* Sub Info Footer */}
               <div className="mt-6 pt-4 border-t border-[var(--border-muted)] flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
-                <span className="truncate">{t.landing.feature1Sub}</span>
+                <span className="truncate"><ScrambleText text={t.landing.feature1Sub} /></span>
               </div>
             </div>
 
@@ -146,18 +147,18 @@ export default function LandingPage() {
                 </div>
                 {/* Title */}
                 <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight mb-2.5">
-                  {t.landing.feature2Title}
+                  <ScrambleText text={t.landing.feature2Title} />
                 </h3>
                 {/* Description */}
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {t.landing.feature2Desc}
+                  <ScrambleText text={t.landing.feature2Desc} />
                 </p>
               </div>
 
               {/* Sub Info Footer */}
               <div className="mt-6 pt-4 border-t border-[var(--border-muted)] flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                <span className="truncate">{t.landing.feature2Sub}</span>
+                <span className="truncate"><ScrambleText text={t.landing.feature2Sub} /></span>
               </div>
             </div>
 
@@ -170,18 +171,18 @@ export default function LandingPage() {
                 </div>
                 {/* Title */}
                 <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight mb-2.5">
-                  {t.landing.feature3Title}
+                  <ScrambleText text={t.landing.feature3Title} />
                 </h3>
                 {/* Description */}
                 <p className="text-sm text-[var(--text-secondary)] leading-relaxed">
-                  {t.landing.feature3Desc}
+                  <ScrambleText text={t.landing.feature3Desc} />
                 </p>
               </div>
 
               {/* Sub Info Footer */}
               <div className="mt-6 pt-4 border-t border-[var(--border-muted)] flex items-center gap-2 text-xs text-[var(--text-muted)]">
                 <span className="w-1.5 h-1.5 rounded-full bg-purple-500 shrink-0" />
-                <span className="truncate">{t.landing.feature3Sub}</span>
+                <span className="truncate"><ScrambleText text={t.landing.feature3Sub} /></span>
               </div>
             </div>
           </div>
@@ -197,7 +198,7 @@ export default function LandingPage() {
                 1,200+
               </div>
               <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                {t.landing.statsStudents}
+                <ScrambleText text={t.landing.statsStudents} />
               </div>
             </div>
 
@@ -206,7 +207,7 @@ export default function LandingPage() {
                 350+
               </div>
               <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                {t.landing.statsGroups}
+                <ScrambleText text={t.landing.statsGroups} />
               </div>
             </div>
 
@@ -215,7 +216,7 @@ export default function LandingPage() {
                 94%
               </div>
               <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                {t.landing.statsCompletion}
+                <ScrambleText text={t.landing.statsCompletion} />
               </div>
             </div>
 
@@ -224,7 +225,7 @@ export default function LandingPage() {
                 100%
               </div>
               <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                {t.landing.statsVerification}
+                <ScrambleText text={t.landing.statsVerification} />
               </div>
             </div>
           </div>
@@ -235,10 +236,10 @@ export default function LandingPage() {
       <section className="w-full py-20 px-4 sm:px-6 lg:px-8 border-t border-[var(--border)] bg-[var(--surface)] text-center">
         <div className="max-w-3xl mx-auto space-y-6">
           <h3 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-            {t.landing.bottomCtaTitle}
+            <ScrambleText text={t.landing.bottomCtaTitle} />
           </h3>
           <p className="text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed max-w-xl mx-auto">
-            {t.landing.bottomCtaSubtitle}
+            <ScrambleText text={t.landing.bottomCtaSubtitle} />
           </p>
         </div>
       </section>

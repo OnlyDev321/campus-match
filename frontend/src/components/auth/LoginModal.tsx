@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState } from "react";
 import { Modal, Input, Button, Badge } from "@/design-system";
 import { useAuthStore } from "@/stores/authStore";
@@ -88,10 +89,10 @@ export default function LoginModal() {
           </div>
           <div>
             <h3 className="text-base font-bold text-(--text-primary) tracking-tight">
-              {t.loginModal.title}
+              <ScrambleText text={t.loginModal.title} />
             </h3>
             <p className="text-xs text-(--text-muted) font-normal">
-              {t.loginModal.subtitle}
+              <ScrambleText text={t.loginModal.subtitle} />
             </p>
           </div>
         </div>
@@ -155,7 +156,7 @@ export default function LoginModal() {
             fullWidth
             isLoading={isSubmitting}
           >
-            {isSubmitting ? t.loginModal.submittingBtn : t.loginModal.submitBtn}
+            <ScrambleText text={isSubmitting ? t.loginModal.submittingBtn : t.loginModal.submitBtn} />
           </Button>
         </div>
 
@@ -164,10 +165,10 @@ export default function LoginModal() {
           <ShieldCheck className="w-5 h-5 text-(--success) shrink-0 mt-0.5" />
           <div className="text-xs space-y-1">
             <p className="font-semibold text-(--text-primary)">
-              {t.loginModal.securityGuaranteeTitle}
+              <ScrambleText text={t.loginModal.securityGuaranteeTitle} />
             </p>
             <p className="text-(--text-secondary) leading-relaxed">
-              {t.loginModal.securityGuaranteeDesc}
+              <ScrambleText text={t.loginModal.securityGuaranteeDesc} />
             </p>
           </div>
         </div>

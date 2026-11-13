@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React from "react";
 import ProfileCard from "./ProfileCard";
 import TimetableCard from "./TimetableCard";
@@ -25,21 +26,21 @@ const MyPage = () => {
       {/* 1. Breadcrumb / Directory path - Đồng nhất với Groups page */}
       <div className="flex items-center gap-2 text-xs font-semibold tracking-wider">
         <span className="text-[var(--primary)] uppercase">
-          {t.myPage.breadcrumbRoot}
+          <ScrambleText text={t.myPage.breadcrumbRoot} />
         </span>
         <span className="text-[var(--text-faint)]">/</span>
         <span className="text-[var(--text-muted)] font-normal">
-          {t.myPage.breadcrumbCampus}
+          <ScrambleText text={t.myPage.breadcrumbCampus} />
         </span>
       </div>
 
       {/* 2. Page Title & Subtitle */}
       <div className="space-y-1.5">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-          {t.nav.myPage}
+          <ScrambleText text={t.nav.myPage} />
         </h1>
         <p className="text-sm sm:text-base text-[var(--text-secondary)]">
-          {t.myPage.subtitle}
+          <ScrambleText text={t.myPage.subtitle} />
         </p>
       </div>
 

@@ -4,6 +4,7 @@ import com.campusmatch.dto.ApplicationResponse;
 import com.campusmatch.dto.ApplyRequest;
 import com.campusmatch.dto.AuthResponse;
 import com.campusmatch.entity.*;
+import com.campusmatch.security.StudentIdPrivacy;
 import com.campusmatch.repository.ApplicationRepository;
 import com.campusmatch.repository.GroupMemberRepository;
 import com.campusmatch.repository.GroupRepository;
@@ -237,11 +238,11 @@ public class ApplicationService {
         User u = app.getApplicant();
         AuthResponse.UserSummary userSummary = AuthResponse.UserSummary.builder()
                 .id(u.getId())
-                .studentId(u.getStudentId())
+                .studentId(StudentIdPrivacy.visibleStudentId(u.getStudentId()))
                 .name(u.getName())
                 .department(u.getDepartment())
                 .faculty(u.getFaculty())
-                .email(u.getEmail())
+                .email(StudentIdPrivacy.visibleEmail(u.getEmail(), u.getStudentId()))
                 .academicYear(u.getAcademicYear())
                 .phoneNumber(u.getPhoneNumber())
                 .avatarUrl(u.getAvatarUrl())

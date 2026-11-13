@@ -1,4 +1,18 @@
 import React from "react";
+
+/** Chữ giao diện chạy ký tự tại chỗ khi người dùng đổi ngôn ngữ. */
+export interface ScrambleTextProps {
+  /** Nội dung đã dịch, dùng trực tiếp cho trình đọc màn hình. */
+  text: string;
+  /** Các tên, mã hoặc giá trị chèn vào câu cần giữ nguyên trong suốt hiệu ứng. */
+  protectedValues?: readonly (string | number)[];
+}
+
+/** Thuộc tính control chọn lựa dùng chung trong design system. */
+export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  /** Nhãn liên kết với control, dùng cho cả chuột và trình đọc màn hình. */
+  label?: string;
+}
 import type { TranslationDict } from "@/i18n/dictionaries/en";
 import type { ThemeMode, ResolvedTheme } from "@/design-system/tokens";
 

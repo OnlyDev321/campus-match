@@ -1,6 +1,93 @@
 import { TranslationDict } from "./en";
 
 export const vi: TranslationDict = {
+  common: {
+    "closeDialog": "Đóng hộp thoại"
+  },
+  groupDetail: {
+    "notFoundTitle": "Không tìm thấy nhóm",
+    "notFoundDescription": "Không tìm thấy nhóm có ID {id} hoặc nhóm đã bị xóa.",
+    "backToGroups": "Quay lại danh sách nhóm",
+    "share": "Chia sẻ",
+    "linkCopied": "Đã sao chép liên kết!",
+    "copied": "Đã sao chép",
+    "join": "Tham gia",
+    "fullClosed": "Đã đủ thành viên • Ngừng tuyển",
+    "recruitingOne": "Đang tuyển (còn {count} chỗ)",
+    "recruitingMany": "Đang tuyển (còn {count} chỗ)",
+    "meetingFormatFallback": "Chưa xác định hình thức họp",
+    "academicYear": "Năm học {year}",
+    "semesterLabel": "Học kỳ",
+    "notProvided": "Chưa cung cấp",
+    "postedOn": "Đăng ngày {date}",
+    "about": "Giới thiệu dự án",
+    "objectives": "Mục tiêu dự án và định hướng nhóm",
+    "meetingSchedule": "Lịch họp và trao đổi tiến độ hằng tuần",
+    "rolesTitle": "Cơ cấu nhóm và số lượng theo vai trò",
+    "members": "thành viên",
+    "filled": "Đã đủ",
+    "open": "Đang tuyển",
+    "slotsSummary": "Đã có {current}/{max} thành viên tham gia.",
+    "skillsTitle": "Công nghệ và kỹ năng cần có",
+    "skillsFallback": "Công cụ phát triển cơ bản (Git, GitHub, VS Code)",
+    "noticeTitle": "Lưu ý:",
+    "noticeBody": "Đừng lo nếu bạn chưa đáp ứng đủ 100% kỹ năng công nghệ! Nhóm coi trọng sự nhiệt tình, tham gia đều đặn hằng tuần và tinh thần ham học hỏi.",
+    "recruitmentProgress": "Tiến độ tuyển thành viên",
+    "noSpots": "Không còn chỗ trống",
+    "remainingOne": "Còn {count} chỗ trống",
+    "remainingMany": "Còn {count} chỗ trống",
+    "manageApplications": "Quản lý đơn ứng tuyển",
+    "applicationSubmitted": "Đã gửi đơn ứng tuyển",
+    "groupFull": "Nhóm đã đủ thành viên",
+    "apply": "Ứng tuyển vào nhóm",
+    "verificationNote": "Xác thực qua SSO u-SAINT của Đại học Soongsil. Đơn ứng tuyển được trưởng nhóm trực tiếp xem xét.",
+    "leader": "Trưởng nhóm",
+    "organizer": "Người tạo nhóm",
+    "studentId": "Mã sinh viên: {id}",
+    "roster": "Thành viên ({current}/{max})",
+    "openCount": "Còn {count} chỗ",
+    "academicClassification": "Phân loại học vụ u-SAINT",
+    "college": "Trường:",
+    "department": "Khoa/ngành:",
+    "postYear": "Năm đăng:",
+    "courseCode": "Mã môn học:"
+  },
+  applyModal: {
+    "title": "Ứng tuyển vào nhóm",
+    "description": "Gửi đơn ứng tuyển vào “{title}” ({course})",
+    "successTitle": "Đã gửi đơn ứng tuyển!",
+    "successDescription": "Đơn ứng tuyển đã được gửi đến {leader}. Bạn sẽ nhận thông báo khi trưởng nhóm xem xét hồ sơ.",
+    "targetRole": "Vai trò ứng tuyển:",
+    "targetGroup": "Nhóm ứng tuyển:",
+    "done": "Hoàn tất và quay lại",
+    "student": "Sinh viên Soongsil",
+    "undergraduate": "Sinh viên đại học",
+    "applicant": "Ứng viên",
+    "desiredRole": "Vai trò mong muốn trong nhóm",
+    "introduction": "Giới thiệu và động lực tham gia",
+    "characterCount": "{count}/500 ký tự",
+    "statementPlaceholder": "Giới thiệu ngắn gọn về môn học liên quan, kỹ năng hoặc mục tiêu bạn muốn đạt được cùng nhóm…",
+    "skillsLabel": "Kỹ năng / Công nghệ liên quan",
+    "skillsPlaceholder": "VD: React, Next.js, Go, Spring Boot, Python, Figma, Docker…",
+    "skillsHelp": "Liệt kê ngôn ngữ lập trình, framework hoặc công cụ bạn sử dụng.",
+    "githubLabel": "Liên kết GitHub (không bắt buộc)",
+    "githubPlaceholder": "github.com/username",
+    "portfolioLabel": "Portfolio / Website (không bắt buộc)",
+    "portfolioPlaceholder": "https://myportfolio.dev",
+    "cancel": "Hủy",
+    "submit": "Gửi đơn ứng tuyển",
+    "roleRequired": "Vui lòng chọn vai trò mong muốn.",
+    "statementRequired": "Vui lòng viết phần giới thiệu ít nhất 10 ký tự.",
+    "defaultRoles": [
+      "Lập trình viên Frontend",
+      "Lập trình viên Backend",
+      "Lập trình viên Fullstack",
+      "Nhà thiết kế UI/UX",
+      "Kỹ sư AI / ML",
+      "Thành viên chung"
+    ]
+  },
+
   nav: {
     groups: "Tìm nhóm",
     myPage: "Trang cá nhân",
@@ -57,13 +144,16 @@ export const vi: TranslationDict = {
     demoDept: "Khoa Máy tính · Năm 3",
     submitBtn: "Xác thực & Đăng nhập",
     submittingBtn: "Đang kết nối u-SAINT...",
-    securityGuaranteeTitle: "Nguyên tắc bảo mật không lưu mật khẩu (Zero Password Retention)",
+    securityGuaranteeTitle:
+      "Nguyên tắc bảo mật không lưu mật khẩu (Zero Password Retention)",
     securityGuaranteeDesc:
       "Mật khẩu của bạn chỉ dùng để xác thực tức thời với cổng trường và tuyệt đối không bao giờ được lưu trong cơ sở dữ liệu CampusMatch.",
     errorMissing: "Vui lòng nhập đầy đủ mã sinh viên và mật khẩu.",
     errorInvalidCredentials: "Sai mã số sinh viên hoặc mật khẩu u-SAINT.",
-    errorServer: "Đã xảy ra lỗi khi kết nối tới máy chủ u-SAINT. Vui lòng thử lại sau.",
-    errorNetwork: "Lỗi kết nối mạng. Vui lòng kiểm tra lại đường truyền internet.",
+    errorServer:
+      "Đã xảy ra lỗi khi kết nối tới máy chủ u-SAINT. Vui lòng thử lại sau.",
+    errorNetwork:
+      "Lỗi kết nối mạng. Vui lòng kiểm tra lại đường truyền internet.",
   },
   translate: {
     btn: "Dịch sang Tiếng Việt",
@@ -78,7 +168,8 @@ export const vi: TranslationDict = {
   myPage: {
     breadcrumbRoot: "Không gian của tôi",
     breadcrumbCampus: "Cơ sở Soongsil",
-    subtitle: "Xem hồ sơ sinh viên và thông tin liên hệ của bạn, đã được xác thực qua u-SAINT.",
+    subtitle:
+      "Xem hồ sơ sinh viên và thông tin liên hệ của bạn, đã được xác thực qua u-SAINT.",
   },
   timetable: {
     title: "Thời khóa biểu của tôi",
@@ -86,7 +177,14 @@ export const vi: TranslationDict = {
     secondSemester: "Học kỳ 2",
     fetchedAt: "Lấy từ u-SAINT khi đăng nhập · {time} (giờ Hàn Quốc)",
     days: { MON: "T2", TUE: "T3", WED: "T4", THU: "T5", FRI: "T6", SAT: "T7" },
-    daysLong: { MON: "Thứ Hai", TUE: "Thứ Ba", WED: "Thứ Tư", THU: "Thứ Năm", FRI: "Thứ Sáu", SAT: "Thứ Bảy" },
+    daysLong: {
+      MON: "Thứ Hai",
+      TUE: "Thứ Ba",
+      WED: "Thứ Tư",
+      THU: "Thứ Năm",
+      FRI: "Thứ Sáu",
+      SAT: "Thứ Bảy",
+    },
     today: "Hôm nay",
     period: "Tiết {n}",
     daySelector: "Chọn ngày",
@@ -94,11 +192,13 @@ export const vi: TranslationDict = {
     empty: "Không có lớp nào được đăng ký trong {term}.",
     dayEmpty: "Không có lớp vào {day}.",
     unavailableTitle: "Không tải được thời khóa biểu từ u-SAINT.",
-    unavailableDesc: "Hồ sơ và phiên đăng nhập của bạn không bị ảnh hưởng. Hãy đăng nhập lại để thử tải lại.",
+    unavailableDesc:
+      "Hồ sơ và phiên đăng nhập của bạn không bị ảnh hưởng. Hãy đăng nhập lại để thử tải lại.",
     notFetchedTitle: "Chưa tải thời khóa biểu",
     notFetched: "Hãy đăng nhập lại để tải thời khóa biểu từ u-SAINT.",
     signInAgain: "Đăng nhập lại",
-    untimedNote: "Các lớp không có giờ cố định sẽ không hiển thị trong thời khóa biểu u-SAINT.",
+    untimedNote:
+      "Các lớp không có giờ cố định sẽ không hiển thị trong thời khóa biểu u-SAINT.",
   },
   myGroupCard: {
     leader: "Trưởng nhóm",
@@ -116,7 +216,8 @@ export const vi: TranslationDict = {
   manage: {
     title: "Quản lý đơn ứng tuyển",
     listTitle: "Nhóm của tôi",
-    subtitle: "Các nhóm bạn làm trưởng và các nhóm bạn đã tham gia. Mở nhóm bạn làm trưởng để xem các đơn xin gia nhập.",
+    subtitle:
+      "Các nhóm bạn làm trưởng và các nhóm bạn đã tham gia. Mở nhóm bạn làm trưởng để xem các đơn xin gia nhập.",
     ledColumnTitle: "Nhóm tôi làm trưởng",
     memberColumnTitle: "Nhóm tôi là thành viên",
     ledEmpty: "Bạn chưa làm trưởng nhóm nào.",
@@ -134,29 +235,34 @@ export const vi: TranslationDict = {
   },
   applicationCard: {
     applied: "Đã nộp {time}",
-    accept: "Chấp nhận đơn",
+    accept: "Chấp nhận",
     reject: "Từ chối",
   },
   manageDetails: {
-    "blocked": "Chưa thể thực hiện thao tác quản lý cho đến khi backend hỗ trợ API và xác minh quyền trưởng nhóm. Không có thay đổi nào được lưu.",
-    "members": "Thành viên nhóm",
-    "membersEmpty": "Chưa có thành viên trong danh sách.",
-    "editTitle": "Xem xét chỉnh sửa nhóm",
-    "groupTitle": "Tên nhóm",
-    "description": "Mô tả",
-    "capacity": "Số thành viên tối đa",
-    "recruitment": "Trạng thái tuyển thành viên",
-    "titleRule": "Bắt buộc. Nhập tối đa 150 ký tự.",
-    "descriptionRule": "Bắt buộc. Mô tả mục tiêu và yêu cầu của nhóm.",
-    "capacityRule": "Nhập số nguyên dương, không nhỏ hơn số thành viên hiện tại, tối đa 2.147.483.647.",
-    "statusRule": "Đang tuyển phải còn chỗ trống. Đủ thành viên yêu cầu sĩ số tối đa bằng số thành viên hiện tại.",
-    "invalidDraft": "Vui lòng kiểm tra các trường được đánh dấu lỗi và hướng dẫn bên dưới.",
-    "save": "Lưu thay đổi",
-    "notSaved": "Lưu và đổi trạng thái tuyển đang chờ tích hợp backend. Bản nháp sẽ mất khi rời trang hoặc tải lại.",
-    "confirmAccept": "Xác nhận chấp thuận ứng viên",
-    "confirmReject": "Xác nhận từ chối ứng viên",
-    "cancel": "Hủy",
-    "confirm": "Xác nhận"
+    blocked:
+      "Chưa thể thực hiện thao tác quản lý cho đến khi backend hỗ trợ API và xác minh quyền trưởng nhóm. Không có thay đổi nào được lưu.",
+    members: "Thành viên nhóm",
+    membersEmpty: "Chưa có thành viên trong danh sách.",
+    editTitle: "Xem xét chỉnh sửa nhóm",
+    groupTitle: "Tên nhóm",
+    description: "Mô tả",
+    capacity: "Số thành viên tối đa",
+    recruitment: "Trạng thái tuyển thành viên",
+    titleRule: "Bắt buộc. Nhập tối đa 150 ký tự.",
+    descriptionRule: "Bắt buộc. Mô tả mục tiêu và yêu cầu của nhóm.",
+    capacityRule:
+      "Nhập số nguyên dương, không nhỏ hơn số thành viên hiện tại, tối đa 2.147.483.647.",
+    statusRule:
+      "Đang tuyển phải còn chỗ trống. Đủ thành viên yêu cầu sĩ số tối đa bằng số thành viên hiện tại.",
+    invalidDraft:
+      "Vui lòng kiểm tra các trường được đánh dấu lỗi và hướng dẫn bên dưới.",
+    save: "Lưu thay đổi",
+    notSaved:
+      "Lưu và đổi trạng thái tuyển đang chờ tích hợp backend. Bản nháp sẽ mất khi rời trang hoặc tải lại.",
+    confirmAccept: "Xác nhận chấp thuận ứng viên",
+    confirmReject: "Xác nhận từ chối ứng viên",
+    cancel: "Hủy",
+    confirm: "Xác nhận",
   },
   apiErrors: {
     NETWORK_ERROR: "Không kết nối được máy chủ. Vui lòng kiểm tra mạng.",
@@ -170,7 +276,8 @@ export const vi: TranslationDict = {
     breadcrumbDirectory: "DANH MỤC KHÔNG GIAN LÀM VIỆC",
     breadcrumbCampus: "Khuôn viên Soongsil",
     title: "Tìm nhóm học tập",
-    subtitle: "Khám phá các nhóm học tập, đồ án tốt nghiệp và lập trình trong toàn trường.",
+    subtitle:
+      "Khám phá các nhóm học tập, đồ án tốt nghiệp và lập trình trong toàn trường.",
     activeGroups: "Nhóm đang hoạt động",
     teamsRecruiting: "Nhóm đang tuyển",
     searchPlaceholder: "Tìm kiếm theo tên nhóm, đề tài hoặc từ khóa...",
@@ -191,7 +298,8 @@ export const vi: TranslationDict = {
     showingCount: "Hiển thị {current} trên tổng số {total} nhóm",
     nextBtn: "Tiếp",
     noResultsTitle: "Không tìm thấy nhóm phù hợp",
-    noResultsDesc: "Hãy thử thay đổi từ khóa tìm kiếm hoặc xóa bộ lọc để tìm thêm nhóm.",
+    noResultsDesc:
+      "Hãy thử thay đổi từ khóa tìm kiếm hoặc xóa bộ lọc để tìm thêm nhóm.",
     resetFiltersBtn: "Đặt lại bộ lọc",
     cardFull: "Đã đủ người",
     cardRecruiting: "Đang tuyển ({spots} chỗ)",
@@ -206,17 +314,24 @@ export const vi: TranslationDict = {
     breadcrumbDirectory: "DANH MỤC KHÔNG GIAN LÀM VIỆC",
     breadcrumbCreate: "Tạo nhóm mới",
     title: "Tạo nhóm học tập & đồ án mới",
-    subtitle: "Thành lập đội ngũ cho môn học, đồ án tốt nghiệp Capstone hoặc thi lập trình cùng bạn học ĐH Soongsil.",
+    subtitle:
+      "Thành lập đội ngũ cho môn học, đồ án tốt nghiệp Capstone hoặc thi lập trình cùng bạn học ĐH Soongsil.",
     basicInfoTitle: "1. Thông tin cơ bản",
-    basicInfoSubtitle: "Đặt tiêu đề ngắn gọn và mô tả mục tiêu để thu hút thành viên phù hợp.",
+    basicInfoSubtitle:
+      "Đặt tiêu đề ngắn gọn và mô tả mục tiêu để thu hút thành viên phù hợp.",
     groupTitleLabel: "Tiêu đề nhóm",
-    groupTitlePlaceholder: "VD: [Capstone 2026] Phát triển ứng dụng Web ghép nhóm bằng AI",
-    groupTitleHelp: "Bắt buộc. Tối đa 150 ký tự. Nên đặt tiêu đề rõ ràng, súc tích.",
+    groupTitlePlaceholder:
+      "VD: [Capstone 2026] Phát triển ứng dụng Web ghép nhóm bằng AI",
+    groupTitleHelp:
+      "Bắt buộc. Tối đa 150 ký tự. Nên đặt tiêu đề rõ ràng, súc tích.",
     descriptionLabel: "Mục tiêu đồ án, Công nghệ & Kỳ vọng thành viên",
-    descriptionPlaceholder: "Mô tả ý tưởng dự án, công nghệ dự kiến sử dụng (Next.js, Spring Boot...), thời gian họp nhóm định kỳ và yêu cầu đối với thành viên mới...",
-    descriptionHelp: "Bắt buộc. Tối thiểu 20 ký tự. Mô tả càng chi tiết sẽ càng dễ tìm được đồng đội ăn ý.",
+    descriptionPlaceholder:
+      "Mô tả ý tưởng dự án, công nghệ dự kiến sử dụng (Next.js, Spring Boot...), thời gian họp nhóm định kỳ và yêu cầu đối với thành viên mới...",
+    descriptionHelp:
+      "Bắt buộc. Tối thiểu 20 ký tự. Mô tả càng chi tiết sẽ càng dễ tìm được đồng đội ăn ý.",
     academicInfoTitle: "2. Môn học & Học vụ liên quan",
-    academicInfoSubtitle: "Gắn nhóm này với học phần cụ thể trong kỳ học (tùy chọn).",
+    academicInfoSubtitle:
+      "Gắn nhóm này với học phần cụ thể trong kỳ học (tùy chọn).",
     courseCodeLabel: "Mã môn học",
     courseCodePlaceholder: "VD: CS490, SWE302",
     courseCodeHelp: "Tùy chọn. Nhập mã môn học viết hoa theo hệ thống đào tạo.",
@@ -226,9 +341,11 @@ export const vi: TranslationDict = {
     meetingFormatLabel: "Hình thức sinh hoạt & làm việc",
     meetingFormatHelp: "Chọn cách thức mà nhóm sẽ chủ yếu làm việc cùng nhau.",
     formatOnline: "Trực tuyến (Online)",
-    formatOnlineDesc: "Họp và trao đổi từ xa qua Zoom, Google Meet hoặc Discord",
+    formatOnlineDesc:
+      "Họp và trao đổi từ xa qua Zoom, Google Meet hoặc Discord",
     formatOffline: "Trực tiếp (Offline)",
-    formatOfflineDesc: "Học và làm việc trực tiếp tại khuôn viên Đại học Soongsil",
+    formatOfflineDesc:
+      "Học và làm việc trực tiếp tại khuôn viên Đại học Soongsil",
     formatHybrid: "Kết hợp (Hybrid)",
     formatHybridDesc: "Linh hoạt giữa các buổi họp online và gặp mặt trực tiếp",
     capacityTitle: "3. Sĩ số & Phân bổ thành viên",
@@ -239,18 +356,23 @@ export const vi: TranslationDict = {
     spotsOpenBadge: "Còn {count} chỗ trống",
     spotsOpenSingle: "Còn 1 chỗ trống",
     leaderNoticeTitle: "Tự động đồng bộ danh tính từ u-SAINT",
-    leaderNoticeDesc: "Trường/Viện ({college}) và Khoa/Ngành ({department}) của bạn được tự động trích xuất từ tài khoản trường đã xác thực, loại bỏ hoàn toàn tài khoản ảo.",
+    leaderNoticeDesc:
+      "Trường/Viện ({college}) và Khoa/Ngành ({department}) của bạn được tự động trích xuất từ tài khoản trường đã xác thực, loại bỏ hoàn toàn tài khoản ảo.",
     tagsLabel: "Từ khóa & Kỹ năng (Tùy chọn)",
-    tagsPlaceholder: "Gõ từ khóa rồi nhấn Enter (VD: React, SpringBoot, Figma)...",
-    tagsHelp: "Thêm tối đa 5 từ khóa để sinh viên dễ dàng tìm thấy nhóm của bạn.",
+    tagsPlaceholder:
+      "Gõ từ khóa rồi nhấn Enter (VD: React, SpringBoot, Figma)...",
+    tagsHelp:
+      "Thêm tối đa 5 từ khóa để sinh viên dễ dàng tìm thấy nhóm của bạn.",
     previewTitle: "Xem trước thẻ nhóm thời gian thực",
-    previewSubtitle: "Giao diện thẻ nhóm sẽ xuất hiện trong danh mục tìm kiếm của sinh viên.",
+    previewSubtitle:
+      "Giao diện thẻ nhóm sẽ xuất hiện trong danh mục tìm kiếm của sinh viên.",
     previewBadge: "Bản xem trước",
     submitBtn: "Tạo nhóm ngay",
     submittingBtn: "Đang tạo nhóm...",
     cancelBtn: "Hủy bỏ",
     successTitle: "Tạo nhóm thành công!",
-    successDesc: "Nhóm của bạn đã được đăng lên danh mục CampusMatch. Bạn có thể duyệt đơn ứng tuyển trong trang Quản lý.",
+    successDesc:
+      "Nhóm của bạn đã được đăng lên danh mục CampusMatch. Bạn có thể duyệt đơn ứng tuyển trong trang Quản lý.",
     viewGroupBtn: "Xem danh sách nhóm",
     goToManageBtn: "Đi tới Quản lý nhóm",
     errors: {
@@ -258,8 +380,10 @@ export const vi: TranslationDict = {
       titleTooLong: "Tiêu đề nhóm không được vượt quá 150 ký tự.",
       descriptionRequired: "Vui lòng nhập mô tả cho nhóm.",
       descriptionTooShort: "Mô tả nhóm phải có ít nhất 20 ký tự.",
-      capacityInvalid: "Sĩ số nhóm phải nằm trong khoảng từ 2 đến 20 thành viên.",
-      submitFailed: "Tạo nhóm thất bại. Vui lòng kiểm tra lại kết nối và thử lại.",
+      capacityInvalid:
+        "Sĩ số nhóm phải nằm trong khoảng từ 2 đến 20 thành viên.",
+      submitFailed:
+        "Tạo nhóm thất bại. Vui lòng kiểm tra lại kết nối và thử lại.",
       unauthorized: "Vui lòng đăng nhập bằng tài khoản u-SAINT để tạo nhóm.",
     },
   },

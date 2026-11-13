@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
+import { useLanguageStore } from "@/stores/languageStore";
 
 export interface ModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export function Modal({
   maxWidth = "md",
   className = "",
 }: ModalProps) {
+  const { t } = useLanguageStore();
   // Close on Escape key
   useEffect(() => {
     if (!isOpen) return;
@@ -97,7 +99,7 @@ export function Modal({
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close dialog"
+            aria-label={t.common.closeDialog}
             className="p-1 rounded-md text-(--text-faint) hover:text-(--text-primary) hover:bg-(--surface-container-low) transition-colors"
           >
             <X className="w-4 h-4" />
