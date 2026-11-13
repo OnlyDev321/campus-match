@@ -1,15 +1,13 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
   BookOpen,
   Calendar,
   CheckCircle2,
-  ChevronRight,
   Globe2,
   GraduationCap,
   Info,
@@ -17,10 +15,8 @@ import {
   MapPin,
   Minus,
   Plus,
-  Radio as RadioIcon,
   ShieldCheck,
   Sparkles,
-  Users,
 } from "lucide-react";
 import {
   Avatar,
@@ -33,6 +29,7 @@ import {
   CardTitle,
   Input,
   Modal,
+  Radio,
 } from "@/design-system";
 import { createGroup } from "@/services/groupService";
 import { useRequireLogin } from "@/lib/hooks";
@@ -163,8 +160,8 @@ export default function CreateGroupPage() {
 
   // Tính toán dữ liệu xem trước
   const spotsLeft = Math.max(0, formData.maxMembers - 1);
-  const collegeDisplay = user?.faculty || "IT대학";
-  const departmentDisplay = user?.department || "소프트웨어학부";
+  const collegeDisplay = user?.faculty || copy.verifiedStudent;
+  const departmentDisplay = user?.department || copy.verifiedStudent;
   const currentYear = new Date().getFullYear();
 
   const spotsText =
@@ -181,40 +178,37 @@ export default function CreateGroupPage() {
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       {/* 1. Header & Breadcrumb */}
-      <div className="space-y-3">
         <nav
-          aria-label="Breadcrumb"
-          className="flex items-center gap-2 text-xs font-medium text-[var(--text-muted)]"
+          aria-label={copy.breadcrumbCreate}
+          className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wider"
         >
           <Link
-            href="/groups"
-            className="hover:text-[var(--primary)] flex items-center gap-1 transition-colors"
+            href="/manage"
+            className="text-[var(--primary)] uppercase hover:underline transition-colors"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span><ScrambleText text={copy.breadcrumbDirectory} /></span>
+            <ScrambleText text={t.myPage.breadcrumbRoot} />
           </Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-[var(--text-primary)] font-semibold">
-            <ScrambleText text={copy.breadcrumbCreate} />
+          <span aria-hidden="true" className="text-[var(--text-faint)]">/</span>
+          <span className="text-[var(--text-muted)] font-normal">
+            <ScrambleText text={t.myPage.breadcrumbCampus} />
           </span>
         </nav>
 
-        <div className="border-b border-[var(--border)] pb-6">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-1.5 min-w-0">
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
               <ScrambleText text={copy.title} />
             </h1>
-            <p className="text-sm text-[var(--text-secondary)] max-w-2xl">
+            <p className="text-sm sm:text-base text-[var(--text-secondary)]">
               <ScrambleText text={copy.subtitle} />
             </p>
           </div>
-        </div>
-      </div>
+        </header>
 
       {/* 2. Main Grid Layout: Form (Left) & Live Preview (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Cột trái: Form nhập liệu (8 cols) */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6">
           {submitError && (
@@ -229,9 +223,9 @@ export default function CreateGroupPage() {
 
           <form onSubmit={handleSubmit} noValidate className="space-y-6">
             {/* CARD 1: Thông tin cơ bản */}
-            <Card className="p-6 space-y-5">
+            <Card className="p-5 sm:p-6 space-y-5">
               <div className="flex items-center gap-2.5 pb-3 border-b border-[var(--border-muted)]">
-                <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
                   1
                 </div>
                 <div>
@@ -298,6 +292,8 @@ export default function CreateGroupPage() {
                 <textarea
                   id="group-description"
                   name="description"
+                  maxLength={2000}
+                  aria-invalid={!!errors.description}
                   rows={5}
                   value={formData.description}
                   onChange={(e) => updateField("description", e.target.value)}
@@ -332,12 +328,13 @@ export default function CreateGroupPage() {
                   {formData.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] shadow-xs animate-in zoom-in-95 duration-100"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-[var(--radius-xs)] bg-[var(--surface)] text-[var(--text-primary)] border border-[var(--border)] shadow-xs animate-in zoom-in-95 duration-100"
                     >
                       <span>#{tag}</span>
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
+                        aria-label={copy.removeTag.replace("{tag}", tag)}
                         className="text-[var(--text-muted)] hover:text-[var(--error)] ml-0.5"
                       >
                         ×
@@ -354,7 +351,7 @@ export default function CreateGroupPage() {
                       placeholder={
                         formData.tags.length === 0
                           ? copy.tagsPlaceholder
-                          : "+ Add tag"
+                          : copy.addTag
                       }
                       className="flex-1 min-w-[140px] bg-transparent text-xs text-[var(--text-primary)] placeholder:text-[var(--text-faint)] focus:outline-none px-1 py-0.5"
                     />
@@ -367,9 +364,9 @@ export default function CreateGroupPage() {
             </Card>
 
             {/* CARD 2: Thông tin học phần & Hình thức sinh hoạt */}
-            <Card className="p-6 space-y-5">
+            <Card className="p-5 sm:p-6 space-y-5">
               <div className="flex items-center gap-2.5 pb-3 border-b border-[var(--border-muted)]">
-                <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
                   2
                 </div>
                 <div>
@@ -412,10 +409,10 @@ export default function CreateGroupPage() {
               </div>
 
               {/* Meeting Format Selector */}
-              <div className="space-y-2.5 pt-2">
-                <label className="block text-xs font-semibold text-[var(--text-secondary)]">
+              <fieldset className="space-y-2.5 pt-2">
+                <legend className="block text-xs font-semibold text-[var(--text-secondary)]">
                   <ScrambleText text={copy.meetingFormatLabel} />
-                </label>
+                </legend>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     {
@@ -443,62 +440,29 @@ export default function CreateGroupPage() {
                     return (
                       <div
                         key={format.id}
-                        onClick={() => updateField("meetingFormat", format.id)}
-                        style={{ borderRadius: "var(--radius-input)" }}
-                        className={`cursor-pointer p-3.5 border transition-all text-left flex flex-col justify-between gap-2 select-none ${
-                          isSelected
-                            ? "border-[var(--primary)] bg-[var(--primary-soft)] ring-1 ring-[var(--primary)]"
-                            : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-hover)]"
-                        }`}
+                        className={`p-3.5 rounded-[var(--radius-input)] border transition-colors ${isSelected ? "border-[var(--primary)] bg-[var(--primary-soft)]" : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)]"}`}
                       >
-                        <div className="flex items-center justify-between">
-                          <div
-                            className={`p-1.5 rounded-md ${
-                              isSelected
-                                ? "bg-[var(--primary-container)] text-white"
-                                : "bg-[var(--surface-container-low)] text-[var(--text-secondary)]"
-                            }`}
-                          >
-                            <IconComponent className="w-4 h-4" />
-                          </div>
-                          <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected
-                                ? "border-[var(--primary)] bg-[var(--primary)]"
-                                : "border-[var(--border-strong)]"
-                            }`}
-                          >
-                            {isSelected && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            )}
-                          </div>
-                        </div>
-
-                        <div>
-                          <span
-                            className={`text-xs font-semibold block ${
-                              isSelected
-                                ? "text-[var(--primary)]"
-                                : "text-[var(--text-primary)]"
-                            }`}
-                          >
-                            {format.label}
-                          </span>
-                          <span className="text-[11px] text-[var(--text-muted)] line-clamp-2 mt-0.5 leading-snug">
-                            {format.desc}
-                          </span>
-                        </div>
+                        <Radio
+                          id={`meeting-format-${format.id}`}
+                          name="meetingFormat"
+                          value={format.id}
+                          checked={isSelected}
+                          onChange={() => updateField("meetingFormat", format.id)}
+                          label={<span className="flex items-center gap-2"><IconComponent className="h-4 w-4 text-[var(--primary)]" />{format.label}</span>}
+                          description={format.desc}
+                          className="peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)]"
+                        />
                       </div>
                     );
                   })}
                 </div>
-              </div>
+              </fieldset>
             </Card>
 
             {/* CARD 3: Sĩ số & Phân bổ chỗ ngồi */}
-            <Card className="p-6 space-y-5">
+            <Card className="p-5 sm:p-6 space-y-5">
               <div className="flex items-center gap-2.5 pb-3 border-b border-[var(--border-muted)]">
-                <div className="w-8 h-8 rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
+                <div className="w-8 h-8 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] text-[var(--primary)] flex items-center justify-center font-bold text-sm">
                   3
                 </div>
                 <div>
@@ -515,7 +479,7 @@ export default function CreateGroupPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 rounded-[var(--radius-input)] bg-[var(--surface-container-low)] border border-[var(--border)]">
                   <div>
                     <label
-                      htmlFor="max-members-input"
+                      id="max-members-label"
                       className="text-sm font-semibold text-[var(--text-primary)] block"
                     >
                       <ScrambleText text={copy.maxMembersLabel} />
@@ -527,29 +491,31 @@ export default function CreateGroupPage() {
 
                   {/* Quantity Stepper */}
                   <div className="flex items-center gap-2 self-start sm:self-auto">
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleCapacityChange(-1)}
                       disabled={formData.maxMembers <= 2}
-                      className="w-9 h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                      aria-label="Decrease member count"
+                      variant="outline"
+                      className="h-9 w-9 p-0"
+                      aria-label={copy.decreaseMembers}
                     >
                       <Minus className="w-4 h-4" />
-                    </button>
+                    </Button>
 
-                    <div className="w-16 text-center font-mono font-bold text-lg text-[var(--primary)]">
+                    <div role="status" aria-labelledby="max-members-label" className="w-16 text-center font-mono font-bold text-lg text-[var(--primary)]">
                       {formData.maxMembers}
                     </div>
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => handleCapacityChange(1)}
                       disabled={formData.maxMembers >= 20}
-                      className="w-9 h-9 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-                      aria-label="Increase member count"
+                      variant="outline"
+                      className="h-9 w-9 p-0"
+                      aria-label={copy.increaseMembers}
                     >
                       <Plus className="w-4 h-4" />
-                    </button>
+                    </Button>
                   </div>
                 </div>
 
@@ -557,34 +523,34 @@ export default function CreateGroupPage() {
                 <div className="p-4 rounded-[var(--radius-input)] bg-[var(--surface)] border border-[var(--border-muted)] space-y-3">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-[var(--text-secondary)]">
-                      Seat Allocation:
+                      {copy.seatAllocation}
                     </span>
                     <span className="font-mono text-[var(--text-primary)] font-semibold">
-                      1 Leader · {spotsLeft} Available
+                      {copy.seatSummary.replace("{count}", String(spotsLeft))}
                     </span>
                   </div>
 
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Leader Seat */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--primary-soft)] border border-[var(--primary-soft-border)] text-[var(--primary)] text-xs font-semibold">
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] border border-[var(--primary-soft-border)] text-[var(--primary)] text-xs font-semibold">
                       <Avatar
                         size="sm"
-                        name={user?.name || "Me"}
+                        name={user?.name || copy.leaderYou}
                         src={user?.avatarUrl}
                       />
-                      <span>Leader (You)</span>
+                      <span>{copy.leaderYou}</span>
                     </div>
 
                     {/* Open Seats */}
                     {Array.from({ length: spotsLeft }).map((_, index) => (
                       <div
                         key={index}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-[var(--text-muted)] text-xs"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-[var(--text-muted)] text-xs"
                       >
                         <div className="w-5 h-5 rounded-full border border-dashed border-[var(--border-strong)] flex items-center justify-center text-[10px] font-mono">
                           {index + 2}
                         </div>
-                        <span>Open Spot</span>
+                        <span>{copy.openSpot}</span>
                       </div>
                     ))}
                   </div>
@@ -597,7 +563,7 @@ export default function CreateGroupPage() {
               style={{ borderRadius: "var(--radius-input)" }}
               className="p-4 bg-[var(--surface-container-low)] border border-[var(--border)] flex items-start gap-3.5"
             >
-              <div className="p-2 rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] shrink-0">
+              <div className="p-2 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] text-[var(--primary)] shrink-0">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <div className="space-y-1">
@@ -613,7 +579,7 @@ export default function CreateGroupPage() {
             </div>
 
             {/* Buttons Action Bar */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 border-t border-[var(--border)] pt-5">
               <Button
                 type="button"
                 variant="outline"
@@ -640,7 +606,7 @@ export default function CreateGroupPage() {
           <div className="space-y-1">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[var(--success)] animate-pulse" />
-              <h3 className="text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider">
+              <h3 className="text-sm font-semibold text-[var(--text-primary)]">
                 <ScrambleText text={copy.previewTitle} />
               </h3>
             </div>
@@ -650,11 +616,11 @@ export default function CreateGroupPage() {
           </div>
 
           {/* Interactive Live Card Preview */}
-          <div className="transform transition-all duration-200 hover:-translate-y-0.5">
-            <Card className="h-full flex flex-col gap-4 p-6 shadow-[var(--shadow-level-2)] border-[var(--border-interactive)] bg-[var(--surface)]">
+          <div className="min-w-0">
+            <Card className="h-full flex flex-col gap-4 p-5">
               <CardHeader className="mb-0 flex-wrap items-center justify-between">
                 <Badge variant="primary" className="font-semibold text-xs">
-                  {formData.courseCode || formData.courseName || "General Study"}
+                  {formData.courseCode || formData.courseName || copy.generalStudy}
                 </Badge>
                 <Badge variant="recruiting" dot>
                   {spotsText}
@@ -663,27 +629,27 @@ export default function CreateGroupPage() {
 
               <div className="space-y-1.5">
                 <CardTitle className="text-base font-semibold leading-snug break-words">
-                  {formData.title || "Untitled Study Group"}
+                  {formData.title || copy.untitledGroup}
                 </CardTitle>
                 <CardDescription className="text-xs text-[var(--text-secondary)] line-clamp-3 leading-relaxed break-words">
                   {formData.description ||
-                    "Enter project vision, requirements, and tech stack expectations on the left form to see this preview live..."}
+                    copy.previewDescription}
                 </CardDescription>
               </div>
 
               {/* College & Department & Year Pills */}
               <div className="flex flex-wrap items-center gap-1.5 flex-1 content-start">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary-soft-border)]">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-[var(--radius-xs)] text-xs font-semibold bg-[var(--primary-soft)] text-[var(--primary)] border border-[var(--primary-soft-border)]">
                   {collegeDisplay}
                 </span>
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)]">
+                <span className="inline-flex items-center px-2 py-1 rounded-[var(--radius-xs)] text-xs font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)]">
                   {departmentDisplay}
                 </span>
-                <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
+                <span className="inline-flex items-center px-2 py-1 rounded-[var(--radius-xs)] text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
                   {currentYear}
                 </span>
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[var(--surface-container-high)] text-[var(--text-secondary)]">
-                  {formData.meetingFormat}
+                <span className="inline-flex items-center px-2 py-0.5 rounded-[var(--radius-xs)] text-[11px] font-medium bg-[var(--surface-container-high)] text-[var(--text-secondary)]">
+                  {formData.meetingFormat === "Online" ? copy.formatOnline : formData.meetingFormat === "Offline" ? copy.formatOffline : copy.formatHybrid}
                 </span>
               </div>
 
@@ -706,13 +672,13 @@ export default function CreateGroupPage() {
                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                   <Avatar
                     src={user?.avatarUrl}
-                    name={user?.name || "Leader"}
+                    name={user?.name || copy.leaderYou}
                     size="md"
                     className="ring-1 ring-[var(--border)] shrink-0"
                   />
                   <div className="min-w-0 flex flex-col">
                     <span className="text-xs font-semibold text-[var(--text-primary)] truncate">
-                      {user?.name || "Verified Student"}
+                      {user?.name || copy.verifiedStudent}
                     </span>
                     <span className="text-[11px] text-[var(--text-muted)] truncate">
                       {departmentDisplay}
@@ -731,11 +697,11 @@ export default function CreateGroupPage() {
               </CardFooter>
 
               {/* Mock Action Buttons */}
-              <div className="grid grid-cols-2 gap-2 pt-1 opacity-75 pointer-events-none">
-                <Button variant="outline" size="sm" className="w-full text-xs">
+              <div className="grid grid-cols-2 gap-2 pt-1 ">
+                <Button variant="outline" size="sm" disabled className="w-full text-xs">
                   <ScrambleText text={t.groupsPage.viewDetails} />
                 </Button>
-                <Button variant="primary" size="sm" className="w-full text-xs">
+                <Button variant="primary" size="sm" disabled className="w-full text-xs">
                   <ScrambleText text={t.groupsPage.join} />
                 </Button>
               </div>

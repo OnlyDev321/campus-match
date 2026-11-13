@@ -316,6 +316,18 @@ export const ko: TranslationDict = {
   },
   // Create Group Page
   createGroupPage: {
+    addTag: "+ 태그 추가",
+    removeTag: "{tag} 태그 삭제",
+    decreaseMembers: "모집 인원 줄이기",
+    increaseMembers: "모집 인원 늘리기",
+    seatAllocation: "인원 구성",
+    seatSummary: "그룹장 1명 · {count}자리 남음",
+    leaderYou: "그룹장 (나)",
+    openSpot: "모집 중",
+    generalStudy: "일반 스터디",
+    untitledGroup: "이름 없는 스터디 그룹",
+    previewDescription: "목표, 필요한 역량과 참여 조건을 입력하면 그룹 미리보기에 표시됩니다.",
+    verifiedStudent: "인증된 학생",
     creatorTipsTitle: "CampusMatch 그룹 개설 팁",
     creatorTipCourse: "과목 코드를 명시하면 지원자를 3배 더 빠르게 모집할 수 있습니다.",
     creatorTipSchedule: "소개글에 희망 모임 시간을 구체적으로 작성하세요.",
@@ -326,7 +338,7 @@ export const ko: TranslationDict = {
     title: "스터디 & 프로젝트 그룹 개설",
     subtitle:
       "전공 수업, 캡스톤 디자인, 공모전을 함께할 숭실대 동료를 모집해보세요.",
-    basicInfoTitle: "1. 그룹 기본 정보",
+    basicInfoTitle: "그룹 기본 정보",
     basicInfoSubtitle:
       "참여를 원하는 학우들에게 명확한 목표와 주제를 전달해주세요.",
     groupTitleLabel: "그룹 제목",
@@ -338,7 +350,7 @@ export const ko: TranslationDict = {
       "프로젝트의 기획 의도, 사용할 기술 스택(예: Next.js, Spring Boot), 주간 스터디 진행 방식, 원하는 팀원 역량을 자세히 적어주세요...",
     descriptionHelp:
       "필수 항목입니다. 최소 20자 이상 구체적으로 작성하면 적합한 동료를 찾는 데 도움이 됩니다.",
-    academicInfoTitle: "2. 교과목 및 학사 연계",
+    academicInfoTitle: "교과목 및 학사 연계",
     academicInfoSubtitle:
       "특정 개설 강좌와 연계된 스터디인 경우 입력해주세요 (선택).",
     courseCodeLabel: "과목 코드",
@@ -356,7 +368,7 @@ export const ko: TranslationDict = {
     formatOfflineDesc: "숭실대학교 교내 대면 모임 (열람실, 동아리방, 강의실)",
     formatHybrid: "온·오프라인 병행",
     formatHybridDesc: "정기 온라인 회의와 필요 시 캠퍼스 대면 모임 결합",
-    capacityTitle: "3. 모집 정원 및 인원 설정",
+    capacityTitle: "모집 정원 및 인원 설정",
     capacitySubtitle: "팀에 참여할 총 인원 수를 설정하세요.",
     maxMembersLabel: "총 정원 (그룹장 본인 포함)",
     maxMembersHelp: "프로젝트 규모에 맞춰 2명에서 20명 사이로 설정하세요.",
