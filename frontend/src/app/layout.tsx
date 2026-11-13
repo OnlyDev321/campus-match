@@ -2,6 +2,7 @@ import "./globals.css";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import Footer from "@/components/layout/Footer";
+import PageTransition from "@/components/layout/PageTransition";
 import { ThemeProvider } from "@/design-system";
 
 const themeInitScript = `
@@ -53,7 +54,7 @@ export default function RootLayout({
           <div className="flex flex-1 w-full">
             <Sidebar />
             <main className="flex-1 min-w-0 @container app-main-content">
-              {children}
+              <PageTransition>{children}</PageTransition>
             </main>
           </div>
           <Footer />

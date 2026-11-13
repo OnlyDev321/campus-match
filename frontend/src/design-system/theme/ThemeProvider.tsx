@@ -1,18 +1,21 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
-import { ThemeMode, ResolvedTheme } from "../tokens";
-
-interface ThemeContextType {
-  theme: ThemeMode;
-  resolvedTheme: ResolvedTheme;
-  setTheme: (theme: ThemeMode) => void;
-  toggleTheme: () => void;
-}
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { flushSync } from "react-dom";
+import type { ThemeMode, ResolvedTheme } from "../tokens";
+import type { ThemeContextType } from "@/lib/types";
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const STORAGE_KEY = "campus-match-theme";
+
+function applyTheme(theme: ResolvedTheme) {
+  const root = document.documentElement;
+  root.classList.toggle("dark", theme === "dark");
+  root.setAttribute("data-theme", theme);
+  root.style.colorScheme = theme;
+  root.style.backgroundColor = theme === "dark" ? "#090d16" : "#faf8ff";
+}
 
 export function ThemeProvider({
   children,
@@ -21,6 +24,12 @@ export function ThemeProvider({
   children: React.ReactNode;
   defaultTheme?: ThemeMode;
 }) {
+  const activeTransition = useRef<ReturnType<Document["startViewTransition"]> | null>(null);
+
+  useEffect(() => () => {
+    activeTransition.current?.skipTransition();
+  }, []);
+
   // Khởi tạo theme đồng bộ từ localStorage để triệt tiêu hoàn toàn nhấp nháy FOUC khi tải lại trang
   const [theme, setThemeState] = useState<ThemeMode>(() => {
     if (typeof window === "undefined") return defaultTheme;
@@ -58,32 +67,72 @@ export function ThemeProvider({
   // Cập nhật thuộc tính theme mượt mà lên document root
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const root = document.documentElement;
+    applyTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
-    if (resolvedTheme === "dark") {
-      root.classList.add("dark");
-      root.setAttribute("data-theme", "dark");
-      root.style.colorScheme = "dark";
-      root.style.backgroundColor = "#090d16";
-    } else {
-      root.classList.remove("dark");
-      root.setAttribute("data-theme", "light");
-      root.style.colorScheme = "light";
-      root.style.backgroundColor = "#faf8ff";
+  const setTheme = useCallback<ThemeContextType["setTheme"]>((newTheme, event) => {
+    // Không chồng nhiều ảnh chụp khi người dùng bấm liên tục.
+    if (activeTransition.current) return;
+
+    const nextResolved = newTheme === "system"
+      ? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light")
+      : newTheme;
+    const commit = () => {
+      setThemeState(newTheme);
+      applyTheme(nextResolved);
+      try {
+        localStorage.setItem(STORAGE_KEY, newTheme);
+      } catch {
+        // Theme vẫn hoạt động khi trình duyệt không cho phép lưu trữ.
+      }
+    };
+
+    if (
+      nextResolved === resolvedTheme ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
+      typeof document.startViewTransition !== "function"
+    ) {
+      commit();
+      return;
+    }
+
+    // Kích hoạt bằng bàn phím sẽ lấy tâm nút thay cho tọa độ chuột.
+    const bounds = event?.currentTarget.getBoundingClientRect();
+    const x = event && event.detail > 0 ? event.clientX : bounds ? bounds.left + bounds.width / 2 : window.innerWidth / 2;
+    const y = event && event.detail > 0 ? event.clientY : bounds ? bounds.top + bounds.height / 2 : window.innerHeight / 2;
+    const radius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y),
+    );
+    const root = document.documentElement;
+    root.style.setProperty("--theme-origin-x", `${x}px`);
+    root.style.setProperty("--theme-origin-y", `${y}px`);
+    root.style.setProperty("--theme-radius", `${radius}px`);
+    root.setAttribute("data-theme-transition", "");
+
+    const cleanup = () => {
+      activeTransition.current = null;
+      root.removeAttribute("data-theme-transition");
+      root.style.removeProperty("--theme-origin-x");
+      root.style.removeProperty("--theme-origin-y");
+      root.style.removeProperty("--theme-radius");
+    };
+
+    try {
+      const transition = document.startViewTransition(() => {
+        // React và DOM phải cập nhật trước khi trình duyệt chụp theme mới.
+        flushSync(commit);
+      });
+      activeTransition.current = transition;
+      void transition.finished.then(cleanup, cleanup);
+    } catch {
+      cleanup();
+      commit();
     }
   }, [resolvedTheme]);
 
-  const setTheme = useCallback((newTheme: ThemeMode) => {
-    setThemeState(newTheme);
-    try {
-      localStorage.setItem(STORAGE_KEY, newTheme);
-    } catch {
-      // Handle error gracefully
-    }
-  }, []);
-
-  const toggleTheme = useCallback(() => {
-    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  const toggleTheme = useCallback<ThemeContextType["toggleTheme"]>((event) => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark", event);
   }, [resolvedTheme, setTheme]);
 
   const value = useMemo(

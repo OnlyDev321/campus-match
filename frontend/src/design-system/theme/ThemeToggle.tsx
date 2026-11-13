@@ -1,24 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useSyncExternalStore } from "react";
 import { useTheme } from "./ThemeProvider";
 import { Sun, Moon, Laptop } from "lucide-react";
+import type { ThemeToggleProps } from "@/lib/types";
 
-interface ThemeToggleProps {
-  variant?: "icon-toggle" | "segmented";
-  className?: string;
-}
+const subscribeToHydration = () => () => {};
+const clientSnapshot = () => true;
+const serverSnapshot = () => false;
 
 export function ThemeToggle({
   variant = "icon-toggle",
   className = "",
 }: ThemeToggleProps) {
   const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(subscribeToHydration, clientSnapshot, serverSnapshot);
 
   if (!mounted) {
     // Avoid hydration mismatch by rendering a placeholder of equal size
@@ -39,7 +35,7 @@ export function ThemeToggle({
       >
         <button
           type="button"
-          onClick={() => setTheme("light")}
+          onClick={(event) => setTheme("light", event)}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "light"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
@@ -54,7 +50,7 @@ export function ThemeToggle({
 
         <button
           type="button"
-          onClick={() => setTheme("dark")}
+          onClick={(event) => setTheme("dark", event)}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "dark"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"
@@ -69,7 +65,7 @@ export function ThemeToggle({
 
         <button
           type="button"
-          onClick={() => setTheme("system")}
+          onClick={(event) => setTheme("system", event)}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-button)] ${
             theme === "system"
               ? "bg-[var(--surface)] text-[var(--text-primary)] shadow-sm font-semibold"

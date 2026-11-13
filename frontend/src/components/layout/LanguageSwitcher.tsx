@@ -44,7 +44,7 @@ export default function LanguageSwitcher() {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1.5 w-38 rounded-xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-[var(--shadow-level-3)] py-1 z-50 animate-in fade-in-0 zoom-in-95">
+        <div className="motion-popover absolute right-0 mt-1.5 w-38 rounded-xl bg-[var(--surface)] border border-[var(--border-strong)] shadow-[var(--shadow-level-3)] py-1 z-50">
           {languages.map((item) => (
             <button
               key={item.code}

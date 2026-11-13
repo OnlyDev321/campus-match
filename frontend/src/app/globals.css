@@ -3,12 +3,40 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *, .dark, .dark *));
 
+@layer base {
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    cursor: pointer;
+    transition-property: background-color, color, border-color, box-shadow, opacity, scale;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--motion-ease);
+  }
+
+  button:disabled,
+  input[type="button"]:disabled,
+  input[type="submit"]:disabled,
+  input[type="reset"]:disabled,
+  [role="button"][aria-disabled="true"],
+  button[aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
 /* -------------------------------------------------------------
    CAMPUSMATCH DESIGN SYSTEM TOKENS (DESIGN.md)
    Light & Dark Mode Architecture
    ------------------------------------------------------------- */
 
 :root {
+  /* Chuyển động dùng chung: phản hồi nhanh, không trì hoãn thao tác. */
+  --motion-fast: 150ms;
+  --motion-normal: 200ms;
+  --motion-page: 280ms;
+  --motion-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
   /* Canvas & Surfaces - Light Mode */
   --background: #faf8ff;
   --surface: #ffffff;
@@ -245,6 +273,126 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
   transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Theme mới lan từ vị trí bấm, phủ lên ảnh chụp theme cũ. */
+@supports (view-transition-name: root) {
+  html[data-theme-transition]::view-transition-old(root),
+  html[data-theme-transition]::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+  }
+
+  html[data-theme-transition]::view-transition-old(root) {
+    z-index: 1;
+  }
+
+  html[data-theme-transition]::view-transition-new(root) {
+    z-index: 2;
+    animation: theme-circle-reveal 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
+  }
+
+  /* Chụp ngay màu cuối, tránh màu nền còn nội suy dưới vòng tròn. */
+  html[data-theme-transition],
+  html[data-theme-transition] *,
+  html[data-theme-transition] *::before,
+  html[data-theme-transition] *::after {
+    transition: none !important;
+  }
+
+  @keyframes theme-circle-reveal {
+    from {
+      clip-path: circle(0px at var(--theme-origin-x) var(--theme-origin-y));
+    }
+    to {
+      clip-path: circle(var(--theme-radius) at var(--theme-origin-x) var(--theme-origin-y));
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-theme-transition]::view-transition-new(root) {
+    animation: none;
+  }
+
+  body {
+    transition: none;
+  }
+}
+
+/* Chỉ animate khi nội dung được gắn vào DOM, không animate lại khi render. */
+@layer utilities {
+  .page-enter {
+    animation: page-enter var(--motion-page) var(--motion-ease);
+  }
+
+  .animate-in {
+    animation: surface-enter var(--motion-normal) var(--motion-ease);
+  }
+
+  .motion-backdrop {
+    animation: backdrop-enter var(--motion-fast) ease-out;
+  }
+
+  .motion-popover {
+    transform-origin: top right;
+    animation: surface-enter var(--motion-fast) var(--motion-ease);
+  }
+
+  .motion-button {
+    transition-property: background-color, color, border-color, box-shadow, opacity, scale;
+    transition-duration: var(--motion-fast);
+    transition-timing-function: var(--motion-ease);
+  }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes surface-enter {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Giữ spinner loading, chỉ tắt chuyển động trang và các tương tác trang trí. */
+  .page-enter,
+  .animate-in,
+  .motion-backdrop,
+  .motion-popover {
+    animation: none !important;
+  }
+
+  :root {
+    --motion-fast: 0ms;
+    --motion-normal: 0ms;
+    --motion-page: 0ms;
+  }
+
+  html:focus-within { scroll-behavior: auto; }
+
+  body *,
+  body *::before,
+  body *::after {
+    transition-duration: 0ms !important;
+  }
+
+  button:active,
+  .motion-button:active {
+    scale: none !important;
+  }
+
+  .hover\:-translate-y-0\.5:hover,
+  .hover\:-translate-y-1:hover {
+    translate: none;
+  }
 }
 
 /* Card inner reflection in dark mode for tactile depth */

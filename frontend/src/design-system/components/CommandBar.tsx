@@ -99,7 +99,7 @@ export function CommandBar({ isOpen, onClose, items }: CommandBarProps) {
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/40 dark:bg-black/80 backdrop-blur-sm transition-opacity"
+        className="motion-backdrop fixed inset-0 bg-black/40 dark:bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -107,7 +107,7 @@ export function CommandBar({ isOpen, onClose, items }: CommandBarProps) {
       {/* Command Palette Card */}
       <div
         style={{ borderRadius: "var(--radius-modal)" }}
-        className="relative w-full max-w-xl bg-(--surface) border border-(--border-strong) shadow-(--shadow-level-3) z-10 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150"
+        className="relative w-full max-w-xl bg-(--surface) border border-(--border-strong) shadow-(--shadow-level-3) z-10 overflow-hidden animate-in"
       >
         {/* Search Header */}
         <div className="flex items-center px-4 border-b border-(--border)">
