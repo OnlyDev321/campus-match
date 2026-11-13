@@ -48,6 +48,7 @@ export const ko: TranslationDict = {
     "leader": "그룹장",
     "organizer": "개설자",
     "studentId": "학번: {id}",
+    phoneLabel: "그룹장에게 전화",
     "roster": "팀원 ({current}/{max})",
     "openCount": "{count}자리 남음",
     "academicClassification": "u-SAINT 학적 분류",
@@ -293,6 +294,7 @@ export const ko: TranslationDict = {
     UNAUTHORIZED: "로그인이 만료되었습니다. 다시 로그인해주세요.",
     FORBIDDEN: "이 작업을 수행할 권한이 없습니다.",
     NOT_FOUND: "요청한 항목을 찾을 수 없습니다.",
+    BAD_REQUEST: "요청을 완료할 수 없습니다. 모집 마감 또는 이미 지원한 상태인지 확인해 주세요.",
     SERVER_ERROR: "서버에서 오류가 발생했습니다. 다시 시도해주세요.",
   },
   // Groups Page & Cards
@@ -369,6 +371,14 @@ export const ko: TranslationDict = {
       "프로젝트의 기획 의도, 사용할 기술 스택(예: Next.js, Spring Boot), 주간 스터디 진행 방식, 원하는 팀원 역량을 자세히 적어주세요...",
     descriptionHelp:
       "필수 항목입니다. 최소 20자 이상 구체적으로 작성하면 적합한 동료를 찾는 데 도움이 됩니다.",
+    contactTitle: "그룹 연락처",
+    contactDescription: "선택 사항입니다. 공개에 동의한 연락처만 그룹 페이지에 표시됩니다. 학교 이메일은 자동으로 공개되지 않습니다.",
+    contactEmailLabel: "연락처 이메일 (선택)",
+    contactEmailPlaceholder: "you@example.com",
+    publishEmailLabel: "이 이메일을 그룹 페이지에 공개",
+    contactPhoneLabel: "연락처 전화번호 (선택)",
+    contactPhonePlaceholder: "+82 10 1234 5678",
+    publishPhoneLabel: "이 전화번호를 그룹 페이지에 공개",
     academicInfoTitle: "교과목 및 학사 연계",
     academicInfoSubtitle:
       "특정 개설 강좌와 연계된 스터디인 경우 입력해주세요 (선택).",
@@ -436,6 +446,9 @@ export const ko: TranslationDict = {
       descriptionRequired: "그룹 소개 및 목표를 입력해주세요.",
       descriptionTooShort: "소개글은 최소 20자 이상 작성해주세요.",
       capacityInvalid: "모집 정원은 2명 이상 20명 이하여야 합니다.",
+      contactEmailInvalid: "공개하기 전에 올바른 이메일을 입력해주세요.",
+      contactEmailStudentId: "학번 전체가 노출되지 않는 이메일을 사용해주세요.",
+      contactPhoneInvalid: "공개하기 전에 7~25자리의 올바른 전화번호를 입력해주세요.",
       submitFailed:
         "그룹 생성에 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.",
       unauthorized: "그룹을 개설하려면 u-SAINT 계정으로 로그인해야 합니다.",

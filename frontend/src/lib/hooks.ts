@@ -42,6 +42,7 @@ export const useServiceData = <T,>(
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
+    Promise.resolve().then(() => { if (!cancelled) setStatus("loading"); });
 
     load()
       .then((result) => {
@@ -67,4 +68,14 @@ export const useServiceData = <T,>(
   }, []);
 
   return { status, data, errorCode, reload, setData: setDataState };
+};
+
+/** Trì hoãn cập nhật giá trị cho ô tìm kiếm. */
+export const useDebounce = <T,>(value: T, delay: number): T => {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebounced(value), delay);
+    return () => window.clearTimeout(timer);
+  }, [value, delay]);
+  return debounced;
 };

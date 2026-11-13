@@ -48,6 +48,11 @@ public class GroupService {
         User leader = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ sinh viên"));
 
+        String contactEmail = StringUtils.hasText(request.getContactEmail()) ? request.getContactEmail().trim() : null;
+        if (contactEmail != null && contactEmail.contains(leader.getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email liên hệ không được chứa mã sinh viên đầy đủ");
+        }
+
         // 1. Tạo thực thể StudyGroup kế thừa khoa/viện từ u-SAINT của Leader
         StudyGroup group = StudyGroup.builder()
                 .leader(leader)
@@ -58,6 +63,8 @@ public class GroupService {
                 .postYear(LocalDate.now().getYear())
                 .courseCode(StringUtils.hasText(request.getCourseCode()) ? request.getCourseCode().trim() : null)
                 .courseName(StringUtils.hasText(request.getCourseName()) ? request.getCourseName().trim() : null)
+                .contactEmail(contactEmail)
+                .contactPhone(StringUtils.hasText(request.getContactPhone()) ? request.getContactPhone().trim() : null)
                 .maxMembers(request.getMaxMembers())
                 .status(GroupStatus.RECRUITING)
                 .build();
@@ -274,6 +281,8 @@ public class GroupService {
                 .postYear(group.getPostYear())
                 .courseCode(group.getCourseCode())
                 .courseName(group.getCourseName())
+                .contactEmail(group.getContactEmail())
+                .contactPhone(group.getContactPhone())
                 .maxMembers(group.getMaxMembers())
                 .memberCount((long) members.size())
                 .status(group.getStatus())
@@ -288,7 +297,7 @@ public class GroupService {
         User u = member.getUser();
         return GroupMemberSummaryResponse.builder()
                 .userId(u.getId())
-                .studentId(StudentIdPrivacy.visibleStudentId(u.getStudentId()))
+                .studentId(StudentIdPrivacy.publicStudentId(u.getStudentId()))
                 .name(u.getName())
                 .department(u.getDepartment())
                 .faculty(u.getFaculty())
@@ -302,11 +311,11 @@ public class GroupService {
         if (user == null) return null;
         return AuthResponse.UserSummary.builder()
                 .id(user.getId())
-                .studentId(StudentIdPrivacy.visibleStudentId(user.getStudentId()))
+                .studentId(StudentIdPrivacy.publicStudentId(user.getStudentId()))
                 .name(user.getName())
                 .department(user.getDepartment())
                 .faculty(user.getFaculty())
-                .email(StudentIdPrivacy.visibleEmail(user.getEmail(), user.getStudentId()))
+                .email(null)
                 .academicYear(user.getAcademicYear())
                 .phoneNumber(user.getPhoneNumber())
                 .avatarUrl(user.getAvatarUrl())

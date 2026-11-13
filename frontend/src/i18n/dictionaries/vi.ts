@@ -48,6 +48,7 @@ export const vi: TranslationDict = {
     "leader": "Trưởng nhóm",
     "organizer": "Người tạo nhóm",
     "studentId": "Mã sinh viên: {id}",
+    phoneLabel: "Gọi trưởng nhóm",
     "roster": "Thành viên ({current}/{max})",
     "openCount": "Còn {count} chỗ",
     "academicClassification": "Phân loại học vụ u-SAINT",
@@ -297,6 +298,7 @@ export const vi: TranslationDict = {
     UNAUTHORIZED: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
     FORBIDDEN: "Bạn không có quyền thực hiện thao tác này.",
     NOT_FOUND: "Không tìm thấy dữ liệu yêu cầu.",
+    BAD_REQUEST: "Không thể thực hiện yêu cầu. Hãy kiểm tra nhóm đã đủ người hoặc bạn đã nộp đơn trước đó.",
     SERVER_ERROR: "Máy chủ gặp lỗi. Vui lòng thử lại.",
   },
   // Groups Page & Cards
@@ -376,6 +378,14 @@ export const vi: TranslationDict = {
       "Mô tả ý tưởng dự án, công nghệ dự kiến sử dụng (Next.js, Spring Boot...), thời gian họp nhóm định kỳ và yêu cầu đối với thành viên mới...",
     descriptionHelp:
       "Bắt buộc. Tối thiểu 20 ký tự. Mô tả càng chi tiết sẽ càng dễ tìm được đồng đội ăn ý.",
+    contactTitle: "Thông tin liên hệ của nhóm",
+    contactDescription: "Tùy chọn. Chỉ thông tin bạn đánh dấu công khai mới xuất hiện trên trang nhóm. Email trường sẽ không tự động được hiển thị.",
+    contactEmailLabel: "Email liên hệ (tùy chọn)",
+    contactEmailPlaceholder: "ban@example.com",
+    publishEmailLabel: "Hiển thị email này công khai trên trang nhóm",
+    contactPhoneLabel: "Số điện thoại liên hệ (tùy chọn)",
+    contactPhonePlaceholder: "+82 10 1234 5678",
+    publishPhoneLabel: "Hiển thị số này công khai trên trang nhóm",
     academicInfoTitle: "Môn học & Học vụ liên quan",
     academicInfoSubtitle:
       "Gắn nhóm này với học phần cụ thể trong kỳ học (tùy chọn).",
@@ -447,6 +457,9 @@ export const vi: TranslationDict = {
       descriptionTooShort: "Mô tả nhóm phải có ít nhất 20 ký tự.",
       capacityInvalid:
         "Sĩ số nhóm phải nằm trong khoảng từ 2 đến 20 thành viên.",
+      contactEmailInvalid: "Nhập email hợp lệ trước khi công khai.",
+      contactEmailStudentId: "Hãy dùng email không làm lộ toàn bộ mã sinh viên của bạn.",
+      contactPhoneInvalid: "Nhập số điện thoại hợp lệ (7–25 ký tự) trước khi công khai.",
       submitFailed:
         "Tạo nhóm thất bại. Vui lòng kiểm tra lại kết nối và thử lại.",
       unauthorized: "Vui lòng đăng nhập bằng tài khoản u-SAINT để tạo nhóm.",

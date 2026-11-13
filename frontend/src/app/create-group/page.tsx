@@ -14,8 +14,10 @@ import {
   Info,
   Layers,
   MapPin,
+  Mail,
   Minus,
   Plus,
+  Phone,
   ShieldCheck,
   Sparkles,
   Trash2,
@@ -62,6 +64,10 @@ export default function CreateGroupPage() {
     courseCode: "",
     courseName: "",
     maxMembers: 4,
+    contactEmail: "",
+    contactPhone: "",
+    publishEmail: false,
+    publishPhone: false,
     meetingFormat: "Hybrid",
     tags: [],
     rolesQuota: [
@@ -280,6 +286,15 @@ export default function CreateGroupPage() {
       newErrors.maxMembers = copy.errors.capacityInvalid;
     }
 
+    if (formData.publishEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail.trim())) {
+      newErrors.contactEmail = copy.errors.contactEmailInvalid;
+    } else if (formData.publishEmail && user?.studentId && formData.contactEmail.includes(user.studentId)) {
+      newErrors.contactEmail = copy.errors.contactEmailStudentId;
+    }
+    if (formData.publishPhone && !/^[+0-9() .-]{7,25}$/.test(formData.contactPhone.trim())) {
+      newErrors.contactPhone = copy.errors.contactPhoneInvalid;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -308,11 +323,12 @@ export default function CreateGroupPage() {
           courseCode: formData.courseCode.trim() || undefined,
           courseName: formData.courseName.trim() || undefined,
           maxMembers: formData.maxMembers,
+          contactEmail: formData.publishEmail ? formData.contactEmail.trim() : undefined,
+          contactPhone: formData.publishPhone ? formData.contactPhone.trim() : undefined,
           meetingFormat: formData.meetingFormat,
           rolesQuota:
             cleanedRolesQuota.length > 0 ? cleanedRolesQuota : undefined,
         },
-        user,
       );
 
       setCreatedGroup(response);
@@ -483,6 +499,61 @@ export default function CreateGroupPage() {
                   </p>
                 )}
               </div>
+
+              <fieldset className="space-y-4 border-t border-[var(--border-muted)] pt-5">
+                <legend className="text-sm font-semibold text-[var(--text-primary)] pt-4">
+                  <ScrambleText text={copy.contactTitle} />
+                </legend>
+                <p className="text-xs text-[var(--text-muted)]">
+                  <ScrambleText text={copy.contactDescription} />
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Input
+                      type="email"
+                      autoComplete="email"
+                      maxLength={254}
+                      label={copy.contactEmailLabel}
+                      placeholder={copy.contactEmailPlaceholder}
+                      value={formData.contactEmail}
+                      onChange={(event) => updateField("contactEmail", event.target.value)}
+                      error={errors.contactEmail}
+                      leftIcon={<Mail className="w-4 h-4" />}
+                    />
+                    <label className="flex items-start gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.publishEmail}
+                        onChange={(event) => updateField("publishEmail", event.target.checked)}
+                        className="mt-0.5 accent-[var(--primary)]"
+                      />
+                      <ScrambleText text={copy.publishEmailLabel} />
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      type="tel"
+                      autoComplete="tel"
+                      maxLength={25}
+                      label={copy.contactPhoneLabel}
+                      placeholder={copy.contactPhonePlaceholder}
+                      value={formData.contactPhone}
+                      onChange={(event) => updateField("contactPhone", event.target.value)}
+                      error={errors.contactPhone}
+                      leftIcon={<Phone className="w-4 h-4" />}
+                    />
+                    <label className="flex items-start gap-2 text-xs text-[var(--text-secondary)] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.publishPhone}
+                        onChange={(event) => updateField("publishPhone", event.target.checked)}
+                        className="mt-0.5 accent-[var(--primary)]"
+                      />
+                      <ScrambleText text={copy.publishPhoneLabel} />
+                    </label>
+                  </div>
+                </div>
+              </fieldset>
 
               {/* Tags / Keywords Input */}
               <div className="space-y-2">
@@ -1111,7 +1182,7 @@ export default function CreateGroupPage() {
                 </div>
               </CardFooter>
 
-              {/* Mock Action Buttons */}
+              {/* Preview action buttons */}
               <div className="grid grid-cols-2 gap-2 pt-1 ">
                 <Button
                   variant="outline"

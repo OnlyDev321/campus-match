@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import {
   Network,
   UserPlus,
@@ -15,13 +15,15 @@ import {
 import GroupCard from "@/components/group/GroupCard";
 import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
-import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
+import { CardSkeletonList, ErrorState } from "@/components/common/AsyncState";
+import { useDebounce, useServiceData } from "@/lib/hooks";
 import type { AcademicCatalog, GroupCardData, GroupDetailData } from "@/lib/types";
 import { useRequireLogin } from "@/lib/hooks";
 import { useLanguageStore } from "@/stores/languageStore";
 
 import { getAcademicCatalog } from "@/services/academicService";
-import { fetchAvailableYears } from "@/services/groupService";
+import { getPublicStatistics } from "@/services/statisticsService";
+import { fetchAvailableYears, fetchGroups } from "@/services/groupService";
 
 const GroupPage = () => {
   const isReady = useRequireLogin("/groups");
@@ -32,6 +34,7 @@ const GroupPage = () => {
   const [selectedDepartment, setSelectedDepartment] = useState("ALL");
   const [selectedYear, setSelectedYear] = useState("ALL");
   const [sortBy, setSortBy] = useState<"recent" | "spots">("recent");
+  const debouncedQuery = useDebounce(searchQuery, 300);
 
   // Pagination State (6 items per page)
   const ITEMS_PER_PAGE = 6;
@@ -44,7 +47,7 @@ const GroupPage = () => {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
   // Applied filter states (triggered on Search button click or Enter)
-  const [appliedQuery, setAppliedQuery] = useState("");
+  const appliedQuery = debouncedQuery;
   const [appliedCollege, setAppliedCollege] = useState("ALL");
   const [appliedDepartment, setAppliedDepartment] = useState("ALL");
   const [appliedYear, setAppliedYear] = useState("ALL");
@@ -76,28 +79,15 @@ const GroupPage = () => {
     .filter((college) => selectedCollege === "ALL" || college.name === selectedCollege)
     .flatMap((college) => college.departments)));
 
-  // Available years (연도 / Năm đăng bài) — dynamic từ API hoặc fallback mock
-  const [years, setYears] = useState<number[]>(() => {
-    // Immediate fallback: năm hiện tại + 2 năm trước (tránh dropdown trống lúc load)
-    const now = new Date().getFullYear();
-    return [now, now - 1, now - 2];
-  });
+  // Available years from backend
+  const [years, setYears] = useState<number[]>([]);
 
   useEffect(() => {
     let active = true;
     fetchAvailableYears()
       .then((data) => { if (active && data.length > 0) setYears(data); })
-      .catch(() => { /* giữ fallback ban đầu */ });
+      .catch(() => { if (active) setYears([]); });
     return () => { active = false; };
-  }, []);
-
-  // Đếm số group mỗi năm (cho badge count trong dropdown)
-  const yearCounts = useMemo(() => {
-    const counts = new Map<number, number>();
-    for (const g of mockGroupCards) {
-      counts.set(g.postYear, (counts.get(g.postYear) ?? 0) + 1);
-    }
-    return counts;
   }, []);
 
   const handleSelectCollege = (col: string) => {
@@ -110,91 +100,33 @@ const GroupPage = () => {
   };
 
   const handleSearch = () => {
-    setAppliedQuery(searchQuery);
+
     setAppliedCollege(selectedCollege);
     setAppliedDepartment(selectedDepartment);
     setAppliedYear(selectedYear);
     setCurrentPage(1);
   };
 
-  // Filter groups
-  const filteredGroups = useMemo(() => {
-    return mockGroupCards
-      .filter((group) => {
-        // Search keyword filter
-        if (appliedQuery.trim()) {
-          const query = appliedQuery.toLowerCase();
-          const matchesTitle = group.title.toLowerCase().includes(query);
-          const matchesDesc = group.description.toLowerCase().includes(query);
-          const matchesCourse = group.course.toLowerCase().includes(query);
-          const matchesCollege = group.college.toLowerCase().includes(query);
-          const matchesDept = group.department.toLowerCase().includes(query);
-          const matchesYear = String(group.postYear).includes(query);
-          if (
-            !matchesTitle &&
-            !matchesDesc &&
-            !matchesCourse &&
-            !matchesCollege &&
-            !matchesDept &&
-            !matchesYear
-          ) {
-            return false;
-          }
-        }
-
-        // College filter (단과대)
-        if (appliedCollege !== "ALL" && group.college !== appliedCollege) {
-          return false;
-        }
-
-        // Department filter (학부/학과)
-        if (
-          appliedDepartment !== "ALL" &&
-          group.department !== appliedDepartment
-        ) {
-          return false;
-        }
-
-        // Post Year filter (Năm đăng bài)
-        if (
-          appliedYear !== "ALL" &&
-          String(group.postYear) !== appliedYear
-        ) {
-          return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        if (sortBy === "recent") {
-          return b.postYear - a.postYear;
-        }
-        if (sortBy === "spots") {
-          const spotsA = a.maxMembers - a.memberCount;
-          const spotsB = b.maxMembers - b.memberCount;
-          return spotsB - spotsA;
-        }
-        return 0;
-      });
-  }, [
-    appliedQuery,
-    appliedCollege,
-    appliedDepartment,
-    appliedYear,
-    sortBy,
-  ]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredGroups.length / ITEMS_PER_PAGE));
-
+  const loadGroups = useCallback(() => fetchGroups({
+    keyword: appliedQuery.trim() || undefined,
+    college: appliedCollege === "ALL" ? undefined : appliedCollege,
+    department: appliedDepartment === "ALL" ? undefined : appliedDepartment,
+    postYear: appliedYear === "ALL" ? undefined : Number(appliedYear),
+    page: currentPage - 1,
+    size: ITEMS_PER_PAGE,
+    sort: "createdAt,desc",
+  }), [appliedQuery, appliedCollege, appliedDepartment, appliedYear, currentPage]);
+  const { status, data: groupPage, errorCode, reload } = useServiceData(loadGroups, isReady);
   const paginatedGroups = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredGroups.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredGroups, currentPage]);
-
-  const activeGroupsCount = mockGroupCards.length;
-  const teamsRecruitingCount = mockGroupCards.filter(
-    (g) => g.maxMembers > g.memberCount,
-  ).length;
+    const groups = [...(groupPage?.content ?? [])];
+    if (sortBy === "spots") groups.sort((a, b) => (b.maxMembers - b.memberCount) - (a.maxMembers - a.memberCount));
+    return groups;
+  }, [groupPage, sortBy]);
+  const totalPages = Math.max(1, groupPage?.totalPages ?? 1);
+  const loadStatistics = useCallback(() => getPublicStatistics(), []);
+  const { data: statistics } = useServiceData(loadStatistics, isReady);
+  const activeGroupsCount = statistics ? statistics.recruitingGroups + statistics.fullGroups : 0;
+  const teamsRecruitingCount = statistics?.recruitingGroups ?? 0;
 
   const hasActiveFilters =
     appliedCollege !== "ALL" ||
@@ -207,7 +139,7 @@ const GroupPage = () => {
     setSelectedCollege("ALL");
     setSelectedDepartment("ALL");
     setSelectedYear("ALL");
-    setAppliedQuery("");
+    setSearchQuery("");
     setAppliedCollege("ALL");
     setAppliedDepartment("ALL");
     setAppliedYear("ALL");
@@ -279,7 +211,7 @@ const GroupPage = () => {
         <SearchInput
           placeholder={t.groupsPage.searchPlaceholder}
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -473,7 +405,6 @@ const GroupPage = () => {
                     <ScrambleText text={t.groupsPage.allYears} />
                   </button>
                   {years.map((yr) => {
-                    const count = yearCounts.get(yr) ?? 0;
                     return (
                       <button
                         key={yr}
@@ -489,11 +420,7 @@ const GroupPage = () => {
                         }`}
                       >
                         <ScrambleText text={t.groupsPage.yearFormat.replace("{year}", String(yr))} />
-                        {count > 0 && (
-                          <span className="text-[10px] font-mono text-[var(--text-faint)] tabular-nums">
-                            ({count})
-                          </span>
-                        )}
+
                       </button>
                     );
                   })}
@@ -648,7 +575,6 @@ const GroupPage = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    setAppliedQuery("");
                     setSearchQuery("");
                   }}
                   className="text-[var(--text-faint)] hover:text-[var(--text-primary)] cursor-pointer"
@@ -671,7 +597,9 @@ const GroupPage = () => {
       </Card>
 
       {/* 5. Group Card Grid - Uses .responsive-card-grid from globals.css */}
-      {filteredGroups.length > 0 ? (
+      {status === "loading" ? <CardSkeletonList count={ITEMS_PER_PAGE} /> : status === "error" ? (
+        <ErrorState title={t.groupsPage.noResultsTitle} message={t.apiErrors[errorCode ?? "SERVER_ERROR"]} retryLabel={t.groupsPage.resetFiltersBtn} onRetry={reload} />
+      ) : paginatedGroups.length > 0 ? (
         <div className="space-y-6">
           <div className="responsive-card-grid">
             {paginatedGroups.map((group) => (
@@ -679,8 +607,7 @@ const GroupPage = () => {
                 key={group.id}
                 group={group}
                 onJoin={() => {
-                  const detailedGroup = getGroupDetail(group.id);
-                  setSelectedGroupForApply(detailedGroup || group);
+                  setSelectedGroupForApply(group);
                   setIsApplyModalOpen(true);
                 }}
               />
@@ -691,8 +618,8 @@ const GroupPage = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-[var(--border-muted)]">
             <p className="text-xs sm:text-sm text-[var(--text-muted)]">
               <ScrambleText text={t.groupsPage.showingCount
-                .replace("{current}", String(paginatedGroups.length))
-                .replace("{total}", String(filteredGroups.length))} />
+                .replace("{current}", String(Math.min(currentPage * ITEMS_PER_PAGE, groupPage?.totalElements ?? 0)))
+                .replace("{total}", String(groupPage?.totalElements ?? 0))} />
             </p>
 
             <div className="flex items-center gap-1.5">

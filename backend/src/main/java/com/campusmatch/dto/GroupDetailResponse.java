@@ -20,6 +20,8 @@ public class GroupDetailResponse {
     private Integer postYear;
     private String courseCode;
     private String courseName;
+    private String contactEmail;
+    private String contactPhone;
     private Integer maxMembers;
     private Long memberCount;
     private GroupStatus status;

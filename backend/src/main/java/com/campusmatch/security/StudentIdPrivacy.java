@@ -18,7 +18,13 @@ public final class StudentIdPrivacy {
 
     public static String visibleStudentId(String studentId) {
         if (studentId == null || isOwner(studentId)) return studentId;
-        int hiddenLength = Math.max(0, studentId.length() - 4);
+        return publicStudentId(studentId);
+    }
+
+    /** Response nhóm luôn che bốn ký tự đầu, kể cả khi người xem là chủ tài khoản. */
+    public static String publicStudentId(String studentId) {
+        if (studentId == null) return null;
+        int hiddenLength = Math.min(4, studentId.length());
         return "*".repeat(hiddenLength) + studentId.substring(hiddenLength);
     }
 

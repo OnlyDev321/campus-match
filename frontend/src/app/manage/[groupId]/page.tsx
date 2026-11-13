@@ -10,7 +10,7 @@ import ManageGroupEditor from "@/components/group/ManageGroupEditor";
 import ApplicationCard from "@/components/application/ApplicationCard";
 import DeleteGroupModal from "@/components/group/DeleteGroupModal";
 import { CardSkeletonList, EmptyState, ErrorState } from "@/components/common/AsyncState";
-import { getMyGroups, deleteGroup, MANAGE_MUTATIONS_AVAILABLE, MANAGE_USES_SAMPLE_DATA } from "@/services/groupService";
+import { getMyGroups, deleteGroup, MANAGE_MUTATIONS_AVAILABLE } from "@/services/groupService";
 import {
   acceptApplication,
   getGroupApplications,
@@ -84,7 +84,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
   };
 
   const handleAction = async (applicationId: number, action: ApplicationAction) => {
-    if (!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
+    if (!MANAGE_MUTATIONS_AVAILABLE || data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
     if (action === "accept" && (data.group.status !== "RECRUITING" || data.group.memberCount >= data.group.maxMembers)) return;
     setConfirmation(null);
     setPendingActions((prev) => ({ ...prev, [applicationId]: action }));
@@ -243,7 +243,7 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
               <p id="action-blocked" className="text-sm text-[var(--text-secondary)]"><ScrambleText text={t.manageDetails.blocked} /></p>
               <div className="flex flex-wrap gap-3">
                 <Button autoFocus variant="outline" onClick={() => setConfirmation(null)}><ScrambleText text={t.manageDetails.cancel} /></Button>
-                <Button disabled={!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || Object.keys(pendingActions).length > 0 || (confirmation.action === "accept" && (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers))}
+                <Button disabled={!MANAGE_MUTATIONS_AVAILABLE || Object.keys(pendingActions).length > 0 || (confirmation.action === "accept" && (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers))}
                   aria-describedby="action-blocked" onClick={() => handleAction(confirmation.applicationId, confirmation.action)}><ScrambleText text={t.manageDetails.confirm} /></Button>
               </div>
             </Card>

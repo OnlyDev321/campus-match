@@ -149,17 +149,14 @@ export async function POST(req: NextRequest) {
         backendToken = springBootData.token;
         backendUserId = springBootData.user?.id ?? null;
       } else {
-        console.warn("Spring Boot phản hồi mã lỗi HTTP:", springBootRes.status);
+        return NextResponse.json({ success: false, errorCode: "SERVER_ERROR", error: MESSAGES.SERVER_ERROR[lang] }, { status: 502 });
       }
     } catch (backendError) {
       console.warn(
         "Không kết nối được Spring Boot (server chưa bật hoặc lỗi mạng):",
         backendError,
       );
-      // Token dự phòng nếu Spring Boot chưa bật trong lúc phát triển frontend độc lập
-      // TODO: Xem lại hành vi fallback này khi chuyển services/ sang API thật (USE_MOCK = false):
-      // token giả sẽ bị Backend từ chối (401). Cân nhắc báo lỗi SERVER_ERROR hoặc trả token null.
-      backendToken = `jwt_usaint_${profile.studentId}_${Date.now()}`;
+      return NextResponse.json({ success: false, errorCode: "SERVER_ERROR", error: MESSAGES.SERVER_ERROR[lang] }, { status: 502 });
     }
 
     return NextResponse.json({

@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import { use, useState, useMemo } from "react";
+import { use, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -16,6 +16,7 @@ import {
   Building2,
   Laptop,
   Mail,
+  Phone,
   UserPlus,
   Compass,
   AlertCircle,
@@ -24,8 +25,10 @@ import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
 import type { GroupTranslationState } from "@/lib/types";
 import TranslateButton from "@/components/common/TranslateButton";
-import { getGroupDetailForView } from "@/services/groupService";
-import { formatMessage, visibleStudentId, visibleStudentEmail } from "@/lib/format";
+import { fetchGroupDetail } from "@/services/groupService";
+import { useServiceData } from "@/lib/hooks";
+import { CardSkeletonList, ErrorState } from "@/components/common/AsyncState";
+import { formatMessage, maskStudentId } from "@/lib/format";
 import { useLanguageStore } from "@/stores/languageStore";
 import { useAuthStore } from "@/stores/authStore";
 import type { GroupDetailPageProps } from "@/lib/types";
@@ -34,10 +37,11 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const { id } = use(params);
   const { t, language } = useLanguageStore();
   const copy = t.groupDetail;
-  const { user, isLoggedIn, openLoginModal } = useAuthStore();
+  const { isLoggedIn, openLoginModal } = useAuthStore();
 
   // Dữ liệu xem trước có thể cập nhật trong phiên dev; không giữ lại kết quả null cũ.
-  const group = getGroupDetailForView(id, user);
+  const loadGroup = useCallback(() => fetchGroupDetail(id), [id]);
+  const { status, data: group, errorCode, reload } = useServiceData(loadGroup, true);
 
   // Modal and Interactive States
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -61,7 +65,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const translatedMeetingSchedule = translation?.context === translationContext ? translation.meetingSchedule : null;
   const translatedRolesQuota = translation?.context === translationContext ? translation.rolesQuota : null;
 
-  const displayRolesQuota = useMemo(() => {
+  const displayRolesQuota = (() => {
     if (!group?.rolesQuota) return [];
     if (!translatedRolesQuota) return group.rolesQuota;
     return group.rolesQuota.map((r, i) => {
@@ -73,8 +77,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
         description: translatedRole.description ?? r.description,
       };
     });
-  }, [group?.rolesQuota, translatedRolesQuota]);
+  })();
 
+  if (status === "loading") return <div className="max-w-4xl mx-auto p-8"><CardSkeletonList count={2} /></div>;
+  if (status === "error" && errorCode !== "NOT_FOUND") return <div className="max-w-4xl mx-auto p-8"><ErrorState title={copy.notFoundTitle} message={t.apiErrors[errorCode ?? "SERVER_ERROR"]} retryLabel={copy.backToGroups} onRetry={reload} /></div>;
   if (!group) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center space-y-5">
@@ -102,9 +108,9 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
 
   const spotsLeft = Math.max(group.maxMembers - group.memberCount, 0);
   const isFull = spotsLeft === 0;
-  const isLeader = Boolean(isLoggedIn && user && (group.myRole === "LEADER" || user.studentId === group.leaderStudentId));
+  const isLeader = Boolean(isLoggedIn && group.myRole === "LEADER");
   const isMember = isLoggedIn && group.myRole === "MEMBER";
-  const leaderEmail = visibleStudentEmail(group.leaderEmail, group.leaderStudentId, user?.studentId);
+  const leaderEmail = group.leaderEmail;
 
   const handleShare = async () => {
     try {
@@ -548,7 +554,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                   </p>
                   {group.leaderStudentId && (
                     <p className="text-[11px] font-mono text-[var(--text-muted)] truncate">
-                      <ScrambleText text={formatMessage(copy.studentId, { id: visibleStudentId(group.leaderStudentId, user?.studentId) })} protectedValues={[...Object.values({ id: visibleStudentId(group.leaderStudentId, user?.studentId) })]} />
+                      <ScrambleText text={formatMessage(copy.studentId, { id: maskStudentId(group.leaderStudentId) })} protectedValues={[maskStudentId(group.leaderStudentId)]} />
                     </p>
                   )}
                 </div>
@@ -561,6 +567,16 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 >
                   <Mail className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
                   <span className="truncate">{leaderEmail}</span>
+                </a>
+              )}
+              {group.contactPhone && (
+                <a
+                  href={`tel:${group.contactPhone.replace(/[^+0-9]/g, "")}`}
+                  aria-label={copy.phoneLabel}
+                  className="inline-flex items-center justify-center gap-2 w-full py-2 px-3 rounded-xl text-xs font-medium text-[var(--text-secondary)] bg-[var(--surface-container-low)] border border-[var(--border)] hover:bg-[var(--surface-container)] hover:text-[var(--text-primary)] transition-colors min-w-0 overflow-hidden"
+                >
+                  <Phone className="w-3.5 h-3.5 text-[var(--primary)] shrink-0" />
+                  <span className="truncate">{group.contactPhone}</span>
                 </a>
               )}
             </Card>

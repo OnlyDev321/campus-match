@@ -25,6 +25,7 @@ const errorCodeFromStatus = (status: number): ApiErrorCode => {
   if (status === 401) return "UNAUTHORIZED";
   if (status === 403) return "FORBIDDEN";
   if (status === 404) return "NOT_FOUND";
+  if (status === 400 || status === 409) return "BAD_REQUEST";
   return "SERVER_ERROR";
 };
 

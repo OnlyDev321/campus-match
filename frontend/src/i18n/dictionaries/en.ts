@@ -50,6 +50,7 @@ export const en = {
     leader: "Group Leader",
     organizer: "Organizer",
     studentId: "Student ID: {id}",
+    phoneLabel: "Call group leader",
     roster: "Roster ({current}/{max})",
     openCount: "{count} open",
     academicClassification: "u-SAINT Academic Classification",
@@ -324,6 +325,7 @@ export const en = {
     UNAUTHORIZED: "Your session has expired. Please sign in again.",
     FORBIDDEN: "You don't have permission to do this.",
     NOT_FOUND: "The requested item could not be found.",
+    BAD_REQUEST: "The request cannot be completed. Check whether the group is full or you have already applied.",
     SERVER_ERROR: "Something went wrong on the server. Please try again.",
   },
   // Groups Page & Cards
@@ -405,6 +407,14 @@ export const en = {
       "Describe your project vision, target tech stack (e.g. Next.js, Spring Boot), weekly study commitment, and expectations for new members...",
     descriptionHelp:
       "Required. Minimum 20 characters. Detailed descriptions attract committed teammates.",
+    contactTitle: "Contact details for this group",
+    contactDescription: "Optional. Contact details appear on the group page only when you explicitly choose to publish them. Your university email is never shown automatically.",
+    contactEmailLabel: "Contact email (optional)",
+    contactEmailPlaceholder: "you@example.com",
+    publishEmailLabel: "Show this email on the public group page",
+    contactPhoneLabel: "Contact phone (optional)",
+    contactPhonePlaceholder: "+82 10 1234 5678",
+    publishPhoneLabel: "Show this number on the public group page",
     academicInfoTitle: "Academic & Course Context",
     academicInfoSubtitle:
       "Connect this group with a specific university course (optional).",
@@ -475,6 +485,9 @@ export const en = {
       descriptionRequired: "Please enter a description for your group.",
       descriptionTooShort: "Description must be at least 20 characters.",
       capacityInvalid: "Team capacity must be between 2 and 20 members.",
+      contactEmailInvalid: "Enter a valid email before publishing it.",
+      contactEmailStudentId: "Use an email address that does not reveal your full student ID.",
+      contactPhoneInvalid: "Enter a valid phone number (7–25 characters) before publishing it.",
       submitFailed:
         "Failed to create group. Please check your connection and try again.",
       unauthorized:

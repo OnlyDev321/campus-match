@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -31,7 +33,11 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable()) // Tắt form login mặc định
                 .httpBasic(httpBasic -> httpBasic.disable()) // Tắt HTTP Basic mặc định
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
+                        (request, response, exception) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED)))
                 .authorizeHttpRequests(auth -> auth
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers("/error").permitAll()
                         // Endpoints công khai
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/health", "/api/auth/**").permitAll()

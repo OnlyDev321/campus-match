@@ -370,6 +370,7 @@ export type ApiErrorCode =
   | "UNAUTHORIZED"
   | "FORBIDDEN"
   | "NOT_FOUND"
+  | "BAD_REQUEST"
   | "SERVER_ERROR";
 
 /**
@@ -450,6 +451,10 @@ export interface UserSummary {
   department: string | null;        // Khoa / Ngành (학부/학과)
   faculty: string | null;           // Trường / Viện (단과대학)
   academicYear: string | null;      // Năm học (1, 2, 3, 4)
+  /** Email do backend trả về. */
+  email?: string | null;
+  /** Ảnh đại diện do backend trả về. */
+  avatarUrl?: string | null;
 }
 
 /**
@@ -545,11 +550,63 @@ export interface GroupFilterParams {
   college?: string;         // Lọc theo Trường / Viện (VD: "IT대학")
   department?: string;      // Lọc theo Khoa / Ngành (VD: "소프트웨어학부")
   postYear?: number;        // Lọc theo năm đăng
-  status?: GroupStatus;     // Lọc theo trạng thái tuyển
+  status?: GroupStatusCode; // Lọc theo trạng thái tuyển
   page?: number;            // Số trang yêu cầu
-  limit?: number;           // Số phần tử mỗi trang
+  size?: number;            // Số phần tử mỗi trang
+  sort?: string;            // Sắp xếp Spring Data (ví dụ createdAt,desc)
 }
 
+
+/** Một trang dữ liệu theo định dạng Spring Data Page. */
+export interface SpringPage<T> {
+  /** Các bản ghi của trang hiện tại. */
+  content: T[];
+  /** Chỉ số trang, bắt đầu từ 0. */
+  number: number;
+  /** Tổng số bản ghi khớp bộ lọc. */
+  totalElements: number;
+  /** Tổng số trang. */
+  totalPages: number;
+  /** Kích thước trang. */
+  size: number;
+}
+
+/** DTO tóm tắt nhóm từ Spring Boot. */
+export interface GroupSummaryResponse {
+  /** ID nhóm. */ id: number;
+  /** Tiêu đề nhóm. */ title: string;
+  /** Mô tả nhóm. */ description: string;
+  /** Trường/viện. */ college: string;
+  /** Khoa/ngành. */ department: string;
+  /** Năm đăng. */ postYear: number;
+  /** Mã học phần. */ courseCode: string | null;
+  /** Tên học phần. */ courseName: string | null;
+  /** Số thành viên tối đa. */ maxMembers: number;
+  /** Số thành viên hiện tại. */ memberCount: number;
+  /** Trạng thái nhóm. */ status: GroupStatusCode;
+  /** Trưởng nhóm. */ leader: UserSummary;
+  /** Thời điểm tạo. */ createdAt: string;
+  /** Thời điểm cập nhật. */ updatedAt: string | null;
+}
+
+/** DTO thành viên trong chi tiết nhóm. */
+export interface GroupMemberResponse {
+  /** ID người dùng. */ userId: number;
+  /** Mã sinh viên. */ studentId: string;
+  /** Tên thành viên. */ name: string;
+  /** Khoa/ngành. */ department: string | null;
+  /** Trường/viện. */ faculty: string | null;
+  /** Ảnh đại diện. */ avatarUrl: string | null;
+  /** Vai trò trong nhóm. */ role: GroupMemberRole;
+  /** Thời điểm gia nhập. */ joinedAt: string;
+}
+
+/** DTO chi tiết nhóm từ Spring Boot. */
+export interface GroupDetailResponse extends GroupSummaryResponse {
+  /** Thành viên chính thức. */ members: GroupMemberResponse[];
+  /** Email liên hệ mà leader đã chọn công khai cho nhóm. */ contactEmail: string | null;
+  /** Số điện thoại mà leader đã chọn công khai cho nhóm. */ contactPhone: string | null;
+}
 
 /* --------------------------------------------------------------------------
    5b. CREATE GROUP TYPES (Biểu mẫu & Tạo nhóm học tập mới)
@@ -564,6 +621,10 @@ export interface CreateGroupPayload {
   courseCode?: string;                  // Mã môn học (VD: "CS490", tùy chọn)
   courseName?: string;                  // Tên môn học (VD: "Capstone Design", tùy chọn)
   maxMembers: number;                   // Số lượng thành viên tối đa (từ 2 đến 20)
+  /** Email công khai cho nhóm, chỉ gửi khi leader đồng ý hiển thị. */
+  contactEmail?: string;
+  /** Số điện thoại công khai cho nhóm, chỉ gửi khi leader đồng ý hiển thị. */
+  contactPhone?: string;
   meetingFormat?: MeetingFormat;        // Hình thức họp (Online / Offline / Hybrid)
   rolesQuota?: GroupRoleQuota[];        // Cơ cấu nhóm và số lượng theo vai trò
 }
@@ -598,6 +659,14 @@ export interface CreateGroupFormData {
   courseCode: string;                   // Mã môn học
   courseName: string;                   // Tên môn học
   maxMembers: number;                   // Sĩ số tối đa mong muốn (2 - 20)
+  /** Email liên hệ nhập cho nhóm. */
+  contactEmail: string;
+  /** Số điện thoại liên hệ nhập cho nhóm. */
+  contactPhone: string;
+  /** Leader đồng ý công khai email trong chi tiết nhóm. */
+  publishEmail: boolean;
+  /** Leader đồng ý công khai số điện thoại trong chi tiết nhóm. */
+  publishPhone: boolean;
   meetingFormat: MeetingFormat;         // Hình thức họp (Online / Offline / Hybrid)
   tags: string[];                       // Thẻ kỹ năng / từ khóa (tùy chọn)
   rolesQuota: GroupRoleQuota[];         // Cơ cấu nhóm và số lượng theo vai trò
@@ -612,6 +681,10 @@ export interface CreateGroupFormErrors {
   maxMembers?: string;                  // Lỗi sĩ số tối đa
   courseCode?: string;                  // Lỗi mã môn học
   courseName?: string;                  // Lỗi tên môn học
+  /** Email liên hệ không hợp lệ. */
+  contactEmail?: string;
+  /** Số điện thoại liên hệ không hợp lệ. */
+  contactPhone?: string;
 }
 
 
@@ -668,6 +741,8 @@ export interface GroupDetailData extends GroupCardData {
   requiredSkills?: string[];            // Danh sách kỹ năng / công nghệ yêu cầu
   rolesQuota?: GroupRoleQuota[];        // Phân bổ chỉ tiêu các vị trí cần tuyển
   leaderEmail?: string;                 // Email liên hệ của trưởng nhóm
+  /** Số điện thoại công khai cho nhóm. */
+  contactPhone?: string;
   leaderStudentId?: string;             // MSSV của trưởng nhóm
   membersList?: GroupMemberDetail[];    // Danh sách thành viên chính thức
   createdAt?: string;                   // Ngày tạo nhóm

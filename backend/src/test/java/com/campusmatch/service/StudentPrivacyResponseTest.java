@@ -1,7 +1,9 @@
 package com.campusmatch.service;
 
+import com.campusmatch.dto.CreateGroupRequest;
 import com.campusmatch.entity.*;
 import com.campusmatch.repository.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +23,47 @@ class StudentPrivacyResponseTest {
     }
 
     @Test
+    void createGroupRejectsContactEmailContainingFullStudentId() {
+        var groups = mock(GroupRepository.class);
+        var users = mock(UserRepository.class);
+        var service = new GroupService(groups, mock(GroupMemberRepository.class), users,
+                mock(ApplicationRepository.class), mock(NotificationRepository.class), mock(NotificationService.class));
+        when(users.findByStudentId("20260020")).thenReturn(Optional.of(
+                User.builder().id(1L).studentId("20260020").build()));
+        var request = CreateGroupRequest.builder().title("Study group").description("A study group")
+                .maxMembers(4).contactEmail("20260020@soongsil.ac.kr").build();
+
+        assertThrows(ResponseStatusException.class, () -> service.createGroup(request, "20260020"));
+        verifyNoInteractions(groups);
+    }
+
+    @Test
+    void createGroupReturnsOnlyExplicitGroupContact() {
+        var groups = mock(GroupRepository.class);
+        var members = mock(GroupMemberRepository.class);
+        var users = mock(UserRepository.class);
+        var service = new GroupService(groups, members, users,
+                mock(ApplicationRepository.class), mock(NotificationRepository.class), mock(NotificationService.class));
+        var leader = User.builder().id(1L).studentId("20260020").email("20260020@soongsil.ac.kr")
+                .faculty("IT").department("Software").build();
+        when(users.findByStudentId("20260020")).thenReturn(Optional.of(leader));
+        when(groups.save(any(StudyGroup.class))).thenAnswer(invocation -> {
+            StudyGroup group = invocation.getArgument(0);
+            group.setId(10L);
+            return group;
+        });
+        when(members.findByGroupId(10L)).thenReturn(List.of());
+        var request = CreateGroupRequest.builder().title("Study group").description("A study group")
+                .maxMembers(4).contactEmail("leader@example.com").contactPhone("+82 10 1234 5678").build();
+
+        var response = service.createGroup(request, "20260020");
+        assertEquals("leader@example.com", response.getContactEmail());
+        assertEquals("+82 10 1234 5678", response.getContactPhone());
+        assertEquals("****0020", response.getLeader().getStudentId());
+        assertNull(response.getLeader().getEmail());
+    }
+
+    @Test
     void groupDetailMasksLeaderAndMembersBeforeReturningResponse() {
         var groups = mock(GroupRepository.class);
         var members = mock(GroupMemberRepository.class);
@@ -33,7 +76,8 @@ class StudentPrivacyResponseTest {
                 mock(NotificationService.class));
         var leader = User.builder().id(1L).studentId("20260020").email("20260020@soongsil.ac.kr").build();
         var member = User.builder().id(2L).studentId("20260021").build();
-        var group = StudyGroup.builder().id(10L).leader(leader).build();
+        var group = StudyGroup.builder().id(10L).leader(leader)
+                .contactEmail("leader@example.com").contactPhone("+82 10 1234 5678").build();
         when(groups.findById(10L)).thenReturn(Optional.of(group));
         when(members.findByGroupId(10L)).thenReturn(List.of(
                 new GroupMember(group, leader, GroupRole.LEADER), new GroupMember(group, member, GroupRole.MEMBER)));
@@ -41,13 +85,16 @@ class StudentPrivacyResponseTest {
         var publicResponse = service.getGroupDetail(10L);
         assertEquals("****0020", publicResponse.getLeader().getStudentId());
         assertNull(publicResponse.getLeader().getEmail());
+        assertEquals("leader@example.com", publicResponse.getContactEmail());
+        assertEquals("+82 10 1234 5678", publicResponse.getContactPhone());
         assertEquals(List.of("****0020", "****0021"), publicResponse.getMembers().stream().map(m -> m.getStudentId()).toList());
 
         SecurityContextHolder.getContext().setAuthentication(
                 UsernamePasswordAuthenticationToken.authenticated("20260020", null, AuthorityUtils.NO_AUTHORITIES));
         var ownerResponse = service.getGroupDetail(10L);
-        assertEquals("20260020", ownerResponse.getLeader().getStudentId());
-        assertEquals("20260020", ownerResponse.getMembers().get(0).getStudentId());
+        assertEquals("****0020", ownerResponse.getLeader().getStudentId());
+        assertNull(ownerResponse.getLeader().getEmail());
+        assertEquals("****0020", ownerResponse.getMembers().get(0).getStudentId());
         assertEquals("****0021", ownerResponse.getMembers().get(1).getStudentId());
         assertEquals("20260021", member.getStudentId()); // Không sửa dữ liệu entity.
     }

@@ -56,6 +56,13 @@ public class StudyGroup {
     @Column(name = "course_name", length = 100)
     private String courseName;
 
+    // Chỉ lưu thông tin liên hệ mà leader đã chọn công khai cho nhóm này.
+    @Column(name = "contact_email", length = 254)
+    private String contactEmail;
+
+    @Column(name = "contact_phone", length = 25)
+    private String contactPhone;
+
     // Số lượng thành viên tối đa
     @Column(name = "max_members", nullable = false)
     private Integer maxMembers;

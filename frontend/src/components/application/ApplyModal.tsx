@@ -15,7 +15,9 @@ import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
 import { formatMessage } from "@/lib/format";
 import { useAuthStore } from "@/stores/authStore";
-import type { ApplyModalProps } from "@/lib/types";
+import type { ApplyModalProps, ApiErrorCode } from "@/lib/types";
+import { applyToGroup } from "@/services/applicationService";
+import { toApiErrorCode } from "@/lib/api";
 
 export default function ApplyModal(props: ApplyModalProps) {
   if (!props.isOpen || !props.group) return null;
@@ -40,6 +42,7 @@ function ApplyModalContent({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [isSuccess, setIsSuccess] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [apiError, setApiError] = useState<ApiErrorCode | null>(null);
 
   // Available roles to pick from
   const availableRoles = React.useMemo(() => {
@@ -82,15 +85,24 @@ function ApplyModalContent({
 
     setIsSubmitting(true);
     setErrorMsg(null);
+    setApiError(null);
 
-    // Simulate sending application to Backend: POST /api/groups/{id}/applications
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const applicationStatement = [
+        statement.trim(),
+        `Role: ${selectedRole}`,
+        skills.trim() && `Skills: ${skills.trim()}`,
+        githubUrl.trim() && `GitHub: ${githubUrl.trim()}`,
+        portfolioUrl.trim() && `Portfolio: ${portfolioUrl.trim()}`,
+      ].filter(Boolean).join("\n");
+      await applyToGroup(group.id, applicationStatement);
       setIsSuccess(true);
-      if (onSuccess) {
-        onSuccess(group.id);
-      }
-    }, 700);
+      onSuccess?.(group.id);
+    } catch (error) {
+      setApiError(toApiErrorCode(error));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleFinish = () => {
@@ -266,10 +278,10 @@ function ApplyModalContent({
             />
           </div>
 
-          {errorMsg && (
+          {(errorMsg || apiError) && (
             <div className="p-3 rounded-md bg-[var(--error-bg)] border border-[var(--error-border)] text-xs text-[var(--error-text)] flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
-              <span><ScrambleText text={errorMsg === "roleRequired" ? copy.roleRequired : copy.statementRequired} /></span>
+              <span><ScrambleText text={apiError ? t.apiErrors[apiError] : errorMsg === "roleRequired" ? copy.roleRequired : copy.statementRequired} /></span>
             </div>
           )}
 
