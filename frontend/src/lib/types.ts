@@ -1,5 +1,26 @@
 import React from "react";
 import type { TranslationDict } from "@/i18n/dictionaries/en";
+import type { ThemeMode, ResolvedTheme } from "@/design-system/tokens";
+
+/** Trạng thái giao diện và thao tác chuyển theme dùng chung. */
+export interface ThemeContextType {
+  /** Chế độ người dùng lựa chọn, bao gồm chế độ theo hệ thống. */
+  theme: ThemeMode;
+  /** Theme sáng hoặc tối đang hiển thị thực tế. */
+  resolvedTheme: ResolvedTheme;
+  /** Đổi theme, lấy vị trí sự kiện làm tâm hiệu ứng nếu có. */
+  setTheme: (theme: ThemeMode, event?: React.MouseEvent<HTMLButtonElement>) => void;
+  /** Đảo theme sáng/tối từ nút được kích hoạt. */
+  toggleTheme: (event?: React.MouseEvent<HTMLButtonElement>) => void;
+}
+
+/** Các tùy chọn hiển thị nút chuyển theme. */
+export interface ThemeToggleProps {
+  /** Hiển thị nút biểu tượng hoặc nhóm ba chế độ. */
+  variant?: "icon-toggle" | "segmented";
+  /** Lớp CSS bổ sung cho phần tử bao ngoài. */
+  className?: string;
+}
 
 /* ==========================================================================
    CAMPUSMATCH — CENTRAL TYPE DEFINITIONS (lib/types.ts)

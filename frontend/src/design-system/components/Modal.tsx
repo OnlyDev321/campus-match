@@ -67,7 +67,7 @@ export function Modal({
     >
       {/* Backdrop with blur */}
       <div
-        className="fixed inset-0 bg-black/40 dark:bg-black/75 backdrop-blur-sm transition-opacity"
+        className="motion-backdrop fixed inset-0 bg-black/40 dark:bg-black/75 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -77,7 +77,7 @@ export function Modal({
         style={{
           borderRadius: "var(--radius-modal)",
         }}
-        className={`relative w-full ${maxWidthClasses} bg-(--surface) border border-(--border-strong) shadow-(--shadow-level-3) z-10 overflow-hidden transform transition-all duration-200 animate-in fade-in-0 zoom-in-95 ${className}`}
+        className={`relative w-full ${maxWidthClasses} bg-(--surface) border border-(--border-strong) shadow-(--shadow-level-3) z-10 overflow-hidden animate-in ${className}`}
       >
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-5 pb-3">
