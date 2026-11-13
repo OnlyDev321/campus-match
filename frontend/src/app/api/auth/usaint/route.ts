@@ -1,3 +1,4 @@
+import { USE_MOCK_API } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateUsaint, fetchStudentProfileFromSap, fetchTimetableFromSap } from "@/lib/usaint";
 import type { SupportedLanguage, StudentProfile, StudentTimetable } from "@/lib/types";
@@ -131,7 +132,7 @@ export async function POST(req: NextRequest) {
         process.env.SPRING_BOOT_API_URL || "http://localhost:8080";
       const springBootRes = await fetch(`${backendUrl}/api/auth/sso/usaint`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept-Language": lang },
         body: JSON.stringify({
           studentId: profile.studentId,
           name: profile.name,
@@ -146,7 +147,7 @@ export async function POST(req: NextRequest) {
 
       if (springBootRes.ok) {
         const springBootData = await springBootRes.json();
-        backendToken = springBootData.token;
+        backendToken = typeof springBootData.token === "string" && springBootData.token.trim() ? springBootData.token : null;
         backendUserId = springBootData.user?.id ?? null;
       } else {
         console.warn("Spring Boot phản hồi mã lỗi HTTP:", springBootRes.status);
@@ -156,10 +157,11 @@ export async function POST(req: NextRequest) {
         "Không kết nối được Spring Boot (server chưa bật hoặc lỗi mạng):",
         backendError,
       );
-      // Token dự phòng nếu Spring Boot chưa bật trong lúc phát triển frontend độc lập
-      // TODO: Xem lại hành vi fallback này khi chuyển services/ sang API thật (USE_MOCK = false):
-      // token giả sẽ bị Backend từ chối (401). Cân nhắc báo lỗi SERVER_ERROR hoặc trả token null.
-      backendToken = `jwt_usaint_${profile.studentId}_${Date.now()}`;
+    }
+
+    // API thật yêu cầu JWT do Spring Boot cấp; không phát token giả khi backend lỗi.
+    if (!USE_MOCK_API && !backendToken) {
+      return NextResponse.json({ success: false, errorCode: "SERVER_ERROR", error: MESSAGES.SERVER_ERROR[lang] }, { status: 503 });
     }
 
     return NextResponse.json({

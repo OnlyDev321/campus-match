@@ -321,6 +321,8 @@ export interface ApiErrorBody {
  * - SERVER_ERROR: Các lỗi còn lại
  */
 export type ApiErrorCode =
+  | "BAD_REQUEST"
+  | "CONFLICT"
   | "NETWORK_ERROR"
   | "UNAUTHORIZED"
   | "FORBIDDEN"
@@ -399,6 +401,8 @@ export type GroupMemberRole = "LEADER" | "MEMBER";
  * Thông tin tóm tắt người dùng nhúng trong response nhóm / đơn ứng tuyển.
  */
 export interface UserSummary {
+  /** Ảnh đại diện do API trả về, dùng chữ viết tắt khi thiếu. */
+  avatarUrl?: string;
   id: number;                       // ID người dùng (users.id)
   studentId: string;                // Mã số sinh viên u-SAINT
   name: string;                     // Họ tên sinh viên
@@ -411,6 +415,14 @@ export interface UserSummary {
  * Một thành viên trong response tóm tắt nhóm.
  */
 export interface GroupMemberSummary {
+  /** Email thành viên nếu backend cung cấp. */
+  email?: string;
+  /** Ngành học để trình bày trong danh sách nhóm. */
+  department?: string;
+  /** Ảnh đại diện của thành viên. */
+  avatarUrl?: string;
+  /** Nhãn chuyên môn chỉ để hiển thị, không thay thế quyền LEADER/MEMBER. */
+  projectRole?: string;
   userId: number;                   // ID người dùng (users.id)
   name: string;                     // Tên thành viên
   role: GroupMemberRole;            // Vai trò trong nhóm (LEADER/MEMBER)
@@ -422,6 +434,10 @@ export interface GroupMemberSummary {
  * Response của `GET /api/users/me/groups` (trả về MyGroupSummary[]).
  */
 export interface MyGroupSummary {
+  /** Công nghệ của dự án, tùy chọn trong response backend. */
+  skills?: string[];
+  /** Hạn tuyển theo ISO-8601, không suy diễn nếu API chưa cung cấp. */
+  recruitmentEndsAt?: string;
   id: number;                       // ID nhóm (study_groups.id)
   title: string;                    // Tên nhóm / đề tài
   description: string;              // Mô tả nhóm
@@ -578,9 +594,19 @@ export type ApplicationStatusCode = "PENDING" | "ACCEPTED" | "REJECTED";
  * và của `PUT /api/applications/{id}/accept` | `/reject` (đơn sau khi cập nhật).
  */
 export interface GroupApplication {
+  /** Danh hiệu học tập nếu API cung cấp. */
+  isHonorsStudent?: boolean;
+  /** Phần trăm tương thích lịch học, chỉ hiển thị khi có dữ liệu. */
+  scheduleMatch?: number;
   id: number;                                     // ID đơn (applications.id)
   groupId: number;                                // ID nhóm nhận đơn
   applicant: UserSummary & { email: string | null }; // Thông tin ứng viên (kèm email liên hệ)
+  /** Kỹ năng ứng viên khai báo trong đơn. */
+  skills?: string[];
+  /** Liên kết GitHub công khai của ứng viên. */
+  githubUrl?: string;
+  /** Liên kết hồ sơ sản phẩm của ứng viên. */
+  portfolioUrl?: string;
   statement: string;                              // Lời giới thiệu / nguyện vọng của ứng viên
   status: ApplicationStatusCode;                  // Trạng thái đơn
   createdAt: string;                              // Thời điểm nộp đơn (ISO-8601)
@@ -615,6 +641,8 @@ export interface ManageGroupPageProps {
 export interface ManageGroupData {
   group: MyGroupSummary | null;                 // Nhóm tôi làm Leader (null nếu không tồn tại / không phải Leader)
   applications: GroupApplication[];             // Toàn bộ đơn ứng tuyển của nhóm
+  /** Các nhóm có thể chuyển đến trong bộ chọn nhóm. */
+  groups: MyGroupSummary[];
 }
 
 /**
@@ -626,6 +654,10 @@ export type ApplicationAction = "accept" | "reject";
  * Props cho component ApplicationCard (dành cho Leader duyệt đơn).
  */
 export interface ApplicationCardProps {
+  /** Khóa duyệt khi nhóm đầy hoặc đã đóng tuyển. */
+  acceptDisabled?: boolean;
+  /** Khóa các thao tác khi một đơn khác đang xử lý. */
+  disabled?: boolean;
   application: GroupApplication;                // Dữ liệu đơn ứng tuyển
   onAccept?: (id: number) => void;              // Callback khi duyệt chấp thuận
   onReject?: (id: number) => void;              // Callback khi từ chối
@@ -714,3 +746,22 @@ export interface LanguageOption {
 
 // Re-export type từ điển đa ngữ để tiện dùng toàn ứng dụng
 export type { TranslationDict };
+
+/** Nội dung cập nhật cài đặt nhóm từ màn hình quản lý. */
+export interface ManageGroupUpdate {
+  /** Tên nhóm hiển thị. */
+  title: string;
+  /** Mô tả mục tiêu của nhóm. */
+  description: string;
+  /** Số thành viên tối đa, không nhỏ hơn sĩ số hiện tại. */
+  maxMembers: number;
+}
+
+/** Hộp thoại đang mở trên trang quản lý nhóm. */
+export type ManageGroupDialog = "edit" | "close";
+
+/** Workspace dùng chung cho Manage và trang nhóm được chọn. */
+export interface ManageWorkspaceProps {
+  /** ID nhóm từ URL; bỏ trống để chọn nhóm đầu tiên tôi làm Leader. */
+  groupId?: number;
+}

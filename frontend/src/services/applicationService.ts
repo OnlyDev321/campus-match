@@ -1,22 +1,14 @@
 import { apiRequest } from "@/lib/api";
 import type { GroupApplication } from "@/lib/types";
-import {
-  USE_MOCK,
-  mockDelay,
-  mockGetGroupApplications,
-  mockUpdateApplicationStatus,
-} from "@/services/mocks/groupMocks";
-
-// Các hàm gọi API liên quan tới đơn ứng tuyển (Application module).
-// TODO replace with real API when backend is ready (xem USE_MOCK trong services/mocks/groupMocks.ts).
-// Khi tắt mock, xem lại fallback token giả của BFF trong src/app/api/auth/usaint/route.ts.
+import { USE_MOCK_API } from "@/lib/config";
 
 /**
  * Lấy toàn bộ đơn ứng tuyển của một nhóm (chỉ Leader nhóm).
  * Endpoint: GET /api/groups/{id}/applications → GroupApplication[]
  */
 export async function getGroupApplications(groupId: number): Promise<GroupApplication[]> {
-  if (USE_MOCK) {
+  if (USE_MOCK_API) {
+    const { mockDelay, mockGetGroupApplications } = await import("@/services/mocks/groupMocks");
     await mockDelay();
     return mockGetGroupApplications(groupId);
   }
@@ -28,7 +20,8 @@ export async function getGroupApplications(groupId: number): Promise<GroupApplic
  * Endpoint: PUT /api/applications/{id}/accept → GroupApplication
  */
 export async function acceptApplication(applicationId: number): Promise<GroupApplication> {
-  if (USE_MOCK) {
+  if (USE_MOCK_API) {
+    const { mockDelay, mockUpdateApplicationStatus } = await import("@/services/mocks/groupMocks");
     await mockDelay();
     return mockUpdateApplicationStatus(applicationId, "ACCEPTED");
   }
@@ -42,7 +35,8 @@ export async function acceptApplication(applicationId: number): Promise<GroupApp
  * Endpoint: PUT /api/applications/{id}/reject → GroupApplication
  */
 export async function rejectApplication(applicationId: number): Promise<GroupApplication> {
-  if (USE_MOCK) {
+  if (USE_MOCK_API) {
+    const { mockDelay, mockUpdateApplicationStatus } = await import("@/services/mocks/groupMocks");
     await mockDelay();
     return mockUpdateApplicationStatus(applicationId, "REJECTED");
   }

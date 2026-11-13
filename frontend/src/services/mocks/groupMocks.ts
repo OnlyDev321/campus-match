@@ -10,14 +10,13 @@ import type {
 // DỮ LIỆU GIẢ TẠM THỜI (TEMPORARY MOCK) cho groupService / applicationService.
 // TODO replace with real API when backend is ready: khi Backend có các endpoint
 // GET /api/users/me/groups, GET /api/groups/{id}/applications,
-// PUT /api/applications/{id}/accept | /reject → đặt USE_MOCK = false rồi xóa file này.
+// PUT /api/applications/{id}/accept | /reject → đặt NEXT_PUBLIC_USE_MOCK_API=false rồi xóa file này.
 // Chỉ services/ được import file này. Pages & components KHÔNG BAO GIỜ import trực tiếp.
 // ==========================================================================
 
 // TODO replace with real API when backend is ready.
-// Khi đặt USE_MOCK = false, phải xem lại cả fallback token giả trong
-// src/app/api/auth/usaint/route.ts (khi Spring Boot không phản hồi): token đó sẽ bị Backend từ chối.
-export const USE_MOCK = true;
+// BFF yêu cầu JWT thật khi NEXT_PUBLIC_USE_MOCK_API=false.
+export { USE_MOCK_API as USE_MOCK } from "@/lib/config";
 
 // Độ trễ giả lập mạng để giao diện hiển thị trạng thái loading như khi gọi API thật.
 const MOCK_DELAY_MS = 500;
@@ -30,12 +29,8 @@ const hoursAgo = (hours: number) =>
 // Người dùng giả "tôi" chỉ dùng làm leader/member trong dữ liệu mock.
 // Hồ sơ hiển thị trên My Page luôn lấy từ authStore, không lấy từ đây.
 const ME: UserSummary = {
-  id: 1,
-  studentId: "20211234",
-  name: "홍길동",
-  department: "컴퓨터학부",
-  faculty: "IT대학",
-  academicYear: "3",
+  id: 1, studentId: "20211234", name: "Kim Jinho", department: "Software Dept",
+  faculty: "IT College", academicYear: "3", avatarUrl: "/demo/manage/jinho.jpg",
 };
 
 const KIM: UserSummary = {
@@ -50,24 +45,18 @@ const KIM: UserSummary = {
 const mockMyGroups: MyGroupSummary[] = [
   {
     id: 101,
-    title: "AI Academic Planner",
-    description:
-      "A platform that matches students into study groups by free schedule and course, built with LLMs and Next.js.",
-    courseCode: "CS490",
-    courseName: "Capstone",
-    college: "IT대학",
-    department: "컴퓨터학부",
-    status: "RECRUITING",
-    maxMembers: 5,
-    memberCount: 3,
-    myRole: "LEADER",
-    leader: ME,
+    title: "Web Programming Project",
+    description: "High-throughput interactive campus marketplace web application. Seeking a specialized frontend developer proficient in React and reactive state architectures.",
+    courseCode: "CS301", courseName: "Capstone Studio A", college: "IT College", department: "Software Dept",
+    skills: ["React", "TypeScript", "Go"],
+    recruitmentEndsAt: new Date(Date.now() + 12 * 86400000).toISOString(),
+    status: "RECRUITING", maxMembers: 4, memberCount: 3, myRole: "LEADER", leader: ME,
     members: [
-      { userId: 1, name: "홍길동", role: "LEADER", joinedAt: hoursAgo(24 * 30) },
-      { userId: 3, name: "Lee Minho", role: "MEMBER", joinedAt: hoursAgo(24 * 20) },
-      { userId: 4, name: "Nguyen Lan", role: "MEMBER", joinedAt: hoursAgo(24 * 12) },
+      { userId: 1, name: "Kim Jinho", role: "LEADER", joinedAt: hoursAgo(24 * 30), email: "jinho.k@ssu.ac.kr", department: "Software Dept", projectRole: "Team Leader / PM", avatarUrl: "/demo/manage/jinho.jpg" },
+      { userId: 3, name: "Kang Minseo", role: "MEMBER", joinedAt: hoursAgo(24 * 29), email: "minseo.kang@ssu.ac.kr", department: "Computer Science", projectRole: "Backend Developer", avatarUrl: "/demo/manage/minseo.jpg" },
+      { userId: 4, name: "Song Yuna", role: "MEMBER", joinedAt: hoursAgo(24 * 28), email: "yuna.song@ssu.ac.kr", department: "Visual Design", projectRole: "UI/UX Designer", avatarUrl: "/demo/manage/yuna.jpg" },
     ],
-    pendingApplicationCount: 2,
+    pendingApplicationCount: 3,
     createdAt: hoursAgo(24 * 30),
   },
   {
@@ -117,53 +106,26 @@ const mockMyGroups: MyGroupSummary[] = [
 
 const mockApplications: GroupApplication[] = [
   {
-    id: 9001,
-    groupId: 101,
-    applicant: {
-      id: 8,
-      studentId: "20221357",
-      name: "Park Minji",
-      department: "소프트웨어학부",
-      faculty: "IT대학",
-      academicYear: "3",
-      email: "20221357@soongsil.ac.kr",
-    },
-    statement:
-      "I built the frontend for a hackathon project last semester and have 1.5 years of React/Next.js experience. I can dedicate 12 hours weekly.",
-    status: "PENDING",
-    createdAt: hoursAgo(2),
+    id: 9001, groupId: 101,
+    applicant: { id: 8, studentId: "20221357", name: "Park Minji", department: "Software Department", faculty: "IT College", academicYear: "3", email: "20221357@soongsil.ac.kr", avatarUrl: "/demo/manage/minji.jpg" },
+    skills: ["React", "TypeScript", "Tailwind", "Zustand"], isHonorsStudent: true, scheduleMatch: 95,
+    githubUrl: "https://github.com/minji-p", portfolioUrl: "https://example.com/minji",
+    statement: "I previously built the frontend for the SNU Hackathon winner project. I have 1.5 years experience with React/Next.js and can dedicate 12 hours weekly to this capstone.",
+    status: "PENDING", createdAt: hoursAgo(2),
   },
   {
-    id: 9002,
-    groupId: 101,
-    applicant: {
-      id: 9,
-      studentId: "20232468",
-      name: "Lee Joon",
-      department: "컴퓨터학부",
-      faculty: "IT대학",
-      academicYear: "2",
-      email: null,
-    },
-    statement: "I want to own the backend API and deployment for this project.",
-    status: "PENDING",
-    createdAt: hoursAgo(26),
+    id: 9002, groupId: 101,
+    applicant: { id: 9, studentId: "20212468", name: "Choi Jihoon", department: "Information Systems", faculty: "IT College", academicYear: "4", email: null, avatarUrl: "/demo/manage/jihoon.jpg" },
+    skills: ["React", "Next.js", "Redux", "Storybook"], githubUrl: "https://github.com/jihoon-choi",
+    statement: "Looking to focus strictly on frontend component architecture and testing. Available for all offline meetups.",
+    status: "PENDING", createdAt: hoursAgo(26),
   },
   {
-    id: 9003,
-    groupId: 101,
-    applicant: {
-      id: 4,
-      studentId: "20211999",
-      name: "Nguyen Lan",
-      department: "글로벌미디어학부",
-      faculty: "IT대학",
-      academicYear: "3",
-      email: "20211999@soongsil.ac.kr",
-    },
-    statement: "Happy to take the UI design and user testing.",
-    status: "ACCEPTED",
-    createdAt: hoursAgo(24 * 13),
+    id: 9003, groupId: 101,
+    applicant: { id: 10, studentId: "20232469", name: "Lee Daewon", department: "Computer Science", faculty: "IT College", academicYear: "2", email: null, avatarUrl: "/demo/manage/daewon.jpg" },
+    skills: ["JavaScript", "HTML/CSS", "Learning React"],
+    statement: "Eager to learn React in a team environment. Hard worker and fast learner!",
+    status: "PENDING", createdAt: hoursAgo(48),
   },
 ];
 
@@ -189,14 +151,17 @@ export const mockUpdateApplicationStatus = (
   if (!application) throw new ApiError("NOT_FOUND", 404);
   const group = mockMyGroups.find((g) => g.id === application.groupId);
   if (!group || group.myRole !== "LEADER") throw new ApiError("FORBIDDEN", 403);
-  if (application.status !== "PENDING") throw new ApiError("SERVER_ERROR", 400);
+  if (application.status !== "PENDING") throw new ApiError("CONFLICT", 409);
 
   if (status === "ACCEPTED") {
-    if (group.memberCount >= group.maxMembers) throw new ApiError("SERVER_ERROR", 400);
+    if (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers) throw new ApiError("CONFLICT", 409);
     group.members.push({
       userId: application.applicant.id,
       name: application.applicant.name,
       role: "MEMBER",
+      department: application.applicant.department ?? undefined,
+      email: application.applicant.email ?? undefined,
+      avatarUrl: application.applicant.avatarUrl,
       joinedAt: new Date().toISOString(),
     });
     group.memberCount += 1;
@@ -206,4 +171,13 @@ export const mockUpdateApplicationStatus = (
   application.status = status;
   group.pendingApplicationCount = Math.max(0, group.pendingApplicationCount - 1);
   return clone(application);
+};
+
+/** Cập nhật mock qua service; giữ quyền Leader giống API dự kiến. */
+export const mockManageGroup = (groupId: number, change: (group: MyGroupSummary) => void): MyGroupSummary => {
+  const group = mockMyGroups.find((g) => g.id === groupId);
+  if (!group) throw new ApiError("NOT_FOUND", 404);
+  if (group.myRole !== "LEADER") throw new ApiError("FORBIDDEN", 403);
+  change(group);
+  return clone(group);
 };
