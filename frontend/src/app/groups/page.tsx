@@ -1,8 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import { useState, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useMemo } from "react";
 import {
   Network,
   UserPlus,
@@ -18,21 +17,12 @@ import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
 import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
 import type { GroupCardData, GroupDetailData } from "@/lib/types";
-import { useAuthStore } from "@/stores/authStore";
+import { useRequireLogin } from "@/lib/hooks";
 import { useLanguageStore } from "@/stores/languageStore";
 
 const GroupPage = () => {
-  const router = useRouter();
-  const { isLoggedIn, isLoading, openLoginModal } = useAuthStore();
+  const isReady = useRequireLogin("/groups");
   const { t } = useLanguageStore();
-
-  // Yêu cầu đăng nhập trước khi vào xem trang Groups
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      openLoginModal("/groups");
-      router.push("/");
-    }
-  }, [isLoggedIn, isLoading, openLoginModal, router]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCollege, setSelectedCollege] = useState("ALL");
@@ -200,6 +190,9 @@ const GroupPage = () => {
     setAppliedYear("ALL");
     setCurrentPage(1);
   };
+
+  // Chờ khôi phục phiên trước khi quyết định hiển thị hoặc yêu cầu đăng nhập.
+  if (!isReady) return null;
 
   return (
     <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
