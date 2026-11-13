@@ -609,15 +609,11 @@ export default function CreateGroupPage() {
                       <label
                         key={format.id}
                         htmlFor={`meeting-format-${format.id}`}
-                        className={`group relative flex items-start gap-3 p-3.5 rounded-[var(--radius-input)] border cursor-pointer transition-all duration-150
-                          sm:flex-col sm:items-stretch sm:gap-2
-                          lg:flex-row lg:items-center lg:gap-3
-                          xl:flex-col xl:items-stretch xl:gap-2
-                          ${
-                            isSelected
-                              ? "border-[var(--primary)] bg-[var(--primary-soft)] shadow-sm ring-1 ring-[var(--primary)]/20"
-                              : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-container-low)]"
-                          }`}
+                        className={`group relative flex flex-col justify-between gap-2.5 p-3.5 rounded-[var(--radius-input)] border cursor-pointer transition-all duration-150 ${
+                          isSelected
+                            ? "border-[var(--primary)] bg-[var(--primary-soft)] shadow-sm ring-1 ring-[var(--primary)]/20"
+                            : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-container-low)]"
+                        }`}
                       >
                         {/* Hidden native radio */}
                         <input
@@ -632,13 +628,23 @@ export default function CreateGroupPage() {
                           className="peer sr-only"
                         />
 
-                        {/* Custom radio indicator */}
-                        <div className="relative flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                        {/* Top row: Icon + Title bên trái, Radio indicator ở góc trên bên phải */}
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="flex items-center justify-center w-7 h-7 rounded-md bg-[var(--primary-soft)] text-[var(--primary)] shrink-0">
+                              <IconComponent className="h-4 w-4" />
+                            </span>
+                            <span className="text-sm font-semibold text-[var(--text-primary)]">
+                              {format.label}
+                            </span>
+                          </div>
+
+                          {/* Custom radio indicator (Top-Right) */}
                           <div
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 transition-all duration-150 ${
                               isSelected
-                                ? "border-[var(--primary)] bg-[var(--primary)]"
-                                : "border-[var(--border-strong)] bg-[var(--surface)]"
+                                ? "border-[var(--primary)] bg-[var(--primary)] shadow-xs"
+                                : "border-[var(--border-strong)] bg-[var(--surface)] group-hover:border-[var(--text-muted)]"
                             } peer-focus-visible:ring-2 peer-focus-visible:ring-[var(--primary)]`}
                           >
                             <span
@@ -649,16 +655,10 @@ export default function CreateGroupPage() {
                           </div>
                         </div>
 
-                        {/* Content */}
-                        <div className="flex flex-col gap-0.5 min-w-0">
-                          <span className="flex items-center gap-2 text-sm font-medium text-[var(--text-primary)]">
-                            <IconComponent className="h-4 w-4 text-[var(--primary)] shrink-0" />
-                            {format.label}
-                          </span>
-                          <span className="text-xs text-[var(--text-muted)] leading-relaxed">
-                            {format.desc}
-                          </span>
-                        </div>
+                        {/* Description */}
+                        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                          {format.desc}
+                        </p>
                       </label>
                     );
                   })}
