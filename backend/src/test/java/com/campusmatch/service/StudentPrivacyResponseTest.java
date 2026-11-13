@@ -24,7 +24,13 @@ class StudentPrivacyResponseTest {
     void groupDetailMasksLeaderAndMembersBeforeReturningResponse() {
         var groups = mock(GroupRepository.class);
         var members = mock(GroupMemberRepository.class);
-        var service = new GroupService(groups, members, mock(UserRepository.class), mock(ApplicationRepository.class));
+        var service = new GroupService(
+                groups,
+                members,
+                mock(UserRepository.class),
+                mock(ApplicationRepository.class),
+                mock(NotificationRepository.class),
+                mock(NotificationService.class));
         var leader = User.builder().id(1L).studentId("20260020").email("20260020@soongsil.ac.kr").build();
         var member = User.builder().id(2L).studentId("20260021").build();
         var group = StudyGroup.builder().id(10L).leader(leader).build();

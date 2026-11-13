@@ -22,5 +22,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     void markAllAsRead(@Param("recipient") User recipient);
 
     void deleteByRecipient(User recipient);
+
+    @Modifying
+    @Query("UPDATE Notification n SET n.group = null WHERE n.group.id = :groupId")
+    void nullifyGroupReference(@Param("groupId") Long groupId);
 }
 

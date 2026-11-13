@@ -81,5 +81,23 @@ public class GroupController {
         GroupDetailResponse response = groupService.createGroup(request, studentId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
+    /**
+     * Xóa nhóm học tập (Yêu cầu JWT Bearer Token, chỉ Leader mới có quyền)
+     * DELETE /api/groups/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteGroup(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        if (authentication == null || authentication.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để thực hiện thao tác");
+        }
+
+        String studentId = authentication.getName();
+        groupService.deleteGroup(id, studentId);
+        return ResponseEntity.noContent().build();
+    }
 }
 

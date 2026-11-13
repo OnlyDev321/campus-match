@@ -6,6 +6,7 @@ import com.campusmatch.security.StudentIdPrivacy;
 import com.campusmatch.repository.ApplicationRepository;
 import com.campusmatch.repository.GroupMemberRepository;
 import com.campusmatch.repository.GroupRepository;
+import com.campusmatch.repository.NotificationRepository;
 import com.campusmatch.repository.UserRepository;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +35,8 @@ public class GroupService {
     private final GroupMemberRepository groupMemberRepository;
     private final UserRepository userRepository;
     private final ApplicationRepository applicationRepository;
+    private final NotificationRepository notificationRepository;
+    private final NotificationService notificationService;
 
     /**
      * Tạo nhóm học tập mới (Người tạo tự động là LEADER)
@@ -74,6 +77,55 @@ public class GroupService {
         log.info("Đã tạo nhóm thành công với ID: {}", savedGroup.getId());
 
         return mapToDetailResponse(savedGroup);
+    }
+
+    /**
+     * Xóa nhóm học tập (Chỉ dành cho Trưởng nhóm / Leader)
+     * Kèm xác nhận, gỡ liên kết thông báo, hủy đơn đăng ký và thông báo cho các thành viên.
+     */
+    @Transactional
+    public void deleteGroup(Long groupId, String studentId) {
+        log.info("Yêu cầu xóa nhóm ID: {} từ sinh viên MSSV: {}", groupId, studentId);
+
+        User currentUser = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ người dùng"));
+
+        StudyGroup group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhóm với ID: " + groupId));
+
+        // Kiểm tra quyền: Chỉ Leader của nhóm mới có quyền xóa nhóm
+        if (!group.getLeader().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không phải là Trưởng nhóm nên không có quyền xóa nhóm này");
+        }
+
+        // 1. Gửi thông báo cho tất cả thành viên khác trước khi giải tán nhóm
+        List<GroupMember> members = groupMemberRepository.findByGroupId(groupId);
+        for (GroupMember member : members) {
+            if (!member.getUser().getId().equals(currentUser.getId())) {
+                notificationService.createNotification(
+                        member.getUser(),
+                        currentUser,
+                        NotificationType.GROUP_DELETED,
+                        "Nhóm đã bị giải tán",
+                        String.format("Trưởng nhóm %s đã giải tán nhóm học tập \"%s\".", currentUser.getName(), group.getTitle()),
+                        "/manage",
+                        null
+                );
+            }
+        }
+
+        // 2. Gỡ liên kết group trong các notification cũ để tránh lỗi foreign key constraint
+        notificationRepository.nullifyGroupReference(groupId);
+
+        // 3. Xóa tất cả đơn ứng tuyển của nhóm
+        applicationRepository.deleteByGroupId(groupId);
+
+        // 4. Xóa tất cả thành viên của nhóm
+        groupMemberRepository.deleteByGroupId(groupId);
+
+        // 5. Xóa nhóm
+        groupRepository.delete(group);
+        log.info("Đã xóa nhóm ID: {} thành công", groupId);
     }
 
     /**

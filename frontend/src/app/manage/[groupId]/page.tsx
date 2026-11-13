@@ -3,12 +3,14 @@
 import { ScrambleText } from "@/design-system/components/ScrambleText";
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, AlertTriangle, Trash2 } from "lucide-react";
 import { Avatar, Badge, Button, Card, RoleQuota, type BadgeVariant } from "@/design-system";
 import ManageGroupEditor from "@/components/group/ManageGroupEditor";
 import ApplicationCard from "@/components/application/ApplicationCard";
+import DeleteGroupModal from "@/components/group/DeleteGroupModal";
 import { CardSkeletonList, EmptyState, ErrorState } from "@/components/common/AsyncState";
-import { getMyGroups, MANAGE_MUTATIONS_AVAILABLE, MANAGE_USES_SAMPLE_DATA } from "@/services/groupService";
+import { getMyGroups, deleteGroup, MANAGE_MUTATIONS_AVAILABLE, MANAGE_USES_SAMPLE_DATA } from "@/services/groupService";
 import {
   acceptApplication,
   getGroupApplications,
@@ -69,9 +71,17 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
   }, [groupId, groupIdParam]);
 
   const { status, data, errorCode, reload, setData } = useServiceData(loadGroupData, isReady);
+  const router = useRouter();
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pendingActions, setPendingActions] = useState<Record<number, ApplicationAction>>({});
   const [actionErrors, setActionErrors] = useState<Record<number, ApiErrorCode>>({});
   const [confirmation, setConfirmation] = useState<ManageApplicationConfirmation | null>(null);
+
+  const handleDeleteConfirm = async () => {
+    if (!group) return;
+    await deleteGroup(group.id);
+    router.push("/manage");
+  };
 
   const handleAction = async (applicationId: number, action: ApplicationAction) => {
     if (!MANAGE_MUTATIONS_AVAILABLE || MANAGE_USES_SAMPLE_DATA || data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
@@ -238,6 +248,43 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
               </div>
             </Card>
           )}
+
+          {/* Danger Zone: Giải tán / Xóa nhóm học tập */}
+          <section className="pt-4 border-t border-[var(--border)]">
+            <Card className="border border-[var(--error-border)] bg-[var(--surface)] p-5 sm:p-6 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[var(--error)]">
+                    <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <h3 className="text-sm font-bold tracking-tight">
+                      <ScrambleText text={t.manageDetails.dangerZoneTitle} />
+                    </h3>
+                  </div>
+                  <p className="text-xs text-[var(--text-secondary)] max-w-xl leading-relaxed">
+                    <ScrambleText text={t.manageDetails.dangerZoneDesc} />
+                  </p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                  leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                  className="border-[var(--error-border)] text-[var(--error)] hover:bg-[var(--error-bg)] hover:border-[var(--error)] font-medium shrink-0"
+                >
+                  <ScrambleText text={t.manageDetails.deleteGroupBtn} />
+                </Button>
+              </div>
+            </Card>
+
+            <DeleteGroupModal
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              groupId={group.id}
+              groupTitle={group.title}
+              onDeleteConfirm={handleDeleteConfirm}
+            />
+          </section>
         </>
       )}
     </div>

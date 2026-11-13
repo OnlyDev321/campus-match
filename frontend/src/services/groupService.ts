@@ -70,3 +70,21 @@ export async function createGroup(
     body: JSON.stringify(payload),
   });
 }
+
+/**
+ * Xóa một nhóm học tập (Yêu cầu JWT Bearer Token, chỉ Leader mới có quyền).
+ * Endpoint: DELETE /api/groups/{id}
+ */
+export async function deleteGroup(groupId: number | string): Promise<void> {
+  if (USE_MOCK) {
+    await mockDelay();
+    const idx = mockGroupCards.findIndex((g) => g.id === String(groupId));
+    if (idx !== -1) {
+      mockGroupCards.splice(idx, 1);
+    }
+    return;
+  }
+  return apiRequest<void>(`/groups/${groupId}`, {
+    method: "DELETE",
+  });
+}

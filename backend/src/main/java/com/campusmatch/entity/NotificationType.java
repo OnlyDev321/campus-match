@@ -6,6 +6,7 @@ public enum NotificationType {
     APPLICATION_REJECTED,
     NEW_MEMBER_JOINED,
     GROUP_UPDATED,
-    GROUP_FULL
+    GROUP_FULL,
+    GROUP_DELETED
 }
 

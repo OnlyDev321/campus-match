@@ -22,5 +22,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     long countByGroupIdAndStatus(Long groupId, ApplicationStatus status);
 
     boolean existsByGroupIdAndApplicantId(Long groupId, Long applicantId);
+
+    void deleteByGroupId(Long groupId);
 }
 

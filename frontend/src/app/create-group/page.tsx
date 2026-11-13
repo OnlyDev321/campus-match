@@ -81,7 +81,8 @@ export default function CreateGroupPage() {
   });
 
   // Vai trò được Trưởng nhóm (người tạo) đảm nhận
-  const [selectedLeaderRoleIndex, setSelectedLeaderRoleIndex] = useState<number>(0);
+  const [selectedLeaderRoleIndex, setSelectedLeaderRoleIndex] =
+    useState<number>(0);
 
   const [currentTagInput, setCurrentTagInput] = useState("");
   const [errors, setErrors] = useState<CreateGroupFormErrors>({});
@@ -229,13 +230,13 @@ export default function CreateGroupPage() {
     } else {
       presetRoles = [
         {
-          role: "Project Lead / Member",
+          role: "Leader",
           current: 1,
           max: 2,
           description: "Coordination & core coursework topics",
         },
         {
-          role: "Study Member",
+          role: "Member",
           current: 0,
           max: 2,
           description: "Weekly assignments & group discussions",
@@ -612,9 +613,10 @@ export default function CreateGroupPage() {
                           sm:flex-col sm:items-stretch sm:gap-2
                           lg:flex-row lg:items-center lg:gap-3
                           xl:flex-col xl:items-stretch xl:gap-2
-                          ${isSelected
-                            ? "border-[var(--primary)] bg-[var(--primary-soft)] shadow-sm ring-1 ring-[var(--primary)]/20"
-                            : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-container-low)]"
+                          ${
+                            isSelected
+                              ? "border-[var(--primary)] bg-[var(--primary-soft)] shadow-sm ring-1 ring-[var(--primary)]/20"
+                              : "border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] hover:bg-[var(--surface-container-low)]"
                           }`}
                       >
                         {/* Hidden native radio */}
@@ -860,7 +862,8 @@ export default function CreateGroupPage() {
                                 {index + 1}
                               </span>
                               <span className="text-xs font-semibold text-[var(--text-primary)] truncate max-w-[130px] sm:max-w-[180px]">
-                                {roleItem.role || `${copy.roleNameLabel} ${index + 1}`}
+                                {roleItem.role ||
+                                  `${copy.roleNameLabel} ${index + 1}`}
                               </span>
 
                               {/* Nút chỉ định / Nhãn vai trò của Trưởng nhóm */}
@@ -929,30 +932,30 @@ export default function CreateGroupPage() {
                             </div>
                           </div>
 
-                        {/* Role Inputs Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <Input
-                            label={copy.roleNameLabel}
-                            placeholder={copy.roleNamePlaceholder}
-                            value={roleItem.role}
-                            onChange={(e) =>
-                              handleUpdateRole(index, "role", e.target.value)
-                            }
-                          />
-                          <Input
-                            label={copy.roleDescLabel}
-                            placeholder={copy.roleDescPlaceholder}
-                            value={roleItem.description || ""}
-                            onChange={(e) =>
-                              handleUpdateRole(
-                                index,
-                                "description",
-                                e.target.value,
-                              )
-                            }
-                          />
+                          {/* Role Inputs Grid */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <Input
+                              label={copy.roleNameLabel}
+                              placeholder={copy.roleNamePlaceholder}
+                              value={roleItem.role}
+                              onChange={(e) =>
+                                handleUpdateRole(index, "role", e.target.value)
+                              }
+                            />
+                            <Input
+                              label={copy.roleDescLabel}
+                              placeholder={copy.roleDescPlaceholder}
+                              value={roleItem.description || ""}
+                              onChange={(e) =>
+                                handleUpdateRole(
+                                  index,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
+                            />
+                          </div>
                         </div>
-                      </div>
                       );
                     })}
                   </div>
