@@ -329,6 +329,18 @@ export const vi: TranslationDict = {
   },
   // Create Group Page
   createGroupPage: {
+    addTag: "+ Thêm từ khóa",
+    removeTag: "Xóa từ khóa {tag}",
+    decreaseMembers: "Giảm số thành viên",
+    increaseMembers: "Tăng số thành viên",
+    seatAllocation: "Phân bổ thành viên",
+    seatSummary: "1 trưởng nhóm · {count} chỗ trống",
+    leaderYou: "Trưởng nhóm (bạn)",
+    openSpot: "Chỗ trống",
+    generalStudy: "Nhóm học tập",
+    untitledGroup: "Nhóm học tập chưa có tên",
+    previewDescription: "Mô tả mục tiêu, kỹ năng mong muốn và yêu cầu để xem trước nhóm tại đây.",
+    verifiedStudent: "Sinh viên đã xác thực",
     creatorTipsTitle: "Gợi ý tạo nhóm CampusMatch",
     creatorTipCourse: "Nhóm ghi rõ mã môn học thu hút đơn ứng tuyển nhanh gấp 3 lần.",
     creatorTipSchedule: "Ghi rõ thời gian họp mong muốn trong phần mô tả.",
@@ -339,7 +351,7 @@ export const vi: TranslationDict = {
     title: "Tạo nhóm học tập & đồ án mới",
     subtitle:
       "Thành lập đội ngũ cho môn học, đồ án tốt nghiệp Capstone hoặc thi lập trình cùng bạn học ĐH Soongsil.",
-    basicInfoTitle: "1. Thông tin cơ bản",
+    basicInfoTitle: "Thông tin cơ bản",
     basicInfoSubtitle:
       "Đặt tiêu đề ngắn gọn và mô tả mục tiêu để thu hút thành viên phù hợp.",
     groupTitleLabel: "Tiêu đề nhóm",
@@ -352,7 +364,7 @@ export const vi: TranslationDict = {
       "Mô tả ý tưởng dự án, công nghệ dự kiến sử dụng (Next.js, Spring Boot...), thời gian họp nhóm định kỳ và yêu cầu đối với thành viên mới...",
     descriptionHelp:
       "Bắt buộc. Tối thiểu 20 ký tự. Mô tả càng chi tiết sẽ càng dễ tìm được đồng đội ăn ý.",
-    academicInfoTitle: "2. Môn học & Học vụ liên quan",
+    academicInfoTitle: "Môn học & Học vụ liên quan",
     academicInfoSubtitle:
       "Gắn nhóm này với học phần cụ thể trong kỳ học (tùy chọn).",
     courseCodeLabel: "Mã môn học",
@@ -371,7 +383,7 @@ export const vi: TranslationDict = {
       "Học và làm việc trực tiếp tại khuôn viên Đại học Soongsil",
     formatHybrid: "Kết hợp (Hybrid)",
     formatHybridDesc: "Linh hoạt giữa các buổi họp online và gặp mặt trực tiếp",
-    capacityTitle: "3. Sĩ số & Phân bổ thành viên",
+    capacityTitle: "Sĩ số & Phân bổ thành viên",
     capacitySubtitle: "Thiết lập số lượng thành viên tối đa cho nhóm.",
     maxMembersLabel: "Tổng sĩ số nhóm (Bao gồm cả Trưởng nhóm)",
     maxMembersHelp: "Chọn từ 2 đến 20 thành viên tùy theo quy mô đồ án.",
