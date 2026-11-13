@@ -1,0 +1,69 @@
+package com.campusmatch.service;
+
+import com.campusmatch.entity.*;
+import com.campusmatch.repository.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
+class StudentPrivacyResponseTest {
+    @AfterEach
+    void clearContext() {
+        SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void groupDetailMasksLeaderAndMembersBeforeReturningResponse() {
+        var groups = mock(GroupRepository.class);
+        var members = mock(GroupMemberRepository.class);
+        var service = new GroupService(groups, members, mock(UserRepository.class), mock(ApplicationRepository.class));
+        var leader = User.builder().id(1L).studentId("20260020").email("20260020@soongsil.ac.kr").build();
+        var member = User.builder().id(2L).studentId("20260021").build();
+        var group = StudyGroup.builder().id(10L).leader(leader).build();
+        when(groups.findById(10L)).thenReturn(Optional.of(group));
+        when(members.findByGroupId(10L)).thenReturn(List.of(
+                new GroupMember(group, leader, GroupRole.LEADER), new GroupMember(group, member, GroupRole.MEMBER)));
+
+        var publicResponse = service.getGroupDetail(10L);
+        assertEquals("****0020", publicResponse.getLeader().getStudentId());
+        assertNull(publicResponse.getLeader().getEmail());
+        assertEquals(List.of("****0020", "****0021"), publicResponse.getMembers().stream().map(m -> m.getStudentId()).toList());
+
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated("20260020", null, AuthorityUtils.NO_AUTHORITIES));
+        var ownerResponse = service.getGroupDetail(10L);
+        assertEquals("20260020", ownerResponse.getLeader().getStudentId());
+        assertEquals("20260020", ownerResponse.getMembers().get(0).getStudentId());
+        assertEquals("****0021", ownerResponse.getMembers().get(1).getStudentId());
+        assertEquals("20260021", member.getStudentId()); // Không sửa dữ liệu entity.
+    }
+
+    @Test
+    void applicationResponseDoesNotExposeApplicantsIdToLeader() {
+        var applications = mock(ApplicationRepository.class);
+        var groups = mock(GroupRepository.class);
+        var users = mock(UserRepository.class);
+        var service = new ApplicationService(applications, groups, mock(GroupMemberRepository.class), users);
+        var leader = User.builder().id(1L).studentId("20260020").build();
+        var applicant = User.builder().id(2L).studentId("20260021").email("20260021@soongsil.ac.kr").build();
+        var group = StudyGroup.builder().id(10L).leader(leader).build();
+        when(users.findByStudentId("20260020")).thenReturn(Optional.of(leader));
+        when(groups.findById(10L)).thenReturn(Optional.of(group));
+        when(applications.findByGroupIdOrderByCreatedAtDesc(10L)).thenReturn(List.of(
+                Application.builder().id(100L).group(group).applicant(applicant).build()));
+        SecurityContextHolder.getContext().setAuthentication(
+                UsernamePasswordAuthenticationToken.authenticated("20260020", null, AuthorityUtils.NO_AUTHORITIES));
+
+        var response = service.getGroupApplications(10L, "20260020").get(0);
+        assertEquals("****0021", response.getApplicant().getStudentId());
+        assertNull(response.getApplicant().getEmail());
+    }
+}

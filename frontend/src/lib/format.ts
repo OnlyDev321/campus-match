@@ -1,5 +1,27 @@
 import type { SupportedLanguage } from "@/lib/types";
 
+// Chỉ hiển thị 4 số cuối MSSV trên giao diện nhóm công khai, giữ nguyên số 0 đầu phần đuôi.
+export const maskStudentId = (studentId: string): string =>
+  studentId.replace(/.(?=.{4})/g, "*");
+
+// So sánh toàn bộ MSSV, không dùng tên hoặc 4 số cuối để nhận diện chủ tài khoản.
+export const visibleStudentId = (studentId: string, viewerStudentId?: string): string =>
+  viewerStudentId && studentId === viewerStudentId ? studentId : maskStudentId(studentId);
+
+// Ẩn cả liên kết email nếu địa chỉ chứa nguyên MSSV của người khác.
+export const visibleStudentEmail = (
+  email?: string | null,
+  studentId?: string | null,
+  viewerStudentId?: string,
+): string | undefined => {
+  if (!email) return undefined;
+  if (studentId && email.includes(studentId) && studentId !== viewerStudentId) return undefined;
+  // Backend có thể đã che MSSV; vẫn kiểm tra email dạng <MSSV>@soongsil.ac.kr.
+  const localPart = email.split("@")[0];
+  if (/^\d{8}$/.test(localPart) && localPart !== viewerStudentId) return undefined;
+  return email;
+};
+
 // Tiện ích định dạng chuỗi hiển thị theo ngôn ngữ hiện tại (i18n).
 
 const LOCALES: Record<SupportedLanguage, string> = {

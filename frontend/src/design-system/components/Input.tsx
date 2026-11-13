@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { forwardRef, useId } from "react";
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -36,7 +37,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             htmlFor={inputId}
             className="block text-xs font-medium text-[var(--text-secondary)]"
           >
-            {label}
+            <ScrambleText text={label} />
           </label>
         )}
 
@@ -55,7 +56,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               borderRadius: "var(--radius-input)",
               ...style,
             }}
-            className={`w-full h-[38px] text-sm bg-(--surface) text-(--text-primary) border placeholder:text-(--text-faint) focus:outline-none focus:border-(--primary-container) disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`w-full h-11 sm:h-[38px] text-sm bg-(--surface) text-(--text-primary) border placeholder:text-(--text-faint) transition-colors focus-visible:outline-none focus-visible:border-(--primary-container) focus-visible:ring-2 focus-visible:ring-(--primary-soft-border) aria-invalid:border-(--error) disabled:opacity-50 disabled:cursor-not-allowed ${
               leftIcon ? "pl-9" : "pl-3"
             } ${rightIcon ? "pr-9" : "pr-3"} ${
               error
@@ -74,10 +75,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
         {error ? (
           <p className="text-xs text-[var(--error-text)] font-medium flex items-center gap-1">
-            <span>{error}</span>
+            <span><ScrambleText text={error} /></span>
           </p>
         ) : helperText ? (
-          <p className="text-xs text-[var(--text-muted)]">{helperText}</p>
+          <p className="text-xs text-[var(--text-muted)]"><ScrambleText text={helperText} /></p>
         ) : null}
       </div>
     );

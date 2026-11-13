@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button, Card } from "@/design-system";
 import type { CardSkeletonListProps, EmptyStateProps, ErrorStateProps } from "@/lib/types";
@@ -21,7 +22,7 @@ export const CardSkeletonList = ({ count = 2 }: CardSkeletonListProps) => (
 
 export const EmptyState = ({ text, action }: EmptyStateProps) => (
   <div className="p-10 rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-center space-y-2">
-    <p className="text-sm text-[var(--text-secondary)]">{text}</p>
+    <p className="text-sm text-[var(--text-secondary)]"><ScrambleText text={text} /></p>
     {action && (
       <div className="flex flex-wrap items-center justify-center gap-3 pt-1">{action}</div>
     )}
@@ -35,9 +36,9 @@ export const ErrorState = ({ title, message, retryLabel, onRetry }: ErrorStatePr
   >
     <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-[var(--text-primary)]">
       <AlertCircle className="w-4 h-4 text-[var(--error)]" />
-      {title}
+      <ScrambleText text={title} />
     </p>
-    <p className="text-xs text-[var(--text-secondary)]">{message}</p>
+    <p className="text-xs text-[var(--text-secondary)]"><ScrambleText text={message} /></p>
     {onRetry && retryLabel && (
       <div className="pt-1">
         <Button
@@ -46,7 +47,7 @@ export const ErrorState = ({ title, message, retryLabel, onRetry }: ErrorStatePr
           leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
           onClick={onRetry}
         >
-          {retryLabel}
+          <ScrambleText text={retryLabel} />
         </Button>
       </div>
     )}

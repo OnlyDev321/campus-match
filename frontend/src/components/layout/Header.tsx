@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { ThemeToggle } from "@/design-system";
@@ -119,7 +120,7 @@ export default function Header() {
                           className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[var(--text-primary)] hover:bg-[var(--surface-container-low)] transition-colors"
                         >
                           <User className="w-4 h-4 text-[var(--text-secondary)]" />
-                          <span>{t.nav.myPage}</span>
+                          <span><ScrambleText text={t.nav.myPage} /></span>
                         </Link>
 
                         <button
@@ -131,7 +132,7 @@ export default function Header() {
                           className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-[var(--error)] hover:bg-[var(--error-bg)] transition-colors cursor-pointer text-left"
                         >
                           <LogOut className="w-4 h-4" />
-                          <span>{t.nav.logout}</span>
+                          <span><ScrambleText text={t.nav.logout} /></span>
                         </button>
                       </div>
                     </div>
@@ -145,7 +146,7 @@ export default function Header() {
                 onClick={() => openLoginModal()}
                 className="text-xs"
               >
-                {t.nav.login}
+                <ScrambleText text={t.nav.login} />
               </Button>
             )}
           </div>

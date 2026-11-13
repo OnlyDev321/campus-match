@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import Link from "next/link";
 import { PlusCircle, ArrowRight, Users, ShieldCheck } from "lucide-react";
 import { Badge, Button } from "@/design-system";
@@ -22,7 +23,7 @@ const MyGroupColumn = ({ title, groups, variant, emptyText, emptyAction }: MyGro
         {variant === "lead" ? <ShieldCheck aria-hidden="true" className="h-4 w-4" /> : <Users aria-hidden="true" className="h-4 w-4" />}
       </span>
       <h3 className="text-base font-semibold tracking-tight text-[var(--text-primary)]">
-        {title}
+        <ScrambleText text={title} />
       </h3>
       {groups && (
         <Badge variant="neutral" size="sm" mono>
@@ -61,7 +62,7 @@ const ManagePage = () => {
       href="/groups"
       className="inline-flex items-center gap-1 text-xs font-medium text-[var(--primary)] hover:underline"
     >
-      {t.manage.browseGroups}
+      <ScrambleText text={t.manage.browseGroups} />
       <ArrowRight className="w-3.5 h-3.5" />
     </Link>
   );
@@ -69,18 +70,18 @@ const ManagePage = () => {
   return (
     <div className="@container w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold tracking-wider">
-        <span className="text-[var(--primary)] uppercase">{t.myPage.breadcrumbRoot}</span>
+        <span className="text-[var(--primary)] uppercase"><ScrambleText text={t.myPage.breadcrumbRoot} /></span>
         <span aria-hidden="true" className="text-[var(--text-faint)]">/</span>
-        <span className="text-[var(--text-muted)] font-normal">{t.myPage.breadcrumbCampus}</span>
+        <span className="text-[var(--text-muted)] font-normal"><ScrambleText text={t.myPage.breadcrumbCampus} /></span>
       </div>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div className="space-y-1.5 min-w-0">
         <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-[var(--text-primary)]">
-          {t.manage.listTitle}
+          <ScrambleText text={t.manage.listTitle} />
         </h1>
-        <p className="text-sm sm:text-base text-[var(--text-secondary)]">{t.manage.subtitle}</p>
+        <p className="text-sm sm:text-base text-[var(--text-secondary)]"><ScrambleText text={t.manage.subtitle} /></p>
       </div>
-      <Button href="/create-group" leftIcon={<PlusCircle aria-hidden="true" className="h-4 w-4" />} className="shrink-0 self-start">{t.manage.createGroup}</Button>
+      <Button href="/create-group" leftIcon={<PlusCircle aria-hidden="true" className="h-4 w-4" />} className="shrink-0 self-start"><ScrambleText text={t.manage.createGroup} /></Button>
       </header>
 
       {/* My Groups: Groups I lead / Groups I'm a member of */}
@@ -104,7 +105,7 @@ const ManagePage = () => {
                 size="sm"
                 leftIcon={<PlusCircle className="w-3.5 h-3.5" />}
               >
-                {t.manage.createGroup}
+                <ScrambleText text={t.manage.createGroup} />
               </Button>
             }
           />

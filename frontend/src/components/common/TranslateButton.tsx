@@ -1,5 +1,6 @@
 "use client";
 
+import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React, { useState } from "react";
 import { useLanguageStore } from "@/stores/languageStore";
 import { Globe, RefreshCw, Undo2, Sparkles } from "lucide-react";
@@ -65,12 +66,12 @@ export default function TranslateButton({
       {isTranslating ? (
         <>
           <RefreshCw className="w-3 h-3 animate-spin text-[var(--primary)]" />
-          <span>{t.translate.translating}</span>
+          <span><ScrambleText text={t.translate.translating} /></span>
         </>
       ) : isTranslated ? (
         <>
           <Undo2 className="w-3 h-3" />
-          <span>{t.translate.showOriginal}</span>
+          <span><ScrambleText text={t.translate.showOriginal} /></span>
           <span className="text-[10px] text-[var(--text-faint)] flex items-center gap-0.5">
             <Sparkles className="w-2.5 h-2.5 text-amber-500" /> Gemini
           </span>
@@ -78,7 +79,7 @@ export default function TranslateButton({
       ) : (
         <>
           <Globe className="w-3 h-3" />
-          <span>{t.translate.btn}</span>
+          <span><ScrambleText text={t.translate.btn} /></span>
         </>
       )}
     </button>

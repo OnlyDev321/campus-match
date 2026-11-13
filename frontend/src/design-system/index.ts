@@ -24,6 +24,7 @@ export {
   type CardProps,
 } from "./components/Card";
 export { Input, type InputProps } from "./components/Input";
+export { Select } from "./components/Select";
 export { SearchInput, type SearchInputProps } from "./components/SearchInput";
 export { Checkbox, type CheckboxProps } from "./components/Checkbox";
 export { Radio, type RadioProps } from "./components/Radio";
