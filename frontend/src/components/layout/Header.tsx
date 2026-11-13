@@ -12,6 +12,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
 import LanguageSwitcher from "@/components/layout/LanguageSwitcher";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function Header() {
   const [isCommandBarOpen, setIsCommandBarOpen] = useState(false);
@@ -45,9 +46,7 @@ export default function Header() {
               href="/"
               className="flex items-center gap-2 font-bold tracking-tight text-[var(--text-primary)] hover:opacity-90 transition-opacity"
             >
-              <div className="w-8 h-8 rounded-lg bg-(--primary-container) flex items-center justify-center text-white shadow-sm font-mono font-bold text-sm shrink-0">
-                CM
-              </div>
+              <BrandLogo size={32} priority />
               <span className="text-base font-semibold tracking-tight hidden min-[440px]:inline">
                 Campus<span className="text-(--primary)">Match</span>
               </span>
