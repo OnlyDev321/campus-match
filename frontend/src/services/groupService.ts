@@ -1,6 +1,6 @@
 import { apiRequest } from "@/lib/api";
-import type { MyGroupSummary } from "@/lib/types";
-import { USE_MOCK, mockDelay, mockGetMyGroups } from "@/services/mocks/groupMocks";
+import type { CreateGroupPayload, CreateGroupResponse, MyGroupSummary, StudentProfile } from "@/lib/types";
+import { USE_MOCK, mockDelay, mockGetMyGroups, mockCreateGroup } from "@/services/mocks/groupMocks";
 
 // Chỉ bật sau khi backend có API và kiểm tra JWT/quyền Leader phía server.
 // Đây là cờ khả năng tích hợp, không phải cơ chế phân quyền.
@@ -21,4 +21,27 @@ export async function getMyGroups(): Promise<MyGroupSummary[]> {
     return mockGetMyGroups();
   }
   return apiRequest<MyGroupSummary[]>("/users/me/groups");
+}
+
+/**
+ * Tạo một nhóm học tập mới (Yêu cầu JWT Bearer Token, người tạo tự động là Leader).
+ * Endpoint: POST /api/groups
+ */
+export async function createGroup(
+  payload: CreateGroupPayload,
+  userProfile?: StudentProfile | null,
+): Promise<CreateGroupResponse> {
+  if (USE_MOCK) {
+    await mockDelay();
+    return mockCreateGroup(payload, userProfile ? {
+      name: userProfile.name,
+      faculty: userProfile.faculty,
+      department: userProfile.department,
+      studentId: userProfile.studentId,
+    } : undefined);
+  }
+  return apiRequest<CreateGroupResponse>("/groups", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }

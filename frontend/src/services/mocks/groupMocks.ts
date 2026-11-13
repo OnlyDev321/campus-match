@@ -1,6 +1,8 @@
 import { ApiError } from "@/lib/api";
 import type {
   ApplicationStatusCode,
+  CreateGroupPayload,
+  CreateGroupResponse,
   GroupApplication,
   MyGroupSummary,
   UserSummary,
@@ -206,4 +208,65 @@ export const mockUpdateApplicationStatus = (
   application.status = status;
   group.pendingApplicationCount = Math.max(0, group.pendingApplicationCount - 1);
   return clone(application);
+};
+
+// Giống nghiệp vụ Backend (architecture.md §7, Giai đoạn 5):
+// Tạo nhóm mới, người tạo tự động là LEADER, thêm vào mockMyGroups
+export const mockCreateGroup = (
+  payload: CreateGroupPayload,
+  userProfile?: { name?: string; faculty?: string; department?: string; studentId?: string },
+): CreateGroupResponse => {
+  const newId = Date.now();
+  const leader: UserSummary = {
+    id: ME.id,
+    studentId: userProfile?.studentId || ME.studentId,
+    name: userProfile?.name || ME.name,
+    department: userProfile?.department || ME.department,
+    faculty: userProfile?.faculty || ME.faculty,
+    academicYear: ME.academicYear,
+  };
+
+  const newMyGroup: MyGroupSummary = {
+    id: newId,
+    title: payload.title.trim(),
+    description: payload.description.trim(),
+    courseCode: payload.courseCode?.trim() || null,
+    courseName: payload.courseName?.trim() || null,
+    college: leader.faculty || "IT대학",
+    department: leader.department || "소프트웨어학부",
+    status: "RECRUITING",
+    maxMembers: payload.maxMembers,
+    memberCount: 1,
+    myRole: "LEADER",
+    leader,
+    members: [
+      {
+        userId: leader.id,
+        name: leader.name,
+        role: "LEADER",
+        joinedAt: new Date().toISOString(),
+      },
+    ],
+    pendingApplicationCount: 0,
+    createdAt: new Date().toISOString(),
+  };
+
+  mockMyGroups.unshift(newMyGroup);
+
+  return {
+    id: newId,
+    title: newMyGroup.title,
+    description: newMyGroup.description,
+    college: newMyGroup.college,
+    department: newMyGroup.department,
+    postYear: new Date().getFullYear(),
+    courseCode: newMyGroup.courseCode,
+    courseName: newMyGroup.courseName,
+    maxMembers: newMyGroup.maxMembers,
+    memberCount: 1,
+    status: "RECRUITING",
+    leader,
+    createdAt: newMyGroup.createdAt,
+    updatedAt: newMyGroup.createdAt,
+  };
 };

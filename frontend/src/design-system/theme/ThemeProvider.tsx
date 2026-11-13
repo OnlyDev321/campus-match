@@ -21,23 +21,24 @@ export function ThemeProvider({
   children: React.ReactNode;
   defaultTheme?: ThemeMode;
 }) {
-  const [theme, setThemeState] = useState<ThemeMode>(defaultTheme);
-  const [systemDark, setSystemDark] = useState<boolean>(false);
-
-  // Sync stored theme & system preference on mount
-  useEffect(() => {
+  // Khởi tạo theme đồng bộ từ localStorage để triệt tiêu hoàn toàn nhấp nháy FOUC khi tải lại trang
+  const [theme, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return defaultTheme;
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
       if (stored === "light" || stored === "dark" || stored === "system") {
-        setThemeState(stored);
+        return stored;
       }
     } catch {}
+    return defaultTheme;
+  });
 
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setSystemDark(mediaQuery.matches);
-  }, []);
+  const [systemDark, setSystemDark] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
-  // Track system preference changes
+  // Theo dõi khi hệ điều hành thay đổi chế độ sáng/tối
   useEffect(() => {
     if (typeof window === "undefined") return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
@@ -54,7 +55,7 @@ export function ThemeProvider({
     return theme;
   }, [theme, systemDark]);
 
-  // Apply class and data attribute to document element
+  // Cập nhật thuộc tính theme mượt mà lên document root
   useEffect(() => {
     if (typeof window === "undefined") return;
     const root = document.documentElement;
@@ -63,10 +64,12 @@ export function ThemeProvider({
       root.classList.add("dark");
       root.setAttribute("data-theme", "dark");
       root.style.colorScheme = "dark";
+      root.style.backgroundColor = "#090d16";
     } else {
       root.classList.remove("dark");
       root.setAttribute("data-theme", "light");
       root.style.colorScheme = "light";
+      root.style.backgroundColor = "#faf8ff";
     }
   }, [resolvedTheme]);
 

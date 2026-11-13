@@ -14,10 +14,12 @@ const themeInitScript = `
         document.documentElement.classList.add('dark');
         document.documentElement.setAttribute('data-theme', 'dark');
         document.documentElement.style.colorScheme = 'dark';
+        document.documentElement.style.backgroundColor = '#090d16';
       } else {
         document.documentElement.classList.remove('dark');
         document.documentElement.setAttribute('data-theme', 'light');
         document.documentElement.style.colorScheme = 'light';
+        document.documentElement.style.backgroundColor = '#faf8ff';
       }
     } catch (e) {}
   })();
