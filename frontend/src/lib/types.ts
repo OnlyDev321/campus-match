@@ -1,5 +1,15 @@
 import React from "react";
 
+/** Số liệu công khai tính từ database, không bao gồm dữ liệu mock của giao diện. */
+export interface PublicStatistics {
+  /** Số tài khoản đã đăng nhập u-SAINT thành công ít nhất một lần. */
+  verifiedStudents: number;
+  /** Số nhóm đang ở trạng thái RECRUITING. */
+  recruitingGroups: number;
+  /** Số nhóm đã đủ thành viên, ở trạng thái COMPLETED. */
+  fullGroups: number;
+}
+
 /** Chữ giao diện chạy ký tự tại chỗ khi người dùng đổi ngôn ngữ. */
 export interface ScrambleTextProps {
   /** Nội dung đã dịch, dùng trực tiếp cho trình đọc màn hình. */
@@ -623,6 +633,8 @@ export interface GroupMemberDetail {
   major: string;            // Ngành học & năm học
   avatarUrl?: string;       // Ảnh đại diện
   isLeader?: boolean;       // Có phải là trưởng nhóm không
+  /** Đánh dấu dòng của người đang xem trong dữ liệu xem trước. */
+  isCurrentUser?: boolean;
 }
 
 /**
@@ -640,6 +652,8 @@ export interface GroupRoleQuota {
  * Kế thừa các trường cơ bản từ GroupCardData và mở rộng thêm mô tả dài, mục tiêu, thành viên.
  */
 export interface GroupDetailData extends GroupCardData {
+  /** Vai trò người xem trong nhóm, chỉ dùng để hiển thị UI, không thay phân quyền server. */
+  myRole?: GroupMemberRole;
   courseCode?: string;                  // Mã môn học chi tiết (VD: "CSE408")
   semester?: string;                    // Học kỳ (VD: "2025 Spring Semester")
   longDescription?: string;             // Bài giới thiệu đề tài chi tiết
@@ -843,3 +857,22 @@ export interface LanguageOption {
 
 // Re-export type từ điển đa ngữ để tiện dùng toàn ứng dụng
 export type { TranslationDict };
+
+/** Danh mục đơn vị đào tạo công khai, đồng bộ định kỳ từ SSU. */
+export interface AcademicCatalog {
+  /** Thời điểm đồng bộ thành công gần nhất. */
+  syncedAt: string;
+  /** Đường dẫn nguồn chính thức. */
+  source: string;
+  /** Các trường/viện và khoa/ngành trực thuộc. */
+  colleges: AcademicCollege[];
+}
+
+export interface AcademicCollege {
+  /** Tên chính thức tiếng Hàn của đơn vị. */
+  name: string;
+  /** Trang giới thiệu của đơn vị tại SSU. */
+  sourceUrl: string;
+  /** Tên các khoa/ngành chính thức, không tự dịch. */
+  departments: string[];
+}

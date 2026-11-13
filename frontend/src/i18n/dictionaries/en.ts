@@ -3,6 +3,10 @@ export const en = {
     "closeDialog": "Close dialog"
   },
   groupDetail: {
+    alreadyMember: "You are a member",
+    memberNotice: "You have joined this group. Contact the group leader to coordinate your work.",
+    you: "You",
+
     "notFoundTitle": "Group Not Found",
     "notFoundDescription": "The group with ID {id} could not be found or may have been deleted.",
     "backToGroups": "Back to Groups",
@@ -98,6 +102,11 @@ export const en = {
   },
   // Landing Page
   landing: {
+    statsFullGroups: "Groups Fully Staffed",
+    statsTitle: "CampusMatch Statistics",
+    statsLoading: "Loading platform statistics…",
+    statsUnavailable: "Statistics are temporarily unavailable. They will refresh automatically.",
+
     badge: "Official Soongsil Academic Verification · 2026 Matching",
     heroTitlePrefix: "Find Trusted Peers,",
     heroTitleHighlight: "Build Ideal Teams",
@@ -126,7 +135,7 @@ export const en = {
       "Discover teammates for Capstone Design, coding tests, or hackathons with role quotas (Frontend, Backend, Design).",
     feature3Sub: "Structured role & member quotas",
     statsStudents: "Verified Students",
-    statsGroups: "Active Groups",
+    statsGroups: "Groups Recruiting",
     statsCompletion: "Project Completion Rate",
     statsVerification: "Identity Verified",
     bottomCtaTitle: "Looking for Great Teammates This Semester?",
@@ -264,6 +273,8 @@ export const en = {
   },
   // Groups Page & Cards
   groupsPage: {
+    catalogLoading: "Loading academic directory…",
+    catalogRetry: "Directory unavailable. Retry",
     breadcrumbDirectory: "WORKSPACE DIRECTORY",
     breadcrumbCampus: "Soongsil Campus",
     title: "Find Your Group",
@@ -300,6 +311,11 @@ export const en = {
   },
   // Create Group Page
   createGroupPage: {
+    creatorTipsTitle: "CampusMatch Creator Tips",
+    creatorTipCourse: "Groups with specific course codes attract 3x faster applications.",
+    creatorTipSchedule: "Specify preferred meeting times in your description.",
+    creatorTipApplications: "You can accept or reject applications in the Manage tab.",
+
     breadcrumbDirectory: "WORKSPACE DIRECTORY",
     breadcrumbCreate: "Create Study Group",
     title: "Create Study & Project Group",

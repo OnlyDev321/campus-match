@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Network,
   UserPlus,
@@ -16,9 +16,11 @@ import GroupCard from "@/components/group/GroupCard";
 import ApplyModal from "@/components/application/ApplyModal";
 import { Card, SearchInput, Button, Badge } from "@/design-system";
 import { mockGroupCards, getGroupDetail } from "@/lib/mockData";
-import type { GroupCardData, GroupDetailData } from "@/lib/types";
+import type { AcademicCatalog, GroupCardData, GroupDetailData } from "@/lib/types";
 import { useRequireLogin } from "@/lib/hooks";
 import { useLanguageStore } from "@/stores/languageStore";
+
+import { getAcademicCatalog } from "@/services/academicService";
 
 const GroupPage = () => {
   const isReady = useRequireLogin("/groups");
@@ -52,19 +54,26 @@ const GroupPage = () => {
   const [isYearOpen, setIsYearOpen] = useState(false);
   const [isSortOpen, setIsSortOpen] = useState(false);
 
-  // Available colleges (단과대)
-  const colleges = useMemo(() => {
-    return Array.from(new Set(mockGroupCards.map((g) => g.college)));
-  }, []);
+  const [catalog, setCatalog] = useState<AcademicCatalog | null>(null);
+  const [catalogError, setCatalogError] = useState(false);
+  const [catalogRequest, setCatalogRequest] = useState(0);
 
-  // Available departments (학부/학과 - cascaded by selected college)
-  const departments = useMemo(() => {
-    const pool =
-      selectedCollege === "ALL"
-        ? mockGroupCards
-        : mockGroupCards.filter((g) => g.college === selectedCollege);
-    return Array.from(new Set(pool.map((g) => g.department)));
-  }, [selectedCollege]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000);
+    let active = true;
+    getAcademicCatalog(controller.signal)
+      .then((data) => { if (active) setCatalog(data); })
+      .catch(() => { if (active) setCatalogError(true); })
+      .finally(() => clearTimeout(timeout));
+    return () => { active = false; controller.abort(); clearTimeout(timeout); };
+  }, [catalogRequest]);
+
+  // Danh mục không phụ thuộc số nhóm hiện có trong trang.
+  const colleges = catalog?.colleges.map((college) => college.name) ?? [];
+  const departments = Array.from(new Set((catalog?.colleges ?? [])
+    .filter((college) => selectedCollege === "ALL" || college.name === selectedCollege)
+    .flatMap((college) => college.departments)));
 
   // Available years (연도 / Năm đăng bài)
   const years = useMemo(() => {
@@ -76,14 +85,10 @@ const GroupPage = () => {
   const handleSelectCollege = (col: string) => {
     setSelectedCollege(col);
     setIsCollegeOpen(false);
-    if (col !== "ALL") {
-      const deptsInCollege = mockGroupCards
-        .filter((g) => g.college === col)
-        .map((g) => g.department);
-      if (!deptsInCollege.includes(selectedDepartment)) {
-        setSelectedDepartment("ALL");
-      }
-    }
+    const available = catalog?.colleges
+      .filter((college) => col === "ALL" || college.name === col)
+      .flatMap((college) => college.departments) ?? [];
+    if (!available.includes(selectedDepartment)) setSelectedDepartment("ALL");
   };
 
   const handleSearch = () => {
@@ -296,7 +301,7 @@ const GroupPage = () => {
               </Button>
 
               {isCollegeOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-48 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                <div className="absolute top-full left-0 mt-1.5 w-60 max-h-64 overflow-y-auto rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
                   <button
                     type="button"
                     onClick={() => handleSelectCollege("ALL")}
@@ -308,6 +313,15 @@ const GroupPage = () => {
                   >
                     <ScrambleText text={t.groupsPage.allColleges} />
                   </button>
+                  {!catalog && (
+                    <div className="px-3.5 py-2 text-xs text-[var(--text-muted)]" role="status">
+                      {catalogError ? (
+                        <button type="button" onClick={() => { setCatalogError(false); setCatalogRequest((value) => value + 1); }}>
+                          {t.groupsPage.catalogRetry}
+                        </button>
+                      ) : t.groupsPage.catalogLoading}
+                    </div>
+                  )}
                   {colleges.map((col) => (
                     <button
                       key={col}
@@ -368,6 +382,15 @@ const GroupPage = () => {
                   >
                     <ScrambleText text={t.groupsPage.allDepartments} />
                   </button>
+                  {!catalog && (
+                    <div className="px-3.5 py-2 text-xs text-[var(--text-muted)]" role="status">
+                      {catalogError ? (
+                        <button type="button" onClick={() => { setCatalogError(false); setCatalogRequest((value) => value + 1); }}>
+                          {t.groupsPage.catalogRetry}
+                        </button>
+                      ) : t.groupsPage.catalogLoading}
+                    </div>
+                  )}
                   {departments.map((dept) => (
                     <button
                       key={dept}
