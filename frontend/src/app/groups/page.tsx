@@ -21,6 +21,7 @@ import { useRequireLogin } from "@/lib/hooks";
 import { useLanguageStore } from "@/stores/languageStore";
 
 import { getAcademicCatalog } from "@/services/academicService";
+import { fetchAvailableYears } from "@/services/groupService";
 
 const GroupPage = () => {
   const isReady = useRequireLogin("/groups");
@@ -75,11 +76,28 @@ const GroupPage = () => {
     .filter((college) => selectedCollege === "ALL" || college.name === selectedCollege)
     .flatMap((college) => college.departments)));
 
-  // Available years (연도 / Năm đăng bài)
-  const years = useMemo(() => {
-    return Array.from(new Set(mockGroupCards.map((g) => g.postYear))).sort(
-      (a, b) => b - a,
-    );
+  // Available years (연도 / Năm đăng bài) — dynamic từ API hoặc fallback mock
+  const [years, setYears] = useState<number[]>(() => {
+    // Immediate fallback: năm hiện tại + 2 năm trước (tránh dropdown trống lúc load)
+    const now = new Date().getFullYear();
+    return [now, now - 1, now - 2];
+  });
+
+  useEffect(() => {
+    let active = true;
+    fetchAvailableYears()
+      .then((data) => { if (active && data.length > 0) setYears(data); })
+      .catch(() => { /* giữ fallback ban đầu */ });
+    return () => { active = false; };
+  }, []);
+
+  // Đếm số group mỗi năm (cho badge count trong dropdown)
+  const yearCounts = useMemo(() => {
+    const counts = new Map<number, number>();
+    for (const g of mockGroupCards) {
+      counts.set(g.postYear, (counts.get(g.postYear) ?? 0) + 1);
+    }
+    return counts;
   }, []);
 
   const handleSelectCollege = (col: string) => {
@@ -439,7 +457,7 @@ const GroupPage = () => {
               </Button>
 
               {isYearOpen && (
-                <div className="absolute top-full left-0 mt-1.5 w-36 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
+                <div className="absolute top-full left-0 mt-1.5 w-44 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] shadow-[var(--shadow-level-2)] py-1 z-20">
                   <button
                     type="button"
                     onClick={() => {
@@ -454,23 +472,31 @@ const GroupPage = () => {
                   >
                     <ScrambleText text={t.groupsPage.allYears} />
                   </button>
-                  {years.map((yr) => (
-                    <button
-                      key={yr}
-                      type="button"
-                      onClick={() => {
-                        setSelectedYear(String(yr));
-                        setIsYearOpen(false);
-                      }}
-                      className={`w-full text-left px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
-                        selectedYear === String(yr)
-                          ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
-                          : "text-[var(--text-secondary)]"
-                      }`}
-                    >
-                      <ScrambleText text={t.groupsPage.yearFormat.replace("{year}", String(yr))} />
-                    </button>
-                  ))}
+                  {years.map((yr) => {
+                    const count = yearCounts.get(yr) ?? 0;
+                    return (
+                      <button
+                        key={yr}
+                        type="button"
+                        onClick={() => {
+                          setSelectedYear(String(yr));
+                          setIsYearOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3.5 py-1.5 text-xs hover:bg-[var(--surface-container-low)] ${
+                          selectedYear === String(yr)
+                            ? "font-semibold text-[var(--primary)] bg-[var(--primary-soft)]"
+                            : "text-[var(--text-secondary)]"
+                        }`}
+                      >
+                        <ScrambleText text={t.groupsPage.yearFormat.replace("{year}", String(yr))} />
+                        {count > 0 && (
+                          <span className="text-[10px] font-mono text-[var(--text-faint)] tabular-nums">
+                            ({count})
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

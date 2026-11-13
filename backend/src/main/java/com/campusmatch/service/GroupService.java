@@ -77,6 +77,15 @@ public class GroupService {
     }
 
     /**
+     * Lấy danh sách các năm có nhóm tồn tại trong DB (cho Year filter dropdown).
+     * Trả về sorted giảm dần, VD: [2026, 2025, 2024]
+     */
+    @Transactional(readOnly = true)
+    public List<Integer> getAvailableYears() {
+        return groupRepository.findDistinctPostYears();
+    }
+
+    /**
      * Tìm kiếm & lọc nhóm học tập có phân trang
      */
     @Transactional(readOnly = true)

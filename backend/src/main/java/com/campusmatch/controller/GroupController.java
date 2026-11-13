@@ -17,12 +17,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/groups")
 @RequiredArgsConstructor
 public class GroupController {
 
     private final GroupService groupService;
+
+    /**
+     * Lấy danh sách các năm có nhóm tồn tại (Cho Year filter dropdown, Công khai)
+     * GET /api/groups/years → [2026, 2025, 2024]
+     */
+    @GetMapping("/years")
+    public ResponseEntity<List<Integer>> getAvailableYears() {
+        List<Integer> years = groupService.getAvailableYears();
+        return ResponseEntity.ok(years);
+    }
 
     /**
      * Tìm kiếm và lọc danh sách nhóm học tập (Công khai)

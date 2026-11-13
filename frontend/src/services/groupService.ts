@@ -2,6 +2,7 @@ import { apiRequest } from "@/lib/api";
 import type { CreateGroupPayload, CreateGroupResponse, GroupDetailData, MyGroupSummary, StudentProfile } from "@/lib/types";
 import { getGroupDetail } from "@/lib/mockData";
 import { USE_MOCK, mockDelay, mockGetMyGroups, mockCreateGroup, mockGetJoinedGroupDetail } from "@/services/mocks/groupMocks";
+import { mockGroupCards } from "@/lib/mockData";
 
 /** Nối trang chi tiết hiện tại với nhóm mẫu ở Manage; chỉ bật vai trò mẫu khi USE_MOCK. */
 export function getGroupDetailForView(id: string, profile?: StudentProfile | null): GroupDetailData | null {
@@ -12,6 +13,24 @@ export function getGroupDetailForView(id: string, profile?: StudentProfile | nul
 // Đây là cờ khả năng tích hợp, không phải cơ chế phân quyền.
 export const MANAGE_MUTATIONS_AVAILABLE: boolean = false;
 export const MANAGE_USES_SAMPLE_DATA = USE_MOCK;
+
+/**
+ * Lấy danh sách năm có nhóm tồn tại (cho Year filter dropdown).
+ * - Khi backend sẵn sàng: GET /api/groups/years → [2026, 2025, 2024]
+ * - Fallback (mock): Dynamic tính từ năm hiện tại + data mock
+ */
+export async function fetchAvailableYears(): Promise<number[]> {
+  if (!USE_MOCK) {
+    return apiRequest<number[]>("/groups/years");
+  }
+
+  // Hybrid fallback: dynamic theo năm hiện tại, merge với mock data
+  await mockDelay();
+  const currentYear = new Date().getFullYear();
+  const dataYears = new Set(mockGroupCards.map((g) => g.postYear));
+  const merged = new Set([currentYear, currentYear - 1, currentYear - 2, ...dataYears]);
+  return Array.from(merged).sort((a, b) => b - a);
+}
 
 // Các hàm gọi API liên quan tới nhóm học tập (Group module).
 
