@@ -6,6 +6,7 @@ import { Modal, Input, Button, Badge } from "@/design-system";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
 import { ShieldCheck, User, Lock, AlertCircle } from "lucide-react";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function LoginModal() {
   const { isLoginModalOpen, closeLoginModal, login } = useAuthStore();
@@ -83,22 +84,22 @@ export default function LoginModal() {
       }}
       maxWidth="md"
       title={
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-(--primary-container) flex items-center justify-center text-white font-mono font-bold text-sm shadow-xs">
-            SSU
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-(--text-primary) tracking-tight">
-              <ScrambleText text={t.loginModal.title} />
-            </h3>
-            <p className="text-xs text-(--text-muted) font-normal">
-              <ScrambleText text={t.loginModal.subtitle} />
-            </p>
-          </div>
+        <div>
+          <h3 className="text-base font-bold text-(--text-primary) tracking-tight">
+            <ScrambleText text={t.loginModal.title} />
+          </h3>
+          <p className="text-xs text-(--text-muted) font-normal">
+            <ScrambleText text={t.loginModal.subtitle} />
+          </p>
         </div>
       }
     >
       <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+        {/* Brand logo (full, prominent) */}
+        <div className="flex justify-center pt-1">
+          <BrandLogo size={96} priority />
+        </div>
+
         {/* Error banner */}
         {displayedError && (
           <div className="p-3 rounded-lg bg-(--error-bg) border border-(--error-border) flex items-start gap-2.5 text-(--error-text) text-xs">

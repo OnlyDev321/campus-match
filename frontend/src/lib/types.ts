@@ -803,6 +803,16 @@ export interface NavItem {
   icon: React.ComponentType<{ className?: string }>; // Component biểu tượng Lucide
 }
 
+/** Thuộc tính của logo thương hiệu CampusMatch dùng chung cho các layout. */
+export interface BrandLogoProps {
+  /** Cạnh vuông của logo tính bằng px; logo được co giãn giữ tỉ lệ (object-contain). */
+  size?: number;
+  /** Tải logo ưu tiên (đặt true cho logo nằm ở vùng đầu trang, tránh trễ hình). */
+  priority?: boolean;
+  /** Class bổ sung cho khung bao logo, ví dụ căn giữa hoặc khoảng cách. */
+  className?: string;
+}
+
 /**
  * Props cho khung trạng thái rỗng (`components/common/AsyncState.tsx`).
  */
