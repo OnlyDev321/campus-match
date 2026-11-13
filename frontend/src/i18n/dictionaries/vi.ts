@@ -5,6 +5,10 @@ export const vi: TranslationDict = {
     "closeDialog": "Đóng hộp thoại"
   },
   groupDetail: {
+    alreadyMember: "Bạn đã là thành viên",
+    memberNotice: "Bạn đã tham gia nhóm này. Liên hệ trưởng nhóm để trao đổi và phối hợp công việc.",
+    you: "Bạn",
+
     "notFoundTitle": "Không tìm thấy nhóm",
     "notFoundDescription": "Không tìm thấy nhóm có ID {id} hoặc nhóm đã bị xóa.",
     "backToGroups": "Quay lại danh sách nhóm",
@@ -98,6 +102,11 @@ export const vi: TranslationDict = {
     notifications: "Thông báo",
   },
   landing: {
+    statsFullGroups: "Nhóm đã đủ thành viên",
+    statsTitle: "Số liệu CampusMatch",
+    statsLoading: "Đang tải số liệu hệ thống…",
+    statsUnavailable: "Tạm thời chưa tải được số liệu. Hệ thống sẽ tự động cập nhật lại.",
+
     badge: "Xác thực học vụ chính thức ĐH Soongsil · Kỳ học 2026",
     heroTitlePrefix: "Tìm kiếm bạn học tin cậy,",
     heroTitleHighlight: "Xây dựng đội ngũ hoàn hảo",
@@ -126,7 +135,7 @@ export const vi: TranslationDict = {
       "Tìm bạn làm Đồ án tốt nghiệp (Capstone), luyện code, Spring Boot, React theo đúng chỉ tiêu (Frontend, Backend, Designer).",
     feature3Sub: "Kiểm soát chỉ tiêu từng vai trò",
     statsStudents: "Sinh viên đã xác thực",
-    statsGroups: "Nhóm & Đồ án mở",
+    statsGroups: "Nhóm đang tuyển thành viên",
     statsCompletion: "Tỷ lệ hoàn thành đồ án",
     statsVerification: "Xác thực danh tính",
     bottomCtaTitle: "Bạn đang tìm đồng đội cho kỳ học này?",
@@ -273,6 +282,8 @@ export const vi: TranslationDict = {
   },
   // Groups Page & Cards
   groupsPage: {
+    catalogLoading: "Đang tải danh mục đào tạo…",
+    catalogRetry: "Không tải được danh mục. Thử lại",
     breadcrumbDirectory: "DANH MỤC KHÔNG GIAN LÀM VIỆC",
     breadcrumbCampus: "Khuôn viên Soongsil",
     title: "Tìm nhóm học tập",
@@ -311,6 +322,11 @@ export const vi: TranslationDict = {
   },
   // Create Group Page
   createGroupPage: {
+    creatorTipsTitle: "Gợi ý tạo nhóm CampusMatch",
+    creatorTipCourse: "Nhóm ghi rõ mã môn học thu hút đơn ứng tuyển nhanh gấp 3 lần.",
+    creatorTipSchedule: "Ghi rõ thời gian họp mong muốn trong phần mô tả.",
+    creatorTipApplications: "Bạn có thể chấp nhận hoặc từ chối đơn ứng tuyển tại mục Quản lý nhóm.",
+
     breadcrumbDirectory: "DANH MỤC KHÔNG GIAN LÀM VIỆC",
     breadcrumbCreate: "Tạo nhóm mới",
     title: "Tạo nhóm học tập & đồ án mới",

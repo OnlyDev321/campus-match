@@ -746,12 +746,12 @@ export default function CreateGroupPage() {
           <Card className="p-4 bg-[var(--surface-container-low)] border-[var(--border)] space-y-2.5">
             <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-primary)]">
               <Sparkles className="w-4 h-4 text-[var(--warning)]" />
-              <span>CampusMatch Creator Tips</span>
+              <span><ScrambleText text={copy.creatorTipsTitle} /></span>
             </div>
             <ul className="text-xs text-[var(--text-secondary)] space-y-1.5 list-disc list-inside">
-              <li>Groups with specific course codes attract 3x faster applications.</li>
-              <li>Specify preferred meeting times in your description.</li>
-              <li>You can accept or reject applications in the Manage tab.</li>
+              <li><ScrambleText text={copy.creatorTipCourse} /></li>
+              <li><ScrambleText text={copy.creatorTipSchedule} /></li>
+              <li><ScrambleText text={copy.creatorTipApplications} /></li>
             </ul>
           </Card>
         </div>

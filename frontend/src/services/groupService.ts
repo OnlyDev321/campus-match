@@ -1,6 +1,12 @@
 import { apiRequest } from "@/lib/api";
-import type { CreateGroupPayload, CreateGroupResponse, MyGroupSummary, StudentProfile } from "@/lib/types";
-import { USE_MOCK, mockDelay, mockGetMyGroups, mockCreateGroup } from "@/services/mocks/groupMocks";
+import type { CreateGroupPayload, CreateGroupResponse, GroupDetailData, MyGroupSummary, StudentProfile } from "@/lib/types";
+import { getGroupDetail } from "@/lib/mockData";
+import { USE_MOCK, mockDelay, mockGetMyGroups, mockCreateGroup, mockGetJoinedGroupDetail } from "@/services/mocks/groupMocks";
+
+/** Nối trang chi tiết hiện tại với nhóm mẫu ở Manage; chỉ bật vai trò mẫu khi USE_MOCK. */
+export function getGroupDetailForView(id: string, profile?: StudentProfile | null): GroupDetailData | null {
+  return (USE_MOCK ? mockGetJoinedGroupDetail(id, profile) : null) ?? getGroupDetail(id);
+}
 
 // Chỉ bật sau khi backend có API và kiểm tra JWT/quyền Leader phía server.
 // Đây là cờ khả năng tích hợp, không phải cơ chế phân quyền.

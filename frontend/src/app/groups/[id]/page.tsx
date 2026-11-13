@@ -1,7 +1,7 @@
 "use client";
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
-import React, { use, useState, useMemo } from "react";
+import React, { use, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -23,7 +23,7 @@ import {
 import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
 import ApplyModal from "@/components/application/ApplyModal";
 import TranslateButton from "@/components/common/TranslateButton";
-import { getGroupDetail } from "@/lib/mockData";
+import { getGroupDetailForView } from "@/services/groupService";
 import { formatMessage, visibleStudentId, visibleStudentEmail } from "@/lib/format";
 import { useLanguageStore } from "@/stores/languageStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -35,7 +35,8 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const copy = t.groupDetail;
   const { user, isLoggedIn, openLoginModal } = useAuthStore();
 
-  const group = useMemo(() => getGroupDetail(id), [id]);
+  // Dữ liệu xem trước có thể cập nhật trong phiên dev; không giữ lại kết quả null cũ.
+  const group = getGroupDetailForView(id, user);
 
   // Modal and Interactive States
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
@@ -73,7 +74,8 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
 
   const spotsLeft = Math.max(group.maxMembers - group.memberCount, 0);
   const isFull = spotsLeft === 0;
-  const isLeader = Boolean(user && user.name === group.leaderName);
+  const isLeader = Boolean(isLoggedIn && user && (group.myRole === "LEADER" || user.studentId === group.leaderStudentId));
+  const isMember = isLoggedIn && group.myRole === "MEMBER";
   const leaderEmail = visibleStudentEmail(group.leaderEmail, group.leaderStudentId, user?.studentId);
 
   const handleShare = async () => {
@@ -91,6 +93,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   };
 
   const handleOpenApply = () => {
+    if (isMember || isLeader) return;
     if (!isLoggedIn) {
       openLoginModal(`/groups/${id}`);
       return;
@@ -149,7 +152,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               </span>
             </Button>
 
-            {!isLeader && !isFull && !hasApplied && (
+            {!isLeader && !isMember && !isFull && !hasApplied && (
               <Button
                 variant="primary"
                 size="sm"
@@ -445,6 +448,11 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                   >
                     <ScrambleText text={copy.manageApplications} />
                   </Button>
+                ) : isMember ? (
+                  <div className="flex min-h-11 items-center justify-center gap-2 rounded-(--radius-button) border border-(--success-border) bg-(--success-bg) px-4 py-3 text-sm font-semibold text-(--success-text)">
+                    <CheckCircle2 aria-hidden="true" className="h-4 w-4 shrink-0" />
+                    <ScrambleText text={copy.alreadyMember} />
+                  </div>
                 ) : hasApplied ? (
                   <Button
                     disabled
@@ -475,7 +483,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
 
               <div className="pt-1 text-center">
                 <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
-                  <ScrambleText text={copy.verificationNote} />
+                  <ScrambleText text={isMember ? copy.memberNotice : copy.verificationNote} />
                 </p>
               </div>
             </Card>
@@ -557,6 +565,9 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                             <span className="text-[10px] font-mono text-[var(--primary)] bg-[var(--primary-soft)] px-1.5 py-0.2 rounded border border-[var(--primary-soft-border)] shrink-0">
                               <ScrambleText text={t.myGroupCard.leader} />
                             </span>
+                          )}
+                          {isLoggedIn && member.isCurrentUser && (
+                            <Badge variant="primary" size="sm"><ScrambleText text={copy.you} /></Badge>
                           )}
                         </div>
                         <span className="text-[11px] text-[var(--text-muted)] truncate block">

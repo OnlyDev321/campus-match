@@ -35,6 +35,8 @@ public class SecurityConfig {
                         // Endpoints công khai
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/health", "/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/statistics").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/academic-units").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/groups", "/api/groups/**").permitAll()
                         // Các endpoint còn lại (tạo nhóm, nộp đơn, duyệt đơn, lấy thông tin cá nhân) yêu cầu JWT
                         .anyRequest().authenticated())

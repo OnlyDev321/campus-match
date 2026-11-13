@@ -17,5 +17,7 @@ public interface GroupRepository extends JpaRepository<StudyGroup, Long>, JpaSpe
     List<StudyGroup> findByLeaderId(Long leaderId);
 
     Page<StudyGroup> findByStatus(GroupStatus status, Pageable pageable);
+
+    long countByStatus(GroupStatus status);
 }
 

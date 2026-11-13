@@ -6,6 +6,8 @@ import type {
   GroupApplication,
   MyGroupSummary,
   UserSummary,
+  GroupDetailData,
+  StudentProfile,
 } from "@/lib/types";
 
 // ==========================================================================
@@ -172,6 +174,54 @@ const mockApplications: GroupApplication[] = [
 const clone = <T>(value: T): T => structuredClone(value);
 
 export const mockGetMyGroups = (): MyGroupSummary[] => clone(mockMyGroups);
+
+/** Chi tiết nhóm mẫu tôi tham gia, dùng cùng dữ liệu với thẻ ở trang Manage. */
+export const mockGetJoinedGroupDetail = (id: string, profile?: StudentProfile | null): GroupDetailData | null => {
+  const group = mockMyGroups.find((item) => String(item.id) === id && item.myRole === "MEMBER");
+  if (!group) return null;
+  return {
+    id: String(group.id),
+    title: group.title,
+    description: group.description,
+    course: group.courseName || "System Design",
+    courseCode: group.courseCode || undefined,
+    college: group.college,
+    department: group.department,
+    postYear: 2026,
+    memberCount: group.memberCount,
+    maxMembers: group.maxMembers,
+    myRole: "MEMBER",
+    leaderName: group.leader.name,
+    leaderMajor: group.leader.department || group.department,
+    leaderStudentId: group.leader.studentId,
+    leaderEmail: "kim.seojun@soongsil.ac.kr",
+    semester: "2026 Fall Semester",
+    createdAt: group.createdAt.slice(0, 10),
+    longDescription: "Build a distributed course-registration simulator with separate authentication, course catalog, enrollment, and notification services. Our team focuses on reliable API contracts and preventing oversubscription during peak registration traffic.",
+    objectives: [
+      "Simulate concurrent enrollment and measure response times under load.",
+      "Keep course capacity consistent with transactions and queue-based processing.",
+      "Deliver a working demo with API documentation and integration tests.",
+    ],
+    meetingFormat: "Hybrid",
+    meetingSchedule: "Wednesday 19:00 on Discord · Saturday 14:00 at IT Hall",
+    requiredSkills: ["Spring Boot", "Next.js", "PostgreSQL", "Redis", "Docker", "k6"],
+    rolesQuota: [
+      { role: "Backend Developer", current: 2, max: 2, description: "Enrollment APIs, queues, and data consistency" },
+      { role: "Frontend Developer", current: 1, max: 1, description: "Course search and enrollment dashboard" },
+      { role: "QA / DevOps", current: 0, max: 1, description: "Load testing, monitoring, and deployment" },
+    ],
+    membersList: group.members.map((member) => ({
+      id: String(member.userId),
+      name: member.userId === ME.id ? profile?.name || member.name : member.name,
+      avatarUrl: member.userId === ME.id ? profile?.avatarUrl : undefined,
+      major: member.userId === ME.id ? profile?.department || group.department : group.department,
+      role: member.role === "LEADER" ? "Backend Lead" : member.userId === ME.id ? "Frontend Developer" : "Backend Developer",
+      isLeader: member.role === "LEADER",
+      isCurrentUser: member.userId === ME.id,
+    })),
+  };
+};
 
 // Giống Backend: chỉ Leader của nhóm mới xem được danh sách đơn (403 nếu không phải).
 export const mockGetGroupApplications = (groupId: number): GroupApplication[] => {

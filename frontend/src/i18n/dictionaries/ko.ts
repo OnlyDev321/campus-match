@@ -5,6 +5,10 @@ export const ko: TranslationDict = {
     "closeDialog": "대화상자 닫기"
   },
   groupDetail: {
+    alreadyMember: "참여 중인 그룹입니다",
+    memberNotice: "이미 이 그룹에 참여하고 있습니다. 그룹장과 연락하여 활동을 진행하세요.",
+    you: "나",
+
     "notFoundTitle": "그룹을 찾을 수 없습니다",
     "notFoundDescription": "ID가 {id}인 그룹을 찾을 수 없거나 삭제되었습니다.",
     "backToGroups": "스터디 목록으로",
@@ -98,6 +102,11 @@ export const ko: TranslationDict = {
     notifications: "알림",
   },
   landing: {
+    statsFullGroups: "정원이 채워진 그룹",
+    statsTitle: "CampusMatch 이용 현황",
+    statsLoading: "이용 현황을 불러오는 중입니다…",
+    statsUnavailable: "현재 통계를 불러올 수 없습니다. 잠시 후 자동으로 갱신됩니다.",
+
     badge: "숭실대학교 공식 학사 연동 · 2026학년도 스터디 매칭",
     heroTitlePrefix: "신뢰할 수 있는 학우와,",
     heroTitleHighlight: "완벽한 스터디 & 프로젝트 팀",
@@ -126,7 +135,7 @@ export const ko: TranslationDict = {
       "캡스톤 디자인, 알고리즘 코딩 테스트, Spring Boot, React 등 원하는 목표와 기술 태그로 팀원을 빠르게 구하세요.",
     feature3Sub: "역할별 모집 인원 정원 관리",
     statsStudents: "인증된 숭실대 학우",
-    statsGroups: "개설된 스터디 & 팀",
+    statsGroups: "모집 중인 그룹",
     statsCompletion: "프로젝트 완주율",
     statsVerification: "신원 인증 검증",
     bottomCtaTitle: "이번 학기, 멋진 프로젝트를 함께할 팀원을 찾고 계신가요?",
@@ -269,6 +278,8 @@ export const ko: TranslationDict = {
   },
   // Groups Page & Cards
   groupsPage: {
+    catalogLoading: "학과 목록을 불러오는 중…",
+    catalogRetry: "목록을 불러올 수 없습니다. 다시 시도",
     breadcrumbDirectory: "워크스페이스 디렉토리",
     breadcrumbCampus: "숭실대학교 캠퍼스",
     title: "스터디 & 프로젝트 탐색",
@@ -305,6 +316,11 @@ export const ko: TranslationDict = {
   },
   // Create Group Page
   createGroupPage: {
+    creatorTipsTitle: "CampusMatch 그룹 개설 팁",
+    creatorTipCourse: "과목 코드를 명시하면 지원자를 3배 더 빠르게 모집할 수 있습니다.",
+    creatorTipSchedule: "소개글에 희망 모임 시간을 구체적으로 작성하세요.",
+    creatorTipApplications: "팀 관리 탭에서 지원서를 승인하거나 거절할 수 있습니다.",
+
     breadcrumbDirectory: "워크스페이스 디렉토리",
     breadcrumbCreate: "새 그룹 개설",
     title: "스터디 & 프로젝트 그룹 개설",

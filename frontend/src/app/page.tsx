@@ -2,6 +2,7 @@
 
 import { ScrambleText } from "@/design-system/components/ScrambleText";
 import React from "react";
+import PublicStatistics from "@/components/common/PublicStatistics";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
@@ -189,48 +190,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Real-Time Stats Section */}
-      <section className="w-full py-16 px-4 sm:px-6 lg:px-8 border-t border-[var(--border)] bg-[var(--surface-container-low)]">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center space-y-1.5 shadow-xs">
-              <div className="text-3xl sm:text-4xl font-extrabold text-[var(--primary)] font-mono">
-                1,200+
-              </div>
-              <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                <ScrambleText text={t.landing.statsStudents} />
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center space-y-1.5 shadow-xs">
-              <div className="text-3xl sm:text-4xl font-extrabold text-emerald-600 dark:text-emerald-400 font-mono">
-                350+
-              </div>
-              <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                <ScrambleText text={t.landing.statsGroups} />
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center space-y-1.5 shadow-xs">
-              <div className="text-3xl sm:text-4xl font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
-                94%
-              </div>
-              <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                <ScrambleText text={t.landing.statsCompletion} />
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-[var(--surface)] border border-[var(--border)] text-center space-y-1.5 shadow-xs">
-              <div className="text-3xl sm:text-4xl font-extrabold text-amber-600 dark:text-amber-400 font-mono">
-                100%
-              </div>
-              <div className="text-xs font-semibold text-[var(--text-secondary)]">
-                <ScrambleText text={t.landing.statsVerification} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PublicStatistics />
 
       {/* 4. Bottom CTA Callout */}
       <section className="w-full py-20 px-4 sm:px-6 lg:px-8 border-t border-[var(--border)] bg-[var(--surface)] text-center">
