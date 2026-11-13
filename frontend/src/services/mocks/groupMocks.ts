@@ -177,7 +177,7 @@ export const mockGetMyGroups = (): MyGroupSummary[] => clone(mockMyGroups);
 
 /** Chi tiết nhóm mẫu tôi tham gia, dùng cùng dữ liệu với thẻ ở trang Manage. */
 export const mockGetJoinedGroupDetail = (id: string, profile?: StudentProfile | null): GroupDetailData | null => {
-  const group = mockMyGroups.find((item) => String(item.id) === id && item.myRole === "MEMBER");
+  const group = mockMyGroups.find((item) => String(item.id) === id && (item.myRole === "MEMBER" || item.myRole === "LEADER"));
   if (!group) return null;
   return {
     id: String(group.id),
@@ -190,14 +190,14 @@ export const mockGetJoinedGroupDetail = (id: string, profile?: StudentProfile | 
     postYear: 2026,
     memberCount: group.memberCount,
     maxMembers: group.maxMembers,
-    myRole: "MEMBER",
+    myRole: group.myRole,
     leaderName: group.leader.name,
     leaderMajor: group.leader.department || group.department,
     leaderStudentId: group.leader.studentId,
     leaderEmail: "kim.seojun@soongsil.ac.kr",
     semester: "2026 Fall Semester",
     createdAt: group.createdAt.slice(0, 10),
-    longDescription: "Build a distributed course-registration simulator with separate authentication, course catalog, enrollment, and notification services. Our team focuses on reliable API contracts and preventing oversubscription during peak registration traffic.",
+    longDescription: group.description,
     objectives: [
       "Simulate concurrent enrollment and measure response times under load.",
       "Keep course capacity consistent with transactions and queue-based processing.",
@@ -206,7 +206,7 @@ export const mockGetJoinedGroupDetail = (id: string, profile?: StudentProfile | 
     meetingFormat: "Hybrid",
     meetingSchedule: "Wednesday 19:00 on Discord · Saturday 14:00 at IT Hall",
     requiredSkills: ["Spring Boot", "Next.js", "PostgreSQL", "Redis", "Docker", "k6"],
-    rolesQuota: [
+    rolesQuota: group.rolesQuota || [
       { role: "Backend Developer", current: 2, max: 2, description: "Enrollment APIs, queues, and data consistency" },
       { role: "Frontend Developer", current: 1, max: 1, description: "Course search and enrollment dashboard" },
       { role: "QA / DevOps", current: 0, max: 1, description: "Load testing, monitoring, and deployment" },
@@ -299,6 +299,7 @@ export const mockCreateGroup = (
     ],
     pendingApplicationCount: 0,
     createdAt: new Date().toISOString(),
+    rolesQuota: payload.rolesQuota,
   };
 
   mockMyGroups.unshift(newMyGroup);
@@ -318,5 +319,6 @@ export const mockCreateGroup = (
     leader,
     createdAt: newMyGroup.createdAt,
     updatedAt: newMyGroup.createdAt,
+    rolesQuota: payload.rolesQuota,
   };
 };

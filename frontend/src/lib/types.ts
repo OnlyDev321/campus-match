@@ -482,6 +482,7 @@ export interface MyGroupSummary {
   members: GroupMemberSummary[];    // Danh sách thành viên chính thức
   pendingApplicationCount: number;  // Số đơn đang chờ duyệt (chỉ có ý nghĩa khi myRole = LEADER, ngược lại = 0)
   createdAt: string;                // Ngày tạo nhóm (ISO-8601)
+  rolesQuota?: GroupRoleQuota[];    // Phân bổ chỉ tiêu các vị trí trong nhóm
 }
 
 /**
@@ -563,6 +564,8 @@ export interface CreateGroupPayload {
   courseCode?: string;                  // Mã môn học (VD: "CS490", tùy chọn)
   courseName?: string;                  // Tên môn học (VD: "Capstone Design", tùy chọn)
   maxMembers: number;                   // Số lượng thành viên tối đa (từ 2 đến 20)
+  meetingFormat?: MeetingFormat;        // Hình thức họp (Online / Offline / Hybrid)
+  rolesQuota?: GroupRoleQuota[];        // Cơ cấu nhóm và số lượng theo vai trò
 }
 
 /**
@@ -583,6 +586,7 @@ export interface CreateGroupResponse {
   leader: UserSummary;                  // Thông tin trưởng nhóm
   createdAt: string;                    // Ngày tạo nhóm (ISO-8601)
   updatedAt?: string | null;            // Ngày cập nhật gần nhất
+  rolesQuota?: GroupRoleQuota[];        // Cơ cấu nhóm và số lượng theo vai trò
 }
 
 /**
@@ -596,6 +600,7 @@ export interface CreateGroupFormData {
   maxMembers: number;                   // Sĩ số tối đa mong muốn (2 - 20)
   meetingFormat: MeetingFormat;         // Hình thức họp (Online / Offline / Hybrid)
   tags: string[];                       // Thẻ kỹ năng / từ khóa (tùy chọn)
+  rolesQuota: GroupRoleQuota[];         // Cơ cấu nhóm và số lượng theo vai trò
 }
 
 /**
@@ -846,6 +851,10 @@ export interface GroupTranslationContent {
   title: string;
   /** Mô tả do người tạo nhóm nhập, giữ xuống dòng. */
   description: string;
+  /** Danh sách các mục tiêu & định hướng nhóm do người tạo nhập. */
+  objectives?: string[];
+  /** Lịch họp và trao đổi tiến độ hàng tuần do người tạo nhập. */
+  meetingSchedule?: string;
 }
 
 export interface GroupTranslationState extends GroupTranslationContent {

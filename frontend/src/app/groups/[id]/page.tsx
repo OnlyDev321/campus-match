@@ -46,9 +46,18 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
 
   // Translation States
   const [translation, setTranslation] = useState<GroupTranslationState | null>(null);
-  const translationContext = JSON.stringify([language, id, group?.title, group?.longDescription || group?.description]);
+  const translationContext = JSON.stringify([
+    language,
+    id,
+    group?.title,
+    group?.longDescription || group?.description,
+    group?.objectives,
+    group?.meetingSchedule,
+  ]);
   const translatedTitle = translation?.context === translationContext ? translation.title : null;
   const translatedDesc = translation?.context === translationContext ? translation.description : null;
+  const translatedObjectives = translation?.context === translationContext ? translation.objectives : null;
+  const translatedMeetingSchedule = translation?.context === translationContext ? translation.meetingSchedule : null;
 
   if (!group) {
     return (
@@ -213,7 +222,12 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <TranslateButton
                 key={translationContext}
                 isTranslated={translatedTitle !== null}
-                originalContent={{ title: group.title, description: group.longDescription || group.description }}
+                originalContent={{
+                  title: group.title,
+                  description: group.longDescription || group.description,
+                  objectives: group.objectives,
+                  meetingSchedule: group.meetingSchedule,
+                }}
                 onTranslated={(translated) => setTranslation(translated ? { ...translated, context: translationContext } : null)}
               />
             </div>
@@ -270,15 +284,18 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     <ScrambleText text={copy.objectives} />
                   </h3>
                   <div className="space-y-2 sm:space-y-2.5">
-                    {group.objectives.map((goal, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)] min-w-0"
-                      >
-                        <CheckCircle2 className="w-4 h-4 text-[var(--success)] shrink-0 mt-0.5" />
-                        <span className="break-words min-w-0">{goal}</span>
-                      </div>
-                    ))}
+                    {group.objectives.map((goal, idx) => {
+                      const displayGoal = translatedObjectives?.[idx] || goal;
+                      return (
+                        <div
+                          key={idx}
+                          className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)] min-w-0"
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-[var(--success)] shrink-0 mt-0.5" />
+                          <span className="break-words min-w-0">{displayGoal}</span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -291,7 +308,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                     <ScrambleText text={copy.meetingSchedule} />
                   </span>
                   <span className="text-[var(--text-secondary)] block break-words">
-                    {group.meetingSchedule || <ScrambleText text={copy.notProvided} />}
+                    {translatedMeetingSchedule || group.meetingSchedule || <ScrambleText text={copy.notProvided} />}
                   </span>
                 </div>
               </div>

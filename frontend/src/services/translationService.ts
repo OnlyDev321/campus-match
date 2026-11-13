@@ -35,7 +35,16 @@ export async function translateGroupContent(
     }
     if (typeof data.content?.title !== "string" || !data.content.title.trim() ||
       typeof data.content?.description !== "string" || !data.content.description.trim()) throw new TranslationError("TRANSLATION_FAILED");
-    return { title: data.content.title, description: data.content.description };
+    return {
+      title: data.content.title,
+      description: data.content.description,
+      objectives: Array.isArray(data.content.objectives)
+        ? data.content.objectives.filter((s: unknown): s is string => typeof s === "string")
+        : undefined,
+      meetingSchedule: typeof data.content.meetingSchedule === "string"
+        ? data.content.meetingSchedule
+        : undefined,
+    };
   } catch (error) {
     if (error instanceof TranslationError) throw error;
     throw new TranslationError("TRANSLATION_FAILED");
