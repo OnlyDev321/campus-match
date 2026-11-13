@@ -57,7 +57,9 @@ export default function ManageGroupEditor({ group }: ManageGroupEditorProps) {
         <div className="space-y-2 min-w-0">
         <Select id="edit-status" label={copy.recruitment} name="status" value={draft.status} onChange={(e) => update("status", e.target.value)}
           aria-invalid={errors.status} aria-describedby="edit-status-help">
-          {(["RECRUITING", "COMPLETED", "CLOSED"] as const).map((status) => <option key={status} value={status}><ScrambleText text={t.groupStatus[status]} /></option>)}
+          {(["RECRUITING", "COMPLETED", "CLOSED"] as const).map((status) => (
+            <option key={status} value={status}>{t.groupStatus[status]}</option>
+          ))}
         </Select>
         <p id="edit-status-help" className={`text-xs leading-relaxed ${errors.status ? "text-[var(--error-text)]" : "text-[var(--text-muted)]"}`}><ScrambleText text={copy.statusRule} /></p>
         </div>
