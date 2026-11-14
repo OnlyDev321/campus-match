@@ -1,7 +1,6 @@
 plugins {
 	id 'java'
-	id 'org.springframework.boot' version '4.1.1'
-	id 'io.spring.dependency-management' version '1.1.7'
+	id 'org.springframework.boot' version '4.1.2'
 }
 
 group = 'com.campusmatch'
@@ -9,7 +8,7 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(17)
+		languageVersion = JavaLanguageVersion.of(25)
 	}
 }
 
@@ -18,6 +17,16 @@ repositories {
 }
 
 dependencies {
+	// Spring Boot's BOM provides the versions of all Spring Boot-managed dependencies below (it replaces
+	// the io.spring.dependency-management plugin). A Gradle platform only constrains the configuration it is
+	// declared in and those that extend it. The annotation processor and developmentOnly configurations
+	// do not extend implementation, so they import the BOM explicitly (otherwise Lombok and DevTools
+	// would have no version when those configurations are resolved on their own).
+	implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+	annotationProcessor platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+	testAnnotationProcessor platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+	developmentOnly platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+
 	implementation 'org.jsoup:jsoup:1.24.1'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
@@ -36,9 +45,9 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	//JWT (JJWT) cho Spring Boot
-	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+	implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 }
 
 tasks.named('test') {
