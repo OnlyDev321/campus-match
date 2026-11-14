@@ -7,6 +7,8 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "study_groups", indexes = {
@@ -66,6 +68,12 @@ public class StudyGroup {
     // Số lượng thành viên tối đa
     @Column(name = "max_members", nullable = false)
     private Integer maxMembers;
+
+    @ElementCollection
+    @CollectionTable(name = "group_role_quotas", joinColumns = @JoinColumn(name = "group_id"))
+    @OrderColumn(name = "position")
+    @Builder.Default
+    private List<GroupRoleQuota> rolesQuota = new ArrayList<>();
 
     // Trạng thái nhóm (RECRUITING, COMPLETED, CLOSED)
     @Enumerated(EnumType.STRING)

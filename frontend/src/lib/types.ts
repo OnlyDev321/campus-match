@@ -528,10 +528,13 @@ export interface GroupCardData {
   department: string;       // Khoa / Ngành (학부/학과, VD: "소프트웨어학부")
   postYear: number;         // Năm đăng bài (VD: 2024, 2025)
   leaderName: string;       // Tên trưởng nhóm
+  leaderId: number;         // ID trưởng nhóm trong database
   leaderAvatarUrl?: string; // Ảnh đại diện của trưởng nhóm
   leaderMajor: string;      // Ngành học của trưởng nhóm
   memberCount: number;      // Số thành viên hiện tại
   maxMembers: number;       // Sĩ số tối đa của nhóm
+  status: GroupStatusCode;  // Trạng thái tuyển thành viên từ database
+  rolesQuota?: GroupRoleQuota[]; // Các vị trí thực tế do trưởng nhóm tạo
 }
 
 /**
@@ -584,6 +587,7 @@ export interface GroupSummaryResponse {
   /** Số thành viên tối đa. */ maxMembers: number;
   /** Số thành viên hiện tại. */ memberCount: number;
   /** Trạng thái nhóm. */ status: GroupStatusCode;
+  /** Các vai trò và chỉ tiêu đã lưu cho nhóm. */ rolesQuota?: GroupRoleQuota[];
   /** Trưởng nhóm. */ leader: UserSummary;
   /** Thời điểm tạo. */ createdAt: string;
   /** Thời điểm cập nhật. */ updatedAt: string | null;
@@ -679,6 +683,7 @@ export interface CreateGroupFormErrors {
   title?: string;                       // Lỗi tiêu đề
   description?: string;                 // Lỗi mô tả
   maxMembers?: string;                  // Lỗi sĩ số tối đa
+  rolesQuota?: string;                  // Lỗi tổng chỉ tiêu hoặc tên vai trò trùng nhau
   courseCode?: string;                  // Lỗi mã môn học
   courseName?: string;                  // Lỗi tên môn học
   /** Email liên hệ không hợp lệ. */

@@ -37,10 +37,10 @@ const MyGroupCard = ({ group, variant }: MyGroupCardProps) => {
   const courseLabel = [group.courseCode, group.courseName].filter(Boolean).join(" • ");
 
   return (
-    <Link href={href} className="block">
-      <Card isInteractive className="h-full flex flex-col">
+    <Link href={href} className="block min-w-0">
+      <Card isInteractive className="h-full min-w-0 flex flex-col">
         <CardHeader>
-          <span className="font-mono text-xs font-semibold text-[var(--primary)] tracking-wide uppercase truncate">
+          <span className="min-w-0 truncate font-mono text-xs font-semibold text-[var(--primary)] tracking-wide uppercase">
             {courseLabel || group.department}
           </span>
           <Badge
@@ -49,6 +49,7 @@ const MyGroupCard = ({ group, variant }: MyGroupCardProps) => {
             dot
             pulse={group.status === "RECRUITING"}
             mono
+            className="shrink-0"
           >
             <ScrambleText text={t.groupStatus[group.status]} />
           </Badge>

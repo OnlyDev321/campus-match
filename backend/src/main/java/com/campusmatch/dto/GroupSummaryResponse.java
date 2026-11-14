@@ -4,6 +4,8 @@ import com.campusmatch.entity.GroupStatus;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import com.campusmatch.entity.GroupRoleQuota;
 
 @Getter
 @Setter
@@ -22,6 +24,7 @@ public class GroupSummaryResponse {
     private Integer maxMembers;
     private Long memberCount;
     private GroupStatus status;
+    private List<GroupRoleQuota> rolesQuota;
     private AuthResponse.UserSummary leader;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

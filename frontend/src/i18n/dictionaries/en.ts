@@ -89,14 +89,6 @@ export const en = {
     roleRequired: "Please select a target role.",
     statementRequired:
       "Please write a short introduction (at least 10 characters).",
-    defaultRoles: [
-      "Frontend Developer",
-      "Backend Developer",
-      "Fullstack Developer",
-      "UI/UX Designer",
-      "AI / ML Engineer",
-      "General Member",
-    ],
   },
 
   // Navigation & Header
@@ -485,6 +477,7 @@ export const en = {
       descriptionRequired: "Please enter a description for your group.",
       descriptionTooShort: "Description must be at least 20 characters.",
       capacityInvalid: "Team capacity must be between 2 and 20 members.",
+      roleQuotaInvalid: "Role quotas must add up to team capacity, and role names must be unique.",
       contactEmailInvalid: "Enter a valid email before publishing it.",
       contactEmailStudentId: "Use an email address that does not reveal your full student ID.",
       contactPhoneInvalid: "Enter a valid phone number (7–25 characters) before publishing it.",

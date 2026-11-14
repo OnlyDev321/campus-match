@@ -12,5 +12,7 @@ public class ApplyRequest {
 
     @NotBlank(message = "Lời giới thiệu / nguyện vọng không được để trống")
     private String statement;
+
+    private String desiredRole;
 }
 

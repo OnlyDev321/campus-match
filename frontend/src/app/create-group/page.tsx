@@ -285,6 +285,11 @@ export default function CreateGroupPage() {
     if (formData.maxMembers < 2 || formData.maxMembers > 20) {
       newErrors.maxMembers = copy.errors.capacityInvalid;
     }
+    const roleNames = formData.rolesQuota.map((role, index) => role.role.trim() || `${copy.roleNameLabel} ${index + 1}`);
+    if (formData.rolesQuota.reduce((sum, role) => sum + role.max, 0) !== formData.maxMembers ||
+        new Set(roleNames).size !== roleNames.length) {
+      newErrors.rolesQuota = copy.errors.roleQuotaInvalid;
+    }
 
     if (formData.publishEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contactEmail.trim())) {
       newErrors.contactEmail = copy.errors.contactEmailInvalid;
@@ -915,6 +920,7 @@ export default function CreateGroupPage() {
                   )}
 
                   {/* Role Quota Editor Cards List */}
+                  {errors.rolesQuota && <p role="alert" className="text-xs text-[var(--error-text)]">{errors.rolesQuota}</p>}
                   <div className="space-y-3">
                     {formData.rolesQuota.map((roleItem, index) => {
                       const isLeaderRole = selectedLeaderRoleIndex === index;

@@ -13,9 +13,11 @@ import {
 } from "@/design-system";
 import type { GroupCardProps } from "@/lib/types";
 import { useLanguageStore } from "@/stores/languageStore";
+import { useAuthStore } from "@/stores/authStore";
 
 const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   const { t } = useLanguageStore();
+  const userId = useAuthStore((state) => state.userId);
 
   const {
     id,
@@ -30,10 +32,15 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
     leaderMajor,
     memberCount,
     maxMembers,
+    leaderId,
+    status,
+    rolesQuota,
   } = group;
 
   const spotsLeft = Math.max(maxMembers - memberCount, 0);
-  const isFull = spotsLeft === 0;
+  const isFull = spotsLeft === 0 || Boolean(rolesQuota?.length && rolesQuota.every((role) => role.current >= role.max));
+  const canRecruit = status === "RECRUITING" && !isFull;
+  const isOwnGroup = userId !== null && userId === leaderId;
 
   const recruitingText =
     spotsLeft === 1
@@ -49,8 +56,8 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         <Badge variant="primary" className="font-medium">
           {course}
         </Badge>
-        <Badge variant={isFull ? "closed" : "recruiting"} dot>
-          <ScrambleText text={isFull ? t.groupsPage.cardFull : recruitingText} />
+        <Badge variant={canRecruit ? "recruiting" : "closed"} dot>
+          <ScrambleText text={status !== "RECRUITING" ? t.groupStatus[status] : isFull ? t.groupsPage.cardFull : recruitingText} />
         </Badge>
       </CardHeader>
 
@@ -112,7 +119,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
-          disabled={isFull}
+          disabled={!canRecruit || isOwnGroup}
           onClick={() => onJoin?.(id)}
         >
           <ScrambleText text={t.groupsPage.join} />

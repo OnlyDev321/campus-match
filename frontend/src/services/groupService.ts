@@ -14,10 +14,13 @@ const toCard = (group: GroupSummaryResponse): GroupCardData => ({
   department: group.department,
   postYear: group.postYear,
   leaderName: group.leader.name,
+  leaderId: group.leader.id,
   leaderAvatarUrl: group.leader.avatarUrl ?? undefined,
   leaderMajor: group.leader.department || "",
   memberCount: group.memberCount,
   maxMembers: group.maxMembers,
+  status: group.status,
+  rolesQuota: group.rolesQuota ?? [],
 });
 
 const toDetail = (group: GroupDetailResponse): GroupDetailData => {
@@ -75,6 +78,7 @@ export async function createGroup(payload: CreateGroupPayload): Promise<GroupDet
       courseCode: payload.courseCode,
       courseName: payload.courseName,
       maxMembers: payload.maxMembers,
+      rolesQuota: payload.rolesQuota,
       contactEmail: payload.contactEmail,
       contactPhone: payload.contactPhone,
     }),

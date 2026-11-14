@@ -34,7 +34,7 @@ function ApplyModalContent({
   const { t } = useLanguageStore();
   const copy = t.applyModal;
 
-  const [selectedRole, setSelectedRole] = useState<string>(() => group?.rolesQuota?.[0]?.role || "Frontend Developer");
+  const [selectedRole, setSelectedRole] = useState<string>(() => group?.rolesQuota?.find((role) => role.current < role.max)?.role || "");
   const [statement, setStatement] = useState<string>("");
   const [skills, setSkills] = useState<string>("");
   const [githubUrl, setGithubUrl] = useState<string>("");
@@ -44,25 +44,7 @@ function ApplyModalContent({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [apiError, setApiError] = useState<ApiErrorCode | null>(null);
 
-  // Available roles to pick from
-  const availableRoles = React.useMemo(() => {
-    if (!group) return [];
-    if (group.rolesQuota && group.rolesQuota.length > 0) {
-      return group.rolesQuota.map((r) => r.role);
-    }
-    return [
-      "Frontend Developer",
-      "Backend Developer",
-      "Fullstack Developer",
-      "UI/UX Designer",
-      "AI / ML Engineer",
-      "General Member",
-    ];
-  }, [group]);
-
-  const selectedRoleLabel = group?.rolesQuota?.length
-    ? selectedRole
-    : copy.defaultRoles[availableRoles.indexOf(selectedRole)] ?? selectedRole;
+  const availableRoles = React.useMemo(() => group?.rolesQuota?.filter((role) => role.current < role.max) ?? [], [group]);
 
   if (!group) return null;
 
@@ -73,7 +55,7 @@ function ApplyModalContent({
       return;
     }
 
-    if (!selectedRole) {
+    if (availableRoles.length > 0 && !selectedRole) {
       setErrorMsg("roleRequired");
       return;
     }
@@ -90,12 +72,12 @@ function ApplyModalContent({
     try {
       const applicationStatement = [
         statement.trim(),
-        `Role: ${selectedRole}`,
+        selectedRole && `Role: ${selectedRole}`,
         skills.trim() && `Skills: ${skills.trim()}`,
         githubUrl.trim() && `GitHub: ${githubUrl.trim()}`,
         portfolioUrl.trim() && `Portfolio: ${portfolioUrl.trim()}`,
       ].filter(Boolean).join("\n");
-      await applyToGroup(group.id, applicationStatement);
+      await applyToGroup(group.id, applicationStatement, selectedRole || undefined);
       setIsSuccess(true);
       onSuccess?.(group.id);
     } catch (error) {
@@ -141,12 +123,10 @@ function ApplyModalContent({
           </div>
 
           <div className="p-3.5 rounded-lg bg-[var(--surface-container-low)] border border-[var(--border)] max-w-sm mx-auto text-xs text-[var(--text-muted)] space-y-1">
-            <div className="flex justify-between">
+            {selectedRole && <div className="flex justify-between">
               <span><ScrambleText text={copy.targetRole} /></span>
-              <strong className="text-[var(--text-primary)]">
-                {selectedRoleLabel}
-              </strong>
-            </div>
+              <strong className="text-[var(--text-primary)]">{selectedRole}</strong>
+            </div>}
             <div className="flex justify-between">
               <span><ScrambleText text={copy.targetGroup} /></span>
               <span className="text-[var(--text-primary)] truncate max-w-[200px]">
@@ -168,6 +148,7 @@ function ApplyModalContent({
           <div className="p-3.5 rounded-lg border border-[var(--border)] bg-[var(--surface-container-low)] flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <Avatar
+                src={user?.avatarUrl}
                 name={user?.name || copy.student}
                 size="md"
                 className="ring-1 ring-[var(--border)]"
@@ -197,31 +178,31 @@ function ApplyModalContent({
           </div>
 
           {/* Role Selection */}
-          <div className="space-y-2">
+          {availableRoles.length > 0 && <div className="space-y-2">
             <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
               <ScrambleText text={copy.desiredRole} />{" "}
               <span className="text-[var(--error)]">*</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {availableRoles.map((role, index) => {
-                const isSelected = selectedRole === role;
+              {availableRoles.map((role) => {
+                const isSelected = selectedRole === role.role;
                 return (
                   <button
-                    key={role}
+                    key={role.role}
                     type="button"
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => setSelectedRole(role.role)}
                     className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all select-none border cursor-pointer ${
                       isSelected
                         ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
                         : "bg-[var(--surface)] text-[var(--text-secondary)] border-[var(--border)] hover:bg-[var(--surface-container)] hover:border-[var(--border-strong)]"
                     }`}
                   >
-                    <ScrambleText text={group.rolesQuota?.length ? role : copy.defaultRoles[index]} />
+                    <ScrambleText text={role.role} />
                   </button>
                 );
               })}
             </div>
-          </div>
+          </div>}
 
           {/* Motivation / Statement */}
           <div className="space-y-1.5">

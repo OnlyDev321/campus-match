@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import com.campusmatch.entity.GroupRoleQuota;
 
 @Getter
 @Setter
@@ -25,6 +26,7 @@ public class GroupDetailResponse {
     private Integer maxMembers;
     private Long memberCount;
     private GroupStatus status;
+    private List<GroupRoleQuota> rolesQuota;
     private AuthResponse.UserSummary leader;
     private List<GroupMemberSummaryResponse> members;
     private LocalDateTime createdAt;

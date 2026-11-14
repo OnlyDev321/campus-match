@@ -8,6 +8,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.*;
+import java.util.List;
+import com.campusmatch.entity.GroupRoleQuota;
 
 @Getter
 @Setter
@@ -36,5 +38,7 @@ public class CreateGroupRequest {
     @Min(value = 2, message = "Số lượng thành viên tối thiểu là 2")
     @Max(value = 20, message = "Số lượng thành viên tối đa là 20")
     private Integer maxMembers;
+
+    private List<GroupRoleQuota> rolesQuota;
 }
 

@@ -83,14 +83,6 @@ export const vi: TranslationDict = {
     "submit": "Gửi đơn ứng tuyển",
     "roleRequired": "Vui lòng chọn vai trò mong muốn.",
     "statementRequired": "Vui lòng viết phần giới thiệu ít nhất 10 ký tự.",
-    "defaultRoles": [
-      "Lập trình viên Frontend",
-      "Lập trình viên Backend",
-      "Lập trình viên Fullstack",
-      "Nhà thiết kế UI/UX",
-      "Kỹ sư AI / ML",
-      "Thành viên chung"
-    ]
   },
 
   nav: {
@@ -457,6 +449,7 @@ export const vi: TranslationDict = {
       descriptionTooShort: "Mô tả nhóm phải có ít nhất 20 ký tự.",
       capacityInvalid:
         "Sĩ số nhóm phải nằm trong khoảng từ 2 đến 20 thành viên.",
+      roleQuotaInvalid: "Tổng chỉ tiêu vai trò phải bằng sĩ số nhóm và tên vai trò không được trùng nhau.",
       contactEmailInvalid: "Nhập email hợp lệ trước khi công khai.",
       contactEmailStudentId: "Hãy dùng email không làm lộ toàn bộ mã sinh viên của bạn.",
       contactPhoneInvalid: "Nhập số điện thoại hợp lệ (7–25 ký tự) trước khi công khai.",

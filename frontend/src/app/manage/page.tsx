@@ -93,7 +93,7 @@ const ManagePage = () => {
           onRetry={reload}
         />
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 xl:gap-10 items-start">
+        <div className="grid min-w-0 grid-cols-1 @5xl:grid-cols-[repeat(2,minmax(0,1fr))] gap-8 xl:gap-10 items-start">
           <MyGroupColumn
             title={t.manage.ledColumnTitle}
             groups={ledGroups}

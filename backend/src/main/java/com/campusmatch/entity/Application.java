@@ -36,6 +36,9 @@ public class Application {
     @Column(columnDefinition = "TEXT")
     private String statement;
 
+    @Column(name = "desired_role", length = 100)
+    private String desiredRole;
+
     // Trạng thái đơn ứng tuyển (PENDING, ACCEPTED, REJECTED)
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)

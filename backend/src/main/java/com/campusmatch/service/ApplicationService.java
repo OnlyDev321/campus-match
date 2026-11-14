@@ -20,6 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.springframework.util.StringUtils;
 
 @Slf4j
 @Service
@@ -61,6 +62,12 @@ public class ApplicationService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn đã là thành viên chính thức của nhóm này");
         }
 
+        String desiredRole = StringUtils.hasText(request.getDesiredRole()) ? request.getDesiredRole().trim() : null;
+        if (!group.getRolesQuota().isEmpty() && group.getRolesQuota().stream()
+                .noneMatch(role -> role.getRole().equals(desiredRole) && role.getCurrent() < role.getMax())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vị trí ứng tuyển không hợp lệ hoặc đã đủ chỉ tiêu");
+        }
+
         // 4. Kiểm tra đơn đã từng nộp trước đó
         Optional<Application> existingAppOpt = applicationRepository.findByGroupIdAndApplicantId(groupId, applicant.getId());
         if (existingAppOpt.isPresent()) {
@@ -73,6 +80,7 @@ public class ApplicationService {
                 // Đã từng bị REJECTED -> cho phép cập nhật lại lời nhắn và gửi lại đơn chờ duyệt
                 log.info("Đơn cũ của sinh viên {} bị REJECTED. Cập nhật lại trạng thái thành PENDING.", studentId);
                 existing.setStatement(request.getStatement().trim());
+                existing.setDesiredRole(desiredRole);
                 existing.setStatus(ApplicationStatus.PENDING);
                 existing.setUpdatedAt(LocalDateTime.now());
                 Application updated = applicationRepository.save(existing);
@@ -85,6 +93,7 @@ public class ApplicationService {
                 .group(group)
                 .applicant(applicant)
                 .statement(request.getStatement().trim())
+                .desiredRole(desiredRole)
                 .status(ApplicationStatus.PENDING)
                 .build();
 
@@ -161,6 +170,13 @@ public class ApplicationService {
                     "Nhóm đã đủ số lượng thành viên tối đa (" + group.getMaxMembers() + ")");
         }
 
+        GroupRoleQuota requestedRole = group.getRolesQuota().stream()
+                .filter(role -> role.getRole().equals(application.getDesiredRole()))
+                .findFirst().orElse(null);
+        if (requestedRole != null && requestedRole.getCurrent() >= requestedRole.getMax()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vị trí ứng tuyển đã đủ chỉ tiêu");
+        }
+
         // 4. Thêm ứng viên vào bảng group_members
         User applicant = application.getApplicant();
         if (!groupMemberRepository.existsByGroupIdAndUserId(group.getId(), applicant.getId())) {
@@ -172,6 +188,7 @@ public class ApplicationService {
                     .joinedAt(LocalDateTime.now())
                     .build();
             groupMemberRepository.save(newMember);
+            if (requestedRole != null) requestedRole.setCurrent(requestedRole.getCurrent() + 1);
             currentMembers++;
             log.info("Đã bổ sung sinh viên {} vào danh sách thành viên nhóm {}", applicant.getStudentId(), group.getId());
         }

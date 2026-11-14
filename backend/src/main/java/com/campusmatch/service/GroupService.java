@@ -48,6 +48,22 @@ public class GroupService {
         User leader = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ sinh viên"));
 
+        List<GroupRoleQuota> rolesQuota = request.getRolesQuota() == null ? new ArrayList<>() : request.getRolesQuota().stream()
+                .filter(role -> StringUtils.hasText(role.getRole()) && role.getMax() != null && role.getMax() > 0)
+                .map(role -> GroupRoleQuota.builder()
+                        .role(role.getRole().trim())
+                        .current(role.getCurrent() == null ? 0 : role.getCurrent())
+                        .max(role.getMax())
+                        .description(StringUtils.hasText(role.getDescription()) ? role.getDescription().trim() : null)
+                        .build())
+                .collect(Collectors.toList());
+        if (!rolesQuota.isEmpty() && (rolesQuota.stream().mapToInt(GroupRoleQuota::getMax).sum() != request.getMaxMembers()
+                || rolesQuota.stream().mapToInt(GroupRoleQuota::getCurrent).sum() != 1
+                || rolesQuota.stream().anyMatch(role -> role.getCurrent() < 0 || role.getCurrent() > role.getMax())
+                || rolesQuota.stream().map(GroupRoleQuota::getRole).distinct().count() != rolesQuota.size())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ tiêu vị trí không khớp sĩ số nhóm");
+        }
+
         String contactEmail = StringUtils.hasText(request.getContactEmail()) ? request.getContactEmail().trim() : null;
         if (contactEmail != null && contactEmail.contains(leader.getStudentId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email liên hệ không được chứa mã sinh viên đầy đủ");
@@ -66,6 +82,7 @@ public class GroupService {
                 .contactEmail(contactEmail)
                 .contactPhone(StringUtils.hasText(request.getContactPhone()) ? request.getContactPhone().trim() : null)
                 .maxMembers(request.getMaxMembers())
+                .rolesQuota(rolesQuota)
                 .status(GroupStatus.RECRUITING)
                 .build();
 
@@ -203,6 +220,7 @@ public class GroupService {
                     .maxMembers(group.getMaxMembers())
                     .memberCount(memberCount)
                     .status(group.getStatus())
+                    .rolesQuota(group.getRolesQuota())
                     .leader(mapToUserSummary(group.getLeader()))
                     .createdAt(group.getCreatedAt())
                     .updatedAt(group.getUpdatedAt())
@@ -286,6 +304,7 @@ public class GroupService {
                 .maxMembers(group.getMaxMembers())
                 .memberCount((long) members.size())
                 .status(group.getStatus())
+                .rolesQuota(group.getRolesQuota())
                 .leader(mapToUserSummary(group.getLeader()))
                 .members(memberSummaries)
                 .createdAt(group.getCreatedAt())

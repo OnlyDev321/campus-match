@@ -83,14 +83,6 @@ export const ko: TranslationDict = {
     "submit": "지원서 제출",
     "roleRequired": "희망 역할을 선택해 주세요.",
     "statementRequired": "자기소개를 10자 이상 작성해 주세요.",
-    "defaultRoles": [
-      "프론트엔드 개발자",
-      "백엔드 개발자",
-      "풀스택 개발자",
-      "UI/UX 디자이너",
-      "AI / ML 엔지니어",
-      "일반 팀원"
-    ]
   },
 
   nav: {
@@ -446,6 +438,7 @@ export const ko: TranslationDict = {
       descriptionRequired: "그룹 소개 및 목표를 입력해주세요.",
       descriptionTooShort: "소개글은 최소 20자 이상 작성해주세요.",
       capacityInvalid: "모집 정원은 2명 이상 20명 이하여야 합니다.",
+      roleQuotaInvalid: "역할별 정원 합계는 그룹 정원과 같아야 하며 역할 이름은 중복될 수 없습니다.",
       contactEmailInvalid: "공개하기 전에 올바른 이메일을 입력해주세요.",
       contactEmailStudentId: "학번 전체가 노출되지 않는 이메일을 사용해주세요.",
       contactPhoneInvalid: "공개하기 전에 7~25자리의 올바른 전화번호를 입력해주세요.",
