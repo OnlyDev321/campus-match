@@ -27,3 +27,5 @@ skills-lock.json
 ssuonepage
 
 ~$CampusMatch.pptx
+# Docker development secrets (the tracked template is .env.docker.example)
+.env.docker

@@ -1,0 +1,10 @@
+# Keep the build context small and never send local secrets to the Docker daemon.
+node_modules
+.next
+.env
+.env.*
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+.git
+.vscode

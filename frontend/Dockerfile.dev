@@ -1,0 +1,38 @@
+# syntax=docker/dockerfile:1
+
+# Development image for the Next.js frontend (started by ../compose.yaml).
+#
+# Node.js: Next.js 16.3.5 requires >=20.9 (see pnpm-lock.yaml); package.json pins no Node version and has
+# @types/node ^20. Node 22 is the LTS line that satisfies that range.
+# Package manager: pnpm, pinned by "packageManager" in package.json (pnpm@10.18.3); the lockfile is pnpm-lock.yaml.
+FROM node:22-bookworm-slim
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+# Same version as package.json "packageManager". Installed with npm so nothing is downloaded at container start.
+RUN npm install --global pnpm@10.18.3
+
+# /app/.next and /app/node_modules are mount points for named volumes. Creating them here, owned by the
+# unprivileged user, makes Docker seed the volumes with the same ownership.
+RUN mkdir -p /app/.next /app/node_modules && chown -R node:node /app
+
+USER node
+WORKDIR /app
+
+# Dependency layer: only rebuilt when the manifest or lockfile changes.
+COPY --chown=node:node package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN CI=true pnpm install --frozen-lockfile
+
+# Project configuration is baked in (not bind-mounted); sources are baked in too so the image also runs
+# on its own, and compose.yaml bind-mounts ./src and ./public over them for hot reload.
+COPY --chown=node:node next.config.ts tsconfig.json postcss.config.mjs eslint.config.mjs ./
+COPY --chown=node:node public ./public
+COPY --chown=node:node src ./src
+
+EXPOSE 3000
+
+# Same command as compose.yaml (which also resyncs dependencies first). `--webpack` is deliberate: for hot
+# reload over a Windows bind mount the container must poll for file changes, and with Next.js 16.3.5 the
+# default Turbopack dev server did not recompile edited files there (new files were found, edits were not),
+# while webpack does honour WATCHPACK_POLLING. `pnpm dev` outside Docker still uses Turbopack.
+CMD ["pnpm", "dev", "--webpack", "--hostname", "0.0.0.0", "--port", "3000"]

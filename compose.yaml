@@ -1,0 +1,129 @@
+# Campus Match - local Docker development stack (frontend + backend + PostgreSQL).
+#
+#   docker compose up --build
+#
+# Secrets come ONLY from ./.env.docker (see .env.docker.example). This file deliberately has no ${...}
+# interpolation: Compose auto-loads the repository-root .env for interpolation, and that file holds the
+# production Neon credentials under the same variable names. Using `env_file` instead keeps it inert.
+# DB_URL is pinned below (not read from any file), so the backend can only ever reach the "db" service.
+
+name: campus-match
+
+services:
+  db:
+    image: postgres:18
+    restart: unless-stopped
+    env_file: .env.docker
+    environment:
+      POSTGRES_DB: campus_match_dev
+      POSTGRES_USER: postgres
+    # The postgres image only reads POSTGRES_PASSWORD. Map it from DB_PASSWORD so the password is set once
+    # in .env.docker and is guaranteed to match what the backend uses. The image's own entrypoint then runs
+    # unchanged (initdb on first start, privilege drop, "postgres" as the command).
+    entrypoint:
+      - sh
+      - -c
+      - 'export POSTGRES_PASSWORD="$$DB_PASSWORD" && exec docker-entrypoint.sh "$$@"'
+      - sh
+    command: ["postgres"]
+    ports:
+      # Host 5432 belongs to another local PostgreSQL service; this one is published on 5433, localhost only.
+      - "127.0.0.1:5433:5432"
+    volumes:
+      # PostgreSQL 18+ images keep the data under /var/lib/postgresql/<major>/docker, so the volume is
+      # mounted one level up (not at /var/lib/postgresql/data as for PostgreSQL 17 and earlier).
+      - postgres_data:/var/lib/postgresql
+    stop_grace_period: 60s # the image stops PostgreSQL with SIGINT (fast shutdown); give it time to checkpoint
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d campus_match_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: campus-match-backend:dev
+    restart: on-failure:5
+    env_file: .env.docker # DB_PASSWORD, JWT_SECRET, SSO_ASSERTION_SECRET
+    environment:
+      # Pinned on purpose; takes precedence over anything in .env.docker.
+      DB_URL: jdbc:postgresql://db:5432/campus_match_dev
+      DB_USERNAME: postgres
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      # The JRE image has bash but no curl/wget: send a real HTTP request over /dev/tcp and require "200".
+      test:
+        - CMD
+        - bash
+        - -c
+        - 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf "GET /api/health HTTP/1.0\r\nHost: localhost\r\n\r\n" >&3 && head -n 1 <&3 | grep -q " 200 "'
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    image: campus-match-frontend:dev
+    restart: on-failure:5
+    env_file: .env.docker # SSO_ASSERTION_SECRET (server-only, never NEXT_PUBLIC_) and optional FACTCHAT_*
+    environment:
+      # Browser -> backend: the browser runs on the Windows host, so it must use the published port.
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+      # Next.js server (BFF route handlers) -> backend: container-to-container over Docker DNS.
+      SPRING_BOOT_API_URL: http://backend:8080
+      # Windows bind mounts deliver no file-change events to the container: poll for changes (interval in ms).
+      # Used together with `--webpack` below (see the note in frontend/Dockerfile.dev).
+      WATCHPACK_POLLING: "1000"
+      NEXT_TELEMETRY_DISABLED: "1"
+      # .env.docker is shared, but the Next.js server needs neither of these backend secrets; blank them so
+      # the process that talks to the open internet (u-SAINT, FactChat) never holds them.
+      DB_PASSWORD: ""
+      JWT_SECRET: ""
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      # Only the source folders are bind-mounted (hot reload). Configuration files, package.json and the
+      # lockfile are baked into the image, so rebuild with `docker compose up --build` after changing them.
+      # Not mounting the project root also keeps host .env* files (e.g. .env.local) out of the container.
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      # Dependencies and build output live in named volumes, never on the Windows bind mount.
+      - frontend_node_modules:/app/node_modules
+      - frontend_next:/app/.next
+    # pnpm install is a no-op when node_modules already matches the lockfile; it resyncs the volume after a rebuild
+    # with changed dependencies (a named volume is only seeded from the image the first time it is created).
+    command:
+      - sh
+      - -c
+      - CI=true pnpm install --frozen-lockfile && exec pnpm dev --webpack --hostname 0.0.0.0 --port 3000
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:3000/').then((r) => process.exit(r.status < 500 ? 0 : 1)).catch(() => process.exit(1))"
+      interval: 15s
+      timeout: 30s # the first request compiles the landing page
+      retries: 8
+      start_period: 60s
+
+volumes:
+  postgres_data:
+    name: campus_match_dev_postgres_data
+  frontend_node_modules:
+    name: campus_match_dev_frontend_node_modules
+  frontend_next:
+    name: campus_match_dev_frontend_next

@@ -1,0 +1,11 @@
+# Keep the build context small and never send local secrets to the Docker daemon.
+# (gradle/ and gradlew are needed by the Dockerfile and are intentionally NOT listed.)
+.gradle
+build
+bin
+.env
+.env.*
+.idea
+.vscode
+*.log
+HELP.md
