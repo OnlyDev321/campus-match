@@ -28,7 +28,7 @@
 | :--------------------- | :-------------------------------------------------------------------- | :------------------------------------------------------------------------------------- |
 | **Frontend**           | **Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS v4** | Server/Client Components, Design System tokens, Theme Provider, Client routing.        |
 | **Auth Gateway (BFF)** | **Next.js Route Handlers (`/api/auth/usaint`)**                       | Backend-For-Frontend đóng vai trò cổng đệm xác thực với cổng thông tin SAP của trường. |
-| **Backend API**        | **Java 17/21 · Spring Boot 3/4 · Spring Data JPA · Spring Security**  | Xử lý domain nghiệp vụ, phân quyền JWT stateless, giao tiếp PostgreSQL qua HikariCP.   |
+| **Backend API**        | **Java 25 · Spring Boot 4.1 · Spring Data JPA · Spring Security**     | Xử lý domain nghiệp vụ, phân quyền JWT stateless, giao tiếp PostgreSQL qua HikariCP.   |
 | **Database**           | **PostgreSQL 16 on Neon.tech (Singapore Region)**                     | Database quan hệ serverless, hỗ trợ SSL bắt buộc, Hibernate auto-ddl.                  |
 
 ---
@@ -59,12 +59,13 @@ CampusMatch áp dụng mô hình kiến trúc **BFF (Backend-For-Frontend)**:
                 │                          │
                 ▼                          │ 2. Trả về Profile đã xác thực
        3. Gửi Student Profile              │    (Tên, Khoa, Viện, Năm học)
-          kèm Secret Handshake             │
+          kèm SSO assertion đã ký          │
                 │                          ▼
  ┌──────────────┴────────────────────────────────────────┐
- │               Backend: Java Spring Boot 3              │
+ │           Backend: Java 25 · Spring Boot 4.1           │
  │       (Hosted on OCI Always Free VM · 24GB RAM)        │
  │                                                        │
+ │  - Xác minh SSO assertion của BFF (chữ ký, 1 lần dùng)│
  │  - Kiểm tra và đồng bộ (Upsert) user vào table users  │
  │  - Ký và cấp phát JWT Token (HMAC-SHA256)             │
  └───────────────────────────┬────────────────────────────┘
@@ -82,6 +83,70 @@ CampusMatch áp dụng mô hình kiến trúc **BFF (Backend-For-Frontend)**:
 - Sau khi u-SAINT xác nhận hợp lệ, mật khẩu bị **hủy bỏ lập tức** (Garbage Collected).
 - Backend Spring Boot và Database Neon **hoàn toàn KHÔNG BAO GIỜ lưu trữ mật khẩu**.
 - Mọi tương tác sau đó giữa Frontend và Backend sử dụng **JWT Token (Bearer)** có thời hạn 24 giờ.
+
+### 🔐 Tin cậy giữa BFF và Backend: SSO assertion
+
+`POST /api/auth/sso/usaint` **không bao giờ** cấp JWT chỉ dựa trên `studentId` do bên gọi gửi lên. Endpoint chỉ chấp nhận request mang một **assertion có chữ ký** do BFF tạo ra _sau khi_ BFF đã xác thực thật với u-SAINT. Gọi thẳng vào backend (curl, Postman, script...) mà không có assertion hợp lệ luôn bị từ chối.
+
+**Ai xác thực danh tính Soongsil?** Chỉ BFF (`frontend/src/lib/usaint.ts` và `app/api/auth/usaint/route.ts`): `SapSsoClient.login()` gửi ID/mật khẩu tới `smartid.ssu.ac.kr`, BFF yêu cầu phải nhận được cookie `MYSAPSSO2`, rồi đọc MSSV chuẩn từ ứng dụng SAP `ZCMW1001n`. MSSV đưa vào assertion luôn lấy từ kết quả này, **không bao giờ** từ dữ liệu trình duyệt. Backend không tự nói chuyện với u-SAINT; nó tin BFF thông qua chữ ký.
+
+```text
+Browser ──(studentId + password)──► BFF /api/auth/usaint ──► u-SAINT (xác thực thật, MYSAPSSO2)
+                                      │  MSSV chuẩn lấy từ kết quả u-SAINT
+                                      │  ký assertion HS256 (SSO_ASSERTION_SECRET, sống 30 giây, gắn với body)
+                                      ▼
+                      POST /api/auth/sso/usaint   Header: X-SSO-Assertion: <JWS>
+                                      │
+              Backend: chuỗi filter riêng (SsoBridgeSecurityConfig)
+                - kiểm tra chữ ký + alg=HS256, iss, aud, exp, thời gian sống, jti dùng một lần
+                - body phải đúng bằng body đã ký (body_sha256)
+                - studentId trong body phải TRÙNG sub của assertion
+                                      ▼
+                     Upsert user theo sub  ──►  JWT ứng dụng (định dạng không đổi)
+```
+
+| Claim         | Ý nghĩa                                                                                            |
+| :------------ | :------------------------------------------------------------------------------------------------- |
+| `iss`         | Phải là `campus-match-bff`                                                                         |
+| `aud`         | Phải là `campus-match-backend`                                                                     |
+| `sub`         | MSSV đã xác thực: **nguồn danh tính duy nhất** của lần đăng nhập                                   |
+| `iat` / `exp` | BFF ký thời hạn 30 giây; backend từ chối nếu `exp - iat` > 60 giây hoặc `iat` ở tương lai (>5 giây) |
+| `jti`         | Mã dùng một lần; dùng lại là bị từ chối (chống replay)                                             |
+| `body_sha256` | SHA-256 (hex) của đúng body JSON gửi kèm: không thể đổi nội dung hồ sơ sau khi ký                  |
+
+**Biến môi trường (chỉ tên, không ghi giá trị vào mã nguồn hay tài liệu):**
+
+| Biến                  | Nơi dùng                      | Ghi chú                                                                                                        |
+| :-------------------- | :---------------------------- | :------------------------------------------------------------------------------------------------------------- |
+| `SSO_ASSERTION_SECRET`| Backend **và** BFF (server)   | Hai bên phải giống hệt nhau. Ngẫu nhiên, ≥ 32 byte (ví dụ `openssl rand -hex 32`), **khác** `JWT_SECRET`.      |
+| `JWT_SECRET`          | Backend                       | Ký JWT ứng dụng. Không dùng chung với assertion (backend từ chối khởi động nếu hai khóa trùng nhau).           |
+| `SPRING_BOOT_API_URL` | BFF (server)                  | Địa chỉ backend mà BFF gọi server-to-server (mặc định `http://localhost:8080`).                                |
+| `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` | Backend      | Kết nối PostgreSQL.                                                                                            |
+
+`SSO_ASSERTION_SECRET` tuyệt đối không có tiền tố `NEXT_PUBLIC_`, không được trả về trong bất kỳ response nào, và assertion không bao giờ được gửi xuống trình duyệt.
+
+**Cách xử lý lỗi (đóng an toàn):**
+
+| Tình huống                                                                                   | Kết quả                                                         |
+| :------------------------------------------------------------------------------------------- | :-------------------------------------------------------------- |
+| Thiếu header, sai chữ ký, hết hạn, sai `iss`/`aud`, `alg` khác HS256, body bị đổi, bị replay | Backend trả `401`, không chạm DB, không cấp JWT                 |
+| Body quá 2 MiB (đã có assertion hợp lệ)                                                      | `413`                                                           |
+| `studentId` trong body khác `sub` của assertion                                              | `403` (kiểm tra trước mọi truy cập DB)                          |
+| Backend chưa cấu hình `SSO_ASSERTION_SECRET`                                                 | Vẫn khởi động, nhưng từ chối mọi request tới endpoint (`401`)   |
+| Khóa quá ngắn (< 32 byte) hoặc trùng `JWT_SECRET`                                            | Backend từ chối khởi động                                       |
+| BFF thiếu/ngắn `SSO_ASSERTION_SECRET`                                                        | BFF trả `SERVER_ERROR` (500) và **không** gọi backend           |
+| Backend từ chối assertion                                                                    | BFF trả `SERVER_ERROR` (502); người dùng không nhận JWT         |
+
+Log chỉ ghi _mã lý do_ từ chối (ví dụ `BAD_SIGNATURE`, `REPLAYED`) và MSSV đã che bốn ký tự đầu; không bao giờ ghi assertion, JWT, khóa ký hay mật khẩu.
+
+**Cô lập endpoint:** `SsoBridgeSecurityConfig` tạo chuỗi filter riêng chỉ cho đường dẫn này: không CORS (trình duyệt không gọi được), không đọc JWT ứng dụng, không CSRF/session. `SecurityConfig` không còn `permitAll` cho `/api/auth/**`.
+
+**Giới hạn đã biết:**
+
+- **Replay chỉ được chặn trong bộ nhớ tiến trình** (`SsoAssertionReplayGuard`). Dự án chưa có Redis và bảng DB mới sẽ là thay đổi schema. Với 1 instance backend thì chính xác; khởi động lại backend sẽ quên các `jti` đang còn hạn (tối đa ~65 giây), và nếu chạy nhiều instance thì mỗi instance chấp nhận một lần replay. Khi mở rộng nhiều instance cần chuyển sang kho dùng chung.
+- **Backend tin BFF:** ai nắm `SSO_ASSERTION_SECRET` có thể tạo assertion cho bất kỳ MSSV nào. Hãy giữ khóa ở biến môi trường server-only, và dùng HTTPS giữa BFF và backend ở production (chữ ký gắn với body nhưng không mã hóa nó).
+- Thay khóa cần cập nhật đồng thời cả hai phía (chưa hỗ trợ hai khóa song song). Hệ thống không kiểm tra độ ngẫu nhiên của khóa, chỉ kiểm tra độ dài.
+- Xác thực thật với u-SAINT chỉ chạy được với tài khoản Soongsil thật; luồng này chưa được kiểm thử tự động với u-SAINT.
 
 ---
 
@@ -110,13 +175,15 @@ campus-match/
 │   │   ├── design-system/                  # Button, Badge, Card, Modal, Input...
 │   │   └── lib/
 │   │       ├── api.ts                      # Client gọi REST API sang Spring Boot
+│   │       ├── ssoAssertion.ts             # [server-only] Ký SSO assertion BFF → Backend
 │   │       └── types.ts                    # TypeScript interface dùng chung
 │
-├── backend/                                # Java Spring Boot 3 REST API
+├── backend/                                # Java 25 · Spring Boot 4.1 REST API
 │   ├── src/main/java/com/campusmatch/
 │   │   ├── BackendApplication.java         # Main Entry Point (@SpringBootApplication)
 │   │   ├── config/
-│   │   │   ├── SecurityConfig.java         # CORS, Stateless Session, PermitAll/JWT Filter
+│   │   │   ├── SecurityConfig.java         # CORS, Stateless Session, JWT Filter (chuỗi filter cho sinh viên)
+│   │   │   ├── SsoBridgeSecurityConfig.java# Chuỗi filter riêng cho POST /api/auth/sso/usaint (assertion)
 │   │   │   └── WebConfig.java              # Cấu hình MVC & CORS nâng cao
 │   │   ├── controller/
 │   │   │   ├── AuthController.java         # /api/auth/sso/usaint, /api/users/me
@@ -142,6 +209,9 @@ campus-match/
 │   │   └── security/
 │   │       ├── JwtTokenProvider.java       # Sinh & giải mã JWT
 │   │       ├── JwtAuthenticationFilter.java# Interceptor kiểm tra Bearer token
+│   │       ├── SsoAssertionVerifier.java   # Xác minh assertion HS256 của BFF (iss/aud/exp/sub/body)
+│   │       ├── SsoAssertionReplayGuard.java# Mỗi assertion (jti) chỉ dùng được một lần
+│   │       ├── SsoAssertionAuthenticationFilter.java # Filter xác thực service-to-service
 │   │       └── CustomUserDetails.java      # UserDetails Spring Security
 │   ├── src/main/resources/
 │   │   ├── application.yaml                # Cấu hình Neon PostgreSQL, HikariCP, JWT
@@ -239,11 +309,13 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 | Method | Endpoint           | Mô tả                                             | Quyền truy cập (Auth) |
 | :----- | :----------------- | :------------------------------------------------ | :-------------------- |
-| `POST` | `/auth/sso/usaint` | Nhận profile từ BFF, đồng bộ DB, trả về JWT Token | Public (BFF Internal) |
+| `POST` | `/auth/sso/usaint` | Nhận profile từ BFF, đồng bộ DB, trả về JWT Token | Chỉ BFF (header `X-SSO-Assertion` ký HS256) |
 | `GET`  | `/users/me`        | Lấy profile sinh viên hiện tại dựa trên JWT Token | Bearer Token          |
 | `GET`  | `/health`          | Kiểm tra trạng thái server & database             | Public                |
 
 #### Sample SSO Payload:
+
+Chỉ BFF gọi được, kèm header `X-SSO-Assertion: <JWS HS256>` (xem mục _Tin cậy giữa BFF và Backend_). `studentId` trong body phải trùng `sub` của assertion; body phải đúng với `body_sha256` đã ký.
 
 ```json
 // POST /api/auth/sso/usaint
@@ -300,7 +372,7 @@ Hệ thống sử dụng **PostgreSQL 16 (Neon.tech)** với các quan hệ chu�
 
 ## 6. Quy chuẩn triển khai
 
-### Backend (Spring Boot 3/4)
+### Backend (Java 25 · Spring Boot 4.1)
 
 1. **Layered Architecture:** Controller chỉ nhận Request DTO và trả Response DTO (không để lộ Entity ra ngoài API).
 2. **Exception Handling:** Sử dụng `@RestControllerAdvice` và `@ExceptionHandler` để bắt lỗi tập trung, trả về format JSON chuẩn:
@@ -343,6 +415,7 @@ Dưới đây là checklist từng bước rõ ràng để hoàn thiện toàn b
 - [x] Viết `JwtAuthenticationFilter.java` chặn và đọc header `Authorization: Bearer <token>`, tích hợp vào `SecurityConfig.java`.
 - [x] Viết `AuthController.java` xử lý endpoint `POST /api/auth/sso/usaint` và `UserController.java` xử lý `GET /api/users/me`.
 - [x] Cập nhật hàm `login()` trong `frontend/src/stores/authStore.ts` (Zustand) gọi trực tiếp sang BFF `/api/auth/usaint` và chuyển tiếp Backend thật `POST /api/auth/sso/usaint`.
+- [x] Bảo vệ `POST /api/auth/sso/usaint` bằng SSO assertion ký HS256 (BFF ký trong `frontend/src/lib/ssoAssertion.ts`; backend xác minh bằng `SsoAssertionVerifier`, một lần dùng nhờ `SsoAssertionReplayGuard`, chuỗi filter riêng `SsoBridgeSecurityConfig`). Backend không còn cấp JWT chỉ dựa trên `studentId` do bên gọi gửi lên.
 
 ### 📍 Giai đoạn 3: REST API Nhóm học tập (Backend Group Module)
 

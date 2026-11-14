@@ -18,6 +18,21 @@ npm run lint
 npm run build
 ```
 
+### u-SAINT login: BFF to backend trust
+
+`POST /api/auth/usaint` verifies the student's u-SAINT credentials, then calls the Spring Boot
+backend server-to-server. The backend only accepts that call with a short-lived signed assertion
+(`X-SSO-Assertion`, created by `src/lib/ssoAssertion.ts`); it never trusts a student ID sent by
+a caller on its own. Configure these **server-only** variables (never `NEXT_PUBLIC_`):
+
+```dotenv
+SSO_ASSERTION_SECRET=same_random_secret_as_the_backend   # at least 32 random bytes
+SPRING_BOOT_API_URL=http://localhost:8080                # optional, this is the default
+```
+
+Without `SSO_ASSERTION_SECRET` the login route returns `SERVER_ERROR` and does not call the
+backend. See "Tin cậy giữa BFF và Backend" in `architecture.md` for the full design.
+
 ### Group content translation (SSU FactChat)
 
 Configure these **server-only** variables in `.env.local` (or your hosting environment):

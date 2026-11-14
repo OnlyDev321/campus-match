@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateUsaint, fetchStudentProfileFromSap, fetchTimetableFromSap } from "@/lib/usaint";
+import { createSsoAssertion, SSO_ASSERTION_HEADER } from "@/lib/ssoAssertion";
 import type { SupportedLanguage, StudentProfile, StudentTimetable } from "@/lib/types";
 
 const MESSAGES = {
@@ -124,6 +125,31 @@ export async function POST(req: NextRequest) {
     }
 
     // BÀN GIAO THÔNG TIN SANG SPRING BOOT BACKEND ĐỂ LƯU VÀ LẤY JWT ---
+    // MSSV chỉ đến từ kết quả u-SAINT đã xác thực ở trên (profile.studentId), không bao giờ từ dữ liệu trình duyệt.
+    // Backend không tin body: nó chỉ nhận request mang assertion ký bằng SSO_ASSERTION_SECRET (server-only),
+    // gắn với đúng body này. Assertion chỉ đi server → server, không bao giờ trả về trình duyệt.
+    const backendBody = JSON.stringify({
+      studentId: profile.studentId,
+      name: profile.name,
+      department: profile.department,
+      faculty: profile.faculty,
+      email: profile.email,
+      academicYear: profile.academicYear,
+      phoneNumber: profile.phone || "",
+      avatarUrl: profile.avatarUrl || "",
+    });
+    let assertion: string;
+    try {
+      assertion = createSsoAssertion(profile.studentId, backendBody);
+    } catch (assertionError) {
+      // Đóng an toàn: thiếu/sai khóa ký thì không gọi backend. Chỉ ghi thông điệp lỗi (không chứa bí mật).
+      console.error(
+        "Không thể ký assertion SSO cho backend:",
+        assertionError instanceof Error ? assertionError.message : "unknown error",
+      );
+      return NextResponse.json({ success: false, errorCode: "SERVER_ERROR", error: MESSAGES.SERVER_ERROR[lang] }, { status: 500 });
+    }
+
     let backendToken: string | null = null;
     let backendUserId: number | null = null;
     try {
@@ -131,17 +157,11 @@ export async function POST(req: NextRequest) {
         process.env.SPRING_BOOT_API_URL || "http://localhost:8080";
       const springBootRes = await fetch(`${backendUrl}/api/auth/sso/usaint`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: profile.studentId,
-          name: profile.name,
-          department: profile.department,
-          faculty: profile.faculty,
-          email: profile.email,
-          academicYear: profile.academicYear,
-          phoneNumber: profile.phone || "",
-          avatarUrl: profile.avatarUrl || "",
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          [SSO_ASSERTION_HEADER]: assertion,
+        },
+        body: backendBody,
       });
 
       if (springBootRes.ok) {

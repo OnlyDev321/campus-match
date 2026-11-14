@@ -23,3 +23,15 @@ spring:
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: 86400000 # 24 Hours
+
+# Trust between the Next.js BFF and this backend for POST /api/auth/sso/usaint.
+# The BFF signs a short-lived assertion (HS256) with this secret after it has verified the student's u-SAINT login.
+sso:
+  assertion:
+    # Server-side only. At least 32 bytes of random data and DIFFERENT from JWT_SECRET (startup fails otherwise).
+    # Left unset, the endpoint rejects every request (fail closed).
+    secret: ${SSO_ASSERTION_SECRET:}
+    issuer: campus-match-bff
+    audience: campus-match-backend
+    max-lifetime-seconds: 60
+    clock-skew-seconds: 5
