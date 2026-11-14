@@ -477,6 +477,10 @@ export interface MyGroupSummary {
   description: string;              // Mô tả nhóm
   courseCode: string | null;        // Mã môn học (VD: "CS490"), tùy chọn
   courseName: string | null;        // Tên môn học (VD: "Capstone"), tùy chọn
+  /** Hình thức họp đã lưu. */ meetingFormat: MeetingFormat | null;
+  /** Tags đã lưu. */ tags: string[];
+  /** Email liên hệ được công khai. */ contactEmail: string | null;
+  /** Số điện thoại liên hệ được công khai. */ contactPhone: string | null;
   college: string;                  // Trường / Viện (단과대학, VD: "IT대학")
   department: string;               // Khoa / Ngành (학부/학과, VD: "소프트웨어학부")
   status: GroupStatusCode;          // Trạng thái nhóm
@@ -542,7 +546,20 @@ export interface GroupCardData {
  */
 export interface GroupCardProps {
   group: GroupCardData;             // Thông tin nhóm hiển thị
+  isMember: boolean;                // Người xem đã là thành viên chính thức của nhóm
+  /** Người xem đã có đơn đang chờ duyệt trong database. */
+  isPendingApplication: boolean;
+  membershipReady: boolean;         // Đã xác minh danh sách nhóm của người xem từ backend
   onJoin?: (id: string) => void;    // Sự kiện khi bấm nút "Join" (mở Quick Apply Modal)
+}
+
+/** Props hộp xác nhận xóa nhóm, chỉ trưởng nhóm được thao tác. */
+export interface DeleteGroupModalProps {
+  /** Hộp thoại đang mở. */ isOpen: boolean;
+  /** Đóng hộp thoại. */ onClose: () => void;
+  /** ID nhóm cần xóa. */ groupId: number | string;
+  /** Tên nhóm để người dùng gõ xác nhận. */ groupTitle: string;
+  /** Gọi API xóa nhóm. */ onDeleteConfirm: () => Promise<void>;
 }
 
 /**
@@ -610,6 +627,8 @@ export interface GroupDetailResponse extends GroupSummaryResponse {
   /** Thành viên chính thức. */ members: GroupMemberResponse[];
   /** Email liên hệ mà leader đã chọn công khai cho nhóm. */ contactEmail: string | null;
   /** Số điện thoại mà leader đã chọn công khai cho nhóm. */ contactPhone: string | null;
+  /** Hình thức làm việc đã chọn khi tạo nhóm. */ meetingFormat: MeetingFormat | null;
+  /** Từ khóa đã thêm khi tạo nhóm. */ tags: string[];
 }
 
 /* --------------------------------------------------------------------------
@@ -630,6 +649,8 @@ export interface CreateGroupPayload {
   /** Số điện thoại công khai cho nhóm, chỉ gửi khi leader đồng ý hiển thị. */
   contactPhone?: string;
   meetingFormat?: MeetingFormat;        // Hình thức họp (Online / Offline / Hybrid)
+  /** Từ khóa do người tạo nhóm nhập. */
+  tags?: string[];
   rolesQuota?: GroupRoleQuota[];        // Cơ cấu nhóm và số lượng theo vai trò
 }
 
@@ -743,6 +764,8 @@ export interface GroupDetailData extends GroupCardData {
   objectives?: string[];                // Danh sách mục tiêu & cam kết của nhóm
   meetingSchedule?: string;             // Lịch sinh hoạt / họp nhóm hàng tuần
   meetingFormat?: MeetingFormat;        // Hình thức họp (Online/Offline/Hybrid)
+  /** Từ khóa do người tạo nhóm nhập và đã lưu trong database. */
+  tags?: string[];
   requiredSkills?: string[];            // Danh sách kỹ năng / công nghệ yêu cầu
   rolesQuota?: GroupRoleQuota[];        // Phân bổ chỉ tiêu các vị trí cần tuyển
   leaderEmail?: string;                 // Email liên hệ của trưởng nhóm
@@ -818,14 +841,6 @@ export interface ManageGroupData {
  */
 export type ApplicationAction = "accept" | "reject";
 
-/** Lựa chọn duyệt đơn đang chờ xác nhận của Leader. */
-export interface ManageApplicationConfirmation {
-  /** Mã đơn cần xử lý. */
-  applicationId: number;
-  /** Hành động chấp thuận hoặc từ chối. */
-  action: ApplicationAction;
-}
-
 /** Bản nháp chỉnh sửa; chưa phải hợp đồng request backend. */
 export interface ManageGroupDraft {
   /** Tiêu đề tối đa 150 ký tự. */
@@ -834,14 +849,35 @@ export interface ManageGroupDraft {
   description: string;
   /** Tổng sĩ số nhập dưới dạng chuỗi. */
   maxMembers: string;
-  /** Trạng thái tuyển dụng dự kiến. */
-  status: GroupStatusCode;
+  /** Mã học phần. */ courseCode: string;
+  /** Tên học phần. */ courseName: string;
+  /** Hình thức họp; nhóm cũ có thể chưa lưu giá trị này. */ meetingFormat: MeetingFormat | "";
+  /** Từ khóa của nhóm. */ tags: string[];
+  /** Email liên hệ công khai. */ contactEmail: string;
+  /** Số điện thoại liên hệ công khai. */ contactPhone: string;
+  /** Chỉ tiêu theo vai trò, giữ nguyên current từ database. */ rolesQuota: GroupRoleQuota[];
 }
 
 /** Props biểu mẫu chỉnh sửa nhóm. */
 export interface ManageGroupEditorProps {
   /** Nhóm hiện tại dùng để khởi tạo bản nháp và kiểm tra sĩ số. */
   group: MyGroupSummary;
+  /** Đồng bộ thông tin nhóm trên trang sau khi backend lưu thành công. */
+  onSaved: (group: GroupDetailResponse) => void;
+}
+
+/** Dữ liệu cập nhật thông tin nhóm gửi tới backend. */
+export interface UpdateGroupPayload {
+  /** Tiêu đề mới. */ title: string;
+  /** Mô tả mới. */ description: string;
+  /** Tổng sĩ số gồm trưởng nhóm. */ maxMembers: number;
+  /** Mã học phần. */ courseCode?: string;
+  /** Tên học phần. */ courseName?: string;
+  /** Hình thức họp, vắng mặt với nhóm cũ chưa khai báo. */ meetingFormat?: MeetingFormat;
+  /** Tags. */ tags: string[];
+  /** Email liên hệ công khai. */ contactEmail?: string;
+  /** Số điện thoại liên hệ công khai. */ contactPhone?: string;
+  /** Chỉ tiêu theo vai trò. */ rolesQuota: GroupRoleQuota[];
 }
 
 /** Props nội dung quản lý, được khởi tạo lại khi đổi đường dẫn nhóm. */
@@ -858,6 +894,7 @@ export interface ApplicationCardProps {
   onAccept?: (id: number) => void;              // Callback khi duyệt chấp thuận
   onReject?: (id: number) => void;              // Callback khi từ chối
   pendingAction?: ApplicationAction | null;     // Hành động đang xử lý (hiển thị loading trên nút tương ứng)
+  acceptDisabled?: boolean;                      // Không cho duyệt khi nhóm đã đóng hoặc đủ thành viên
   errorCode?: ApiErrorCode | null;              // Mã lỗi của lần xử lý gần nhất (hiển thị qua t.apiErrors.*)
 }
 
@@ -1045,4 +1082,22 @@ export interface AppNotification {
   actorName?: string;         // Người thực hiện hành động
   isRead: boolean;            // Trạng thái đã đọc hay chưa
   createdAt: string;          // Thời gian tạo (ISO-8601)
+}
+
+/** Dữ liệu thông báo từ API, hỗ trợ tên trường cũ `read` khi backend chưa cập nhật. */
+export interface NotificationApiResponse extends Omit<AppNotification, "isRead"> {
+  /** Trạng thái theo hợp đồng API hiện tại. */ isRead?: boolean;
+  /** Trạng thái theo tên JSON cũ của Java Bean. */ read?: boolean;
+}
+
+/** Trạng thái và thao tác đồng bộ thông báo với backend. */
+export interface NotificationStoreState {
+  /** Danh sách thông báo đã tải từ database. */ notifications: AppNotification[];
+  /** Số thông báo chưa đọc. */ unreadCount: number;
+  /** Đang tải danh sách thông báo. */ isLoading: boolean;
+  /** Tải lại thông báo từ backend. */ fetchNotifications: () => Promise<void>;
+  /** Lưu trạng thái đã đọc của một thông báo. */ markAsRead: (id: string) => Promise<void>;
+  /** Lưu trạng thái đã đọc của tất cả thông báo. */ markAllAsRead: () => Promise<void>;
+  /** Xóa một thông báo sau khi backend xác nhận. */ removeNotification: (id: string) => Promise<void>;
+  /** Xóa toàn bộ thông báo sau khi backend xác nhận. */ clearAll: () => Promise<void>;
 }

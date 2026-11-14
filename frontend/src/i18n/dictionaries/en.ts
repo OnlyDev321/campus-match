@@ -16,7 +16,7 @@ export const en = {
     linkCopied: "Link copied!",
     copied: "Copied",
     join: "Join",
-    fullClosed: "Full • Recruitment Closed",
+    fullClosed: "Group complete",
     recruitingOne: "Recruiting ({count} spot left)",
     recruitingMany: "Recruiting ({count} spots left)",
     meetingFormatFallback: "Meeting format not specified",
@@ -28,6 +28,7 @@ export const en = {
     objectives: "Target Objectives & Team Goals",
     meetingSchedule: "Weekly Meeting & Sync-up Schedule",
     rolesTitle: "Team Composition & Role Quotas",
+    tagsTitle: "Topics & Skills",
     members: "Members",
     filled: "Filled",
     open: "Open",
@@ -248,7 +249,7 @@ export const en = {
   },
   // Manage (Leader reviews join requests)
   manage: {
-    title: "Manage Applications",
+    title: "Manage",
     listTitle: "My Groups",
     subtitle:
       "Groups you lead and groups you've joined. Open a group you lead to review its join requests.",
@@ -270,42 +271,49 @@ export const en = {
   // Application Card (Leader view)
   applicationCard: {
     applied: "Applied {time}",
+    pending: "Awaiting review",
+    introduction: "Introduction & motivation",
+    role: "Desired role",
+    skills: "Skills & tools",
+    links: "Links",
+    github: "GitHub",
+    portfolio: "Portfolio",
     accept: "Accept",
     reject: "Reject",
   },
   // Normalized API errors (lib/api.ts → ApiErrorCode)
   manageDetails: {
-    blocked:
-      "Management changes are unavailable until the backend supports these APIs and verifies the group leader. No changes will be saved.",
     members: "Group members",
     membersEmpty: "No members are listed.",
-    editTitle: "Review group changes",
+    editTitle: "Edit group",
+    editSubtitle: "Update the details students see when browsing your group.",
+    contactTitle: "Public contact details",
+    contactHint: "Leave a field empty to remove it from the group detail page.",
+    occupiedSeats: "{count} occupied",
     groupTitle: "Group title",
     description: "Description",
     capacity: "Member capacity",
-    recruitment: "Recruitment status",
     titleRule: "Required. Use 150 characters or fewer.",
     descriptionRule: "Required. Describe the group’s goals and requirements.",
     capacityRule:
-      "Enter a positive whole number, at least the current member count, up to 2,147,483,647.",
-    statusRule:
-      "Recruiting requires an available seat. Completed requires capacity to equal the current member count.",
+      "Enter a number from 2 to 20, at least the current member count.",
     invalidDraft:
       "Please check the fields marked invalid and follow their instructions.",
     save: "Save changes",
-    notSaved:
-      "Saving and recruitment changes are pending backend integration. Leaving or refreshing discards this draft.",
-    confirmAccept: "Confirm accepting this applicant",
-    confirmReject: "Confirm rejecting this applicant",
-    cancel: "Cancel",
-    confirm: "Confirm",
+    saved: "Changes saved.",
     dangerZoneTitle: "Danger Zone",
-    dangerZoneDesc: "Permanently delete this study group and disband all its members. This action cannot be undone.",
+    dangerZoneDesc:
+      "Permanently delete this study group and disband all its members. This action cannot be undone.",
     deleteGroupBtn: "Delete this group",
     deleteModalTitle: "Are you absolutely sure?",
-    deleteModalWarning: "Unexpected bad things will happen if you don’t read this!",
-    deleteModalDescription: "This action cannot be undone. This will permanently delete the group, disband all members, and cancel all pending applications.",
+    deleteModalWarning:
+      "Unexpected bad things will happen if you don’t read this!",
+    deleteModalDescription:
+      "This action cannot be undone. This will permanently delete the group, disband all members, and cancel all pending applications.",
     deleteModalPrompt: "Please type {title} to confirm:",
+    copy: "Copy",
+    copied: "Copied",
+    confirmGroupTitle: "Confirm group title",
     deleteModalInputPlaceholder: "Type group title here",
     deleteModalConfirmBtn: "I understand the consequences, delete this group",
     deleteModalCancelBtn: "Cancel",
@@ -317,7 +325,8 @@ export const en = {
     UNAUTHORIZED: "Your session has expired. Please sign in again.",
     FORBIDDEN: "You don't have permission to do this.",
     NOT_FOUND: "The requested item could not be found.",
-    BAD_REQUEST: "The request cannot be completed. Check whether the group is full or you have already applied.",
+    BAD_REQUEST:
+      "The request cannot be completed. Check whether the group is full or you have already applied.",
     SERVER_ERROR: "Something went wrong on the server. Please try again.",
   },
   // Groups Page & Cards
@@ -329,7 +338,7 @@ export const en = {
     title: "Find Your Group",
     subtitle:
       "Discover study groups, capstone design projects, and programming teams across campus.",
-    activeGroups: "Active Groups",
+    activeGroups: "Groups",
     teamsRecruiting: "Teams Recruiting",
     searchPlaceholder: "Search by group name, topic, or keyword...",
     collegeLabel: "College:",
@@ -359,6 +368,7 @@ export const en = {
     cardYear: "{year}",
     viewDetails: "View Details",
     join: "Join",
+    joined: "Joined",
   },
   // Create Group Page
   createGroupPage: {
@@ -366,10 +376,8 @@ export const en = {
     removeTag: "Remove tag {tag}",
     decreaseMembers: "Decrease member count",
     increaseMembers: "Increase member count",
-    seatAllocation: "Seat allocation",
     seatSummary: "1 leader · {count} available",
     leaderYou: "Leader (you)",
-    openSpot: "Open spot",
     generalStudy: "General study",
     untitledGroup: "Untitled study group",
     previewDescription:
@@ -400,7 +408,8 @@ export const en = {
     descriptionHelp:
       "Required. Minimum 20 characters. Detailed descriptions attract committed teammates.",
     contactTitle: "Contact details for this group",
-    contactDescription: "Optional. Contact details appear on the group page only when you explicitly choose to publish them. Your university email is never shown automatically.",
+    contactDescription:
+      "Optional. Contact details appear on the group page only when you explicitly choose to publish them. Your university email is never shown automatically.",
     contactEmailLabel: "Contact email (optional)",
     contactEmailPlaceholder: "you@example.com",
     publishEmailLabel: "Show this email on the public group page",
@@ -454,7 +463,7 @@ export const en = {
     leaderNoticeTitle: "u-SAINT Official Identity Auto-Sync",
     leaderNoticeDesc:
       "Your college ({college}) and department ({department}) are automatically bound from your verified Soongsil credentials to guarantee authentic student collaboration.",
-    tagsLabel: "Keywords & Skill Tags (Optional)",
+    tagsLabel: "Tags (Optional)",
     tagsPlaceholder:
       "Type a tag and press Enter (e.g. React, SpringBoot, Figma)...",
     tagsHelp:
@@ -477,10 +486,13 @@ export const en = {
       descriptionRequired: "Please enter a description for your group.",
       descriptionTooShort: "Description must be at least 20 characters.",
       capacityInvalid: "Team capacity must be between 2 and 20 members.",
-      roleQuotaInvalid: "Role quotas must add up to team capacity, and role names must be unique.",
+      roleQuotaInvalid:
+        "Role quotas must add up to team capacity, and role names must be unique.",
       contactEmailInvalid: "Enter a valid email before publishing it.",
-      contactEmailStudentId: "Use an email address that does not reveal your full student ID.",
-      contactPhoneInvalid: "Enter a valid phone number (7–25 characters) before publishing it.",
+      contactEmailStudentId:
+        "Use an email address that does not reveal your full student ID.",
+      contactPhoneInvalid:
+        "Enter a valid phone number (7–25 characters) before publishing it.",
       submitFailed:
         "Failed to create group. Please check your connection and try again.",
       unauthorized:
@@ -495,7 +507,8 @@ export const en = {
     unreadTab: "Unread",
     emptyAll: "No notifications yet",
     emptyUnread: "No unread notifications",
-    emptyAllDesc: "When someone applies to your group or your team updates, it will appear here.",
+    emptyAllDesc:
+      "When someone applies to your group or your team updates, it will appear here.",
     emptyUnreadDesc: "You are all caught up!",
     clearAll: "Clear all",
     justNow: "Just now",

@@ -15,7 +15,7 @@ import type { GroupCardProps } from "@/lib/types";
 import { useLanguageStore } from "@/stores/languageStore";
 import { useAuthStore } from "@/stores/authStore";
 
-const GroupCard = ({ group, onJoin }: GroupCardProps) => {
+const GroupCard = ({ group, isMember, isPendingApplication, membershipReady, onJoin }: GroupCardProps) => {
   const { t } = useLanguageStore();
   const userId = useAuthStore((state) => state.userId);
 
@@ -53,9 +53,7 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
   return (
     <Card className="h-full flex flex-col gap-4 p-6 hover:shadow-(--shadow-level-2) hover:border-(--border-strong)">
       <CardHeader className="mb-0 flex-wrap items-center">
-        <Badge variant="primary" className="font-medium">
-          {course}
-        </Badge>
+        {course && <Badge variant="primary" className="font-medium">{course}</Badge>}
         <Badge variant={canRecruit ? "recruiting" : "closed"} dot>
           <ScrambleText text={status !== "RECRUITING" ? t.groupStatus[status] : isFull ? t.groupsPage.cardFull : recruitingText} />
         </Badge>
@@ -119,10 +117,10 @@ const GroupCard = ({ group, onJoin }: GroupCardProps) => {
         </Button>
         <Button
           className="h-10 text-xs font-semibold"
-          disabled={!canRecruit || isOwnGroup}
+          disabled={!canRecruit || isOwnGroup || isMember || isPendingApplication || !membershipReady}
           onClick={() => onJoin?.(id)}
         >
-          <ScrambleText text={t.groupsPage.join} />
+          <ScrambleText text={isMember ? t.groupsPage.joined : isPendingApplication ? t.groupDetail.applicationSubmitted : t.groupsPage.join} />
         </Button>
       </div>
     </Card>

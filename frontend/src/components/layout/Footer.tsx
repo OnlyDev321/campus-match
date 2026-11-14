@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/layout/BrandLogo";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -14,9 +15,7 @@ export default function Footer() {
     <footer className="w-full border-t border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] py-8 app-footer">
       <div className="w-full px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-6 h-6 rounded bg-(--primary-container) flex items-center justify-center text-white font-mono text-xs font-bold">
-            CM
-          </div>
+          <BrandLogo size={24} />
           <span className="text-xs text-[var(--text-muted)]">
             © {new Date().getFullYear()} CampusMatch. University Academic
             Productivity System.

@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Modal, Button, Badge, Avatar, Input } from "@/design-system";
 import { useLanguageStore } from "@/stores/languageStore";
-import { formatMessage } from "@/lib/format";
+import { formatMessage, maskStudentId } from "@/lib/format";
 import { useAuthStore } from "@/stores/authStore";
 import type { ApplyModalProps, ApiErrorCode } from "@/lib/types";
 import { applyToGroup } from "@/services/applicationService";
@@ -164,7 +164,7 @@ function ApplyModalContent({
                   </span>
                 </div>
                 <p className="text-xs text-[var(--text-muted)] truncate">
-                  {user?.studentId || <ScrambleText text={t.groupDetail.notProvided} />} •{" "}
+                  {user?.studentId ? maskStudentId(user.studentId) : <ScrambleText text={t.groupDetail.notProvided} />} •{" "}
                   {user?.department || group.department} •{" "}
                   <ScrambleText text={user?.academicYear
                     ? formatMessage(t.profile.yearBadge, { year: user.academicYear })

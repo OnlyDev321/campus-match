@@ -23,7 +23,8 @@ import { useLanguageStore } from "@/stores/languageStore";
 
 import { getAcademicCatalog } from "@/services/academicService";
 import { getPublicStatistics } from "@/services/statisticsService";
-import { fetchAvailableYears, fetchGroups } from "@/services/groupService";
+import { fetchAvailableYears, fetchGroups, getMyGroups } from "@/services/groupService";
+import { getMyApplications } from "@/services/applicationService";
 
 const GroupPage = () => {
   const isReady = useRequireLogin("/groups");
@@ -114,14 +115,16 @@ const GroupPage = () => {
     postYear: appliedYear === "ALL" ? undefined : Number(appliedYear),
     page: currentPage - 1,
     size: ITEMS_PER_PAGE,
-    sort: "createdAt,desc",
-  }), [appliedQuery, appliedCollege, appliedDepartment, appliedYear, currentPage]);
+    sort: sortBy === "spots" ? "availableSpots,desc" : "createdAt,desc",
+  }), [appliedQuery, appliedCollege, appliedDepartment, appliedYear, currentPage, sortBy]);
   const { status, data: groupPage, errorCode, reload } = useServiceData(loadGroups, isReady);
-  const paginatedGroups = useMemo(() => {
-    const groups = [...(groupPage?.content ?? [])];
-    if (sortBy === "spots") groups.sort((a, b) => (b.maxMembers - b.memberCount) - (a.maxMembers - a.memberCount));
-    return groups;
-  }, [groupPage, sortBy]);
+  const loadMyGroups = useCallback(() => getMyGroups(), []);
+  const { status: membershipStatus, data: myGroups, errorCode: membershipError, reload: reloadMembership } = useServiceData(loadMyGroups, isReady);
+  const loadMyApplications = useCallback(() => getMyApplications(), []);
+  const { status: applicationStatus, data: myApplications, reload: reloadApplications } = useServiceData(loadMyApplications, isReady);
+  const joinedGroupIds = useMemo(() => new Set((myGroups ?? []).map((group) => group.id)), [myGroups]);
+  const pendingGroupIds = useMemo(() => new Set((myApplications ?? []).filter((application) => application.status === "PENDING").map((application) => application.groupId)), [myApplications]);
+  const paginatedGroups = groupPage?.content ?? [];
   const totalPages = Math.max(1, groupPage?.totalPages ?? 1);
   const loadStatistics = useCallback(() => getPublicStatistics(), []);
   const { data: statistics } = useServiceData(loadStatistics, isReady);
@@ -597,6 +600,12 @@ const GroupPage = () => {
       </Card>
 
       {/* 5. Group Card Grid - Uses .responsive-card-grid from globals.css */}
+      {membershipStatus === "error" && (
+        <ErrorState title={t.manage.groupsError} message={t.apiErrors[membershipError ?? "SERVER_ERROR"]} retryLabel={t.manage.retry} onRetry={reloadMembership} />
+      )}
+      {applicationStatus === "error" && (
+        <ErrorState title={t.manage.groupsError} message={t.apiErrors["SERVER_ERROR"]} retryLabel={t.manage.retry} onRetry={reloadApplications} />
+      )}
       {status === "loading" ? <CardSkeletonList count={ITEMS_PER_PAGE} /> : status === "error" ? (
         <ErrorState title={t.groupsPage.noResultsTitle} message={t.apiErrors[errorCode ?? "SERVER_ERROR"]} retryLabel={t.groupsPage.resetFiltersBtn} onRetry={reload} />
       ) : paginatedGroups.length > 0 ? (
@@ -606,7 +615,11 @@ const GroupPage = () => {
               <GroupCard
                 key={group.id}
                 group={group}
+                isMember={joinedGroupIds.has(Number(group.id))}
+                isPendingApplication={pendingGroupIds.has(Number(group.id))}
+                membershipReady={membershipStatus === "ready" && applicationStatus === "ready"}
                 onJoin={() => {
+                  if (membershipStatus !== "ready" || applicationStatus !== "ready" || joinedGroupIds.has(Number(group.id)) || pendingGroupIds.has(Number(group.id))) return;
                   setSelectedGroupForApply(group);
                   setIsApplyModalOpen(true);
                 }}
@@ -690,6 +703,7 @@ const GroupPage = () => {
         isOpen={isApplyModalOpen}
         onClose={() => setIsApplyModalOpen(false)}
         group={selectedGroupForApply}
+        onSuccess={() => reloadApplications()}
       />
     </div>
   );

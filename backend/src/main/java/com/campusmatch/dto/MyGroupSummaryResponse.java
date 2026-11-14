@@ -17,6 +17,11 @@ public class MyGroupSummaryResponse {
     private String description;
     private String courseCode;
     private String courseName;
+    private String meetingFormat;
+    private List<String> tags;
+    private String contactEmail;
+    private String contactPhone;
+    private List<com.campusmatch.entity.GroupRoleQuota> rolesQuota;
     private String college;
     private String department;
     private GroupStatus status;

@@ -7,7 +7,7 @@
 **숭실대학교 전용 스터디 및 프로젝트 팀원 매칭 서비스**
 
 [![Next.js 16](https://img.shields.io/badge/Next.js-16_App_Router-black?logo=next.js)](https://nextjs.org/)
-[![Spring Boot 3](https://img.shields.io/badge/Spring_Boot-3.4-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
+[![Spring Boot 4](https://img.shields.io/badge/Spring_Boot-4.1-brightgreen?logo=springboot)](https://spring.io/projects/spring-boot)
 [![Neon PostgreSQL](https://img.shields.io/badge/Neon-PostgreSQL_16-blue?logo=postgresql)](https://neon.tech/)
 [![Soongsil SSO](https://img.shields.io/badge/SSO-u--SAINT_Verified-004ac6)](https://saint.ssu.ac.kr)
 

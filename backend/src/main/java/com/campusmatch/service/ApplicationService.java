@@ -137,6 +137,16 @@ public class ApplicationService {
                 .collect(Collectors.toList());
     }
 
+    /** Trả về đơn của chính sinh viên để UI giữ trạng thái đã nộp sau khi tải lại. */
+    @Transactional(readOnly = true)
+    public List<ApplicationResponse> getMyApplications(String studentId) {
+        User user = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ sinh viên"));
+        return applicationRepository.findByApplicantId(user.getId()).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+
     /**
      * Trưởng nhóm chấp thuận đơn ứng tuyển
      * PUT /api/applications/{id}/accept
@@ -161,6 +171,9 @@ public class ApplicationService {
         // 2. Nếu đơn đã ACCEPTED trước đó thì trả về luôn
         if (application.getStatus() == ApplicationStatus.ACCEPTED) {
             return mapToResponse(application);
+        }
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể duyệt đơn đang chờ xử lý");
         }
 
         // 3. Kiểm tra sĩ số nhóm
@@ -188,7 +201,11 @@ public class ApplicationService {
                     .joinedAt(LocalDateTime.now())
                     .build();
             groupMemberRepository.save(newMember);
-            if (requestedRole != null) requestedRole.setCurrent(requestedRole.getCurrent() + 1);
+            if (requestedRole != null) {
+                requestedRole.setCurrent(requestedRole.getCurrent() + 1);
+                group.setRolesQuota(new java.util.ArrayList<>(group.getRolesQuota()));
+                groupRepository.save(group);
+            }
             currentMembers++;
             log.info("Đã bổ sung sinh viên {} vào danh sách thành viên nhóm {}", applicant.getStudentId(), group.getId());
         }
@@ -249,6 +266,10 @@ public class ApplicationService {
         // Kiểm tra quyền Leader
         if (!group.getLeader().getId().equals(leader.getId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ trưởng nhóm mới có quyền từ chối đơn ứng tuyển");
+        }
+
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể từ chối đơn đang chờ xử lý");
         }
 
         application.setStatus(ApplicationStatus.REJECTED);

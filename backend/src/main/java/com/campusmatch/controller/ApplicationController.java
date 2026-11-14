@@ -49,6 +49,11 @@ public class ApplicationController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/users/me/applications")
+    public ResponseEntity<List<ApplicationResponse>> getMyApplications(Authentication authentication) {
+        return ResponseEntity.ok(applicationService.getMyApplications(getAuthenticatedStudentId(authentication)));
+    }
+
     /**
      * Leader duyệt chấp thuận một đơn ứng tuyển
      * PUT /api/applications/{id}/accept

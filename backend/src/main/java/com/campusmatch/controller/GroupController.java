@@ -3,6 +3,7 @@ package com.campusmatch.controller;
 import com.campusmatch.dto.CreateGroupRequest;
 import com.campusmatch.dto.GroupDetailResponse;
 import com.campusmatch.dto.GroupSummaryResponse;
+import com.campusmatch.dto.UpdateGroupRequest;
 import com.campusmatch.entity.GroupStatus;
 import com.campusmatch.service.GroupService;
 import jakarta.validation.Valid;
@@ -80,6 +81,18 @@ public class GroupController {
         String studentId = authentication.getName();
         GroupDetailResponse response = groupService.createGroup(request, studentId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /** Cập nhật thông tin nhóm; trạng thái tuyển được tính từ sĩ số. */
+    @PutMapping("/{id}")
+    public ResponseEntity<GroupDetailResponse> updateGroup(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateGroupRequest request,
+            Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để cập nhật nhóm");
+        }
+        return ResponseEntity.ok(groupService.updateGroup(id, request, authentication.getName()));
     }
 
     /**

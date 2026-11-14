@@ -23,24 +23,24 @@ public class User {
     @Column(name = "student_id", unique = true, nullable = false, length = 20, updatable = false)
     private String studentId;
 
-    // Họ và tên sinh viên chính thức: Bất biến
-    @Column(nullable = false, length = 100, updatable = false)
+    // Họ và tên chính thức, làm mới khi u-SAINT trả thông tin mới.
+    @Column(nullable = false, length = 100)
     private String name;
 
-    // Khoa / Ngành học: Bất biến
-    @Column(length = 100, updatable = false)
+    // Khoa / Ngành học, làm mới khi đăng nhập lại.
+    @Column(length = 100)
     private String department;
 
-    // Trường / Viện chủ quản (VD: IT대학): Bất biến
-    @Column(length = 100, updatable = false)
+    // Trường / Viện chủ quản (VD: IT대학), làm mới khi đăng nhập lại.
+    @Column(length = 100)
     private String faculty;
 
     // Email trường cấp (@soongsil.ac.kr)
     @Column(length = 150)
     private String email;
 
-    // Năm học ghi nhận lúc nhập học: Bất biến
-    @Column(name = "academic_year", length = 10, updatable = false)
+    // Năm học cập nhật từ hồ sơ u-SAINT mỗi lần đăng nhập.
+    @Column(name = "academic_year", length = 10)
     private String academicYear;
 
     // Số điện thoại liên hệ

@@ -13,6 +13,10 @@ export async function getGroupApplications(groupId: number): Promise<GroupApplic
   return apiRequest<GroupApplication[]>(`/groups/${groupId}/applications`);
 }
 
+export async function getMyApplications(): Promise<GroupApplication[]> {
+  return apiRequest<GroupApplication[]>("/users/me/applications");
+}
+
 export async function acceptApplication(applicationId: number): Promise<GroupApplication> {
   return apiRequest<GroupApplication>(`/applications/${applicationId}/accept`, { method: "PUT" });
 }

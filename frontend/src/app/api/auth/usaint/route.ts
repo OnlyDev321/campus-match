@@ -111,16 +111,12 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Fallback profile nếu WDA không lấy được thông tin chi tiết
+    // Không tạo hồ sơ học vụ giả khi SAP không trả về dữ liệu xác thực.
     if (!profile) {
-      profile = {
-        studentId: String(studentId).trim(),
-        name: `숭실학우 (${String(studentId).trim().slice(-4)})`,
-        department: "소프트웨어학부",
-        faculty: "IT대학",
-        academicYear: "3",
-        email: `${String(studentId).trim()}@soongsil.ac.kr`,
-      };
+      return NextResponse.json(
+        { success: false, errorCode: "SERVER_ERROR", error: MESSAGES.SERVER_ERROR[lang] },
+        { status: 502 },
+      );
     }
 
     // BÀN GIAO THÔNG TIN SANG SPRING BOOT BACKEND ĐỂ LƯU VÀ LẤY JWT ---

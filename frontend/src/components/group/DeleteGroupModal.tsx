@@ -1,18 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState } from "react";
 import { AlertTriangle, Trash2, Loader2, Copy, Check } from "lucide-react";
 import { Modal, Button, Input } from "@/design-system";
 import { ScrambleText } from "@/design-system/components/ScrambleText";
 import { useLanguageStore } from "@/stores/languageStore";
-
-export interface DeleteGroupModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  groupId: number | string;
-  groupTitle: string;
-  onDeleteConfirm: () => Promise<void>;
-}
+import { toApiErrorCode } from "@/lib/api";
+import type { ApiErrorCode, DeleteGroupModalProps } from "@/lib/types";
 
 export default function DeleteGroupModal({
   isOpen,
@@ -25,18 +19,8 @@ export default function DeleteGroupModal({
 
   const [confirmInput, setConfirmInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<ApiErrorCode | null>(null);
   const [hasCopied, setHasCopied] = useState(false);
-
-  // Reset state on open/close
-  useEffect(() => {
-    if (isOpen) {
-      setConfirmInput("");
-      setErrorMessage(null);
-      setHasCopied(false);
-      setIsDeleting(false);
-    }
-  }, [isOpen]);
 
   const isMatch = confirmInput.trim() === groupTitle.trim();
 
@@ -53,14 +37,12 @@ export default function DeleteGroupModal({
   const handleDelete = async () => {
     if (!isMatch || isDeleting) return;
     setIsDeleting(true);
-    setErrorMessage(null);
+    setErrorCode(null);
     try {
       await onDeleteConfirm();
       onClose();
     } catch (err: unknown) {
-      const errorMsg =
-        err instanceof Error ? err.message : t.apiErrors.SERVER_ERROR;
-      setErrorMessage(errorMsg);
+      setErrorCode(toApiErrorCode(err));
       setIsDeleting(false);
     }
   };
@@ -114,12 +96,12 @@ export default function DeleteGroupModal({
               {hasCopied ? (
                 <>
                   <Check className="w-3 h-3 text-[var(--success)]" />
-                  <span>Copied</span>
+                  <span>{copy.copied}</span>
                 </>
               ) : (
                 <>
                   <Copy className="w-3 h-3" />
-                  <span>Copy</span>
+                  <span>{copy.copy}</span>
                 </>
               )}
             </button>
@@ -135,14 +117,14 @@ export default function DeleteGroupModal({
             placeholder={copy.deleteModalInputPlaceholder}
             disabled={isDeleting}
             autoFocus
-            aria-label="Confirm group title"
+            aria-label={copy.confirmGroupTitle}
             className="font-mono text-xs"
           />
         </div>
 
-        {errorMessage && (
+        {errorCode && (
           <p className="text-xs font-medium text-[var(--error-text)] bg-[var(--error-bg)] p-2.5 rounded-[var(--radius-xs)] border border-[var(--error-border)]">
-            {errorMessage}
+            {t.apiErrors[errorCode]}
           </p>
         )}
 

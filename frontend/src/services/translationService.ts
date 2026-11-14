@@ -48,9 +48,9 @@ export async function translateGroupContent(
         ? data.content.rolesQuota
             .filter(
               (r: unknown): r is { role: string; description?: string } =>
-                Boolean(r && typeof r === "object" && typeof (r as any).role === "string")
+                Boolean(r && typeof r === "object" && typeof (r as { role?: unknown }).role === "string")
             )
-            .map((r: any) => ({
+            .map((r: { role: string; description?: string }) => ({
               role: String(r.role),
               description: typeof r.description === "string" ? r.description : undefined,
             }))

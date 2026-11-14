@@ -1,12 +1,16 @@
 import { apiRequest } from "@/lib/api";
-import type { AppNotification } from "@/lib/types";
+import type { AppNotification, NotificationApiResponse } from "@/lib/types";
 
 /**
  * Lấy danh sách toàn bộ thông báo của người dùng hiện tại từ Database.
  * Endpoint: GET /api/notifications
  */
 export async function getNotifications(): Promise<AppNotification[]> {
-  return apiRequest<AppNotification[]>("/notifications");
+  const notifications = await apiRequest<NotificationApiResponse[]>("/notifications");
+  return notifications.map(({ read, ...notification }) => ({
+    ...notification,
+    isRead: notification.isRead ?? read ?? false,
+  }));
 }
 
 /**

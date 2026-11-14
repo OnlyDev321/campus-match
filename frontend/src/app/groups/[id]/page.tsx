@@ -5,20 +5,21 @@ import { use, useState, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Calendar,
   Clock,
   Users,
   GraduationCap,
-  Sparkles,
   Share2,
   Check,
   CheckCircle2,
   Building2,
   Laptop,
+  MapPin,
+  Video,
   Mail,
   Phone,
   UserPlus,
   Compass,
+  Sparkles,
   AlertCircle,
 } from "lucide-react";
 import { Card, Badge, Button, Avatar, RoleQuota } from "@/design-system";
@@ -26,6 +27,7 @@ import ApplyModal from "@/components/application/ApplyModal";
 import type { GroupTranslationState } from "@/lib/types";
 import TranslateButton from "@/components/common/TranslateButton";
 import { fetchGroupDetail } from "@/services/groupService";
+import { getMyApplications } from "@/services/applicationService";
 import { useServiceData } from "@/lib/hooks";
 import { CardSkeletonList, ErrorState } from "@/components/common/AsyncState";
 import { formatMessage, maskStudentId } from "@/lib/format";
@@ -42,10 +44,12 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   // Dữ liệu xem trước có thể cập nhật trong phiên dev; không giữ lại kết quả null cũ.
   const loadGroup = useCallback(() => fetchGroupDetail(id), [id]);
   const { status, data: group, errorCode, reload } = useServiceData(loadGroup, true);
+  const loadMyApplications = useCallback(() => getMyApplications(), []);
+  const { status: applicationStatus, data: myApplications, reload: reloadMyApplications } = useServiceData(loadMyApplications, isLoggedIn);
 
   // Modal and Interactive States
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
-  const [hasApplied, setHasApplied] = useState(false);
+  const [justApplied, setJustApplied] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Translation States
@@ -55,14 +59,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
     id,
     group?.title,
     group?.longDescription || group?.description,
-    group?.objectives,
-    group?.meetingSchedule,
     group?.rolesQuota?.map((r) => ({ role: r.role, description: r.description })),
   ]);
   const translatedTitle = translation?.context === translationContext ? translation.title : null;
   const translatedDesc = translation?.context === translationContext ? translation.description : null;
-  const translatedObjectives = translation?.context === translationContext ? translation.objectives : null;
-  const translatedMeetingSchedule = translation?.context === translationContext ? translation.meetingSchedule : null;
   const translatedRolesQuota = translation?.context === translationContext ? translation.rolesQuota : null;
 
   const displayRolesQuota = (() => {
@@ -110,7 +110,17 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   const isFull = spotsLeft === 0;
   const isLeader = Boolean(isLoggedIn && group.myRole === "LEADER");
   const isMember = isLoggedIn && group.myRole === "MEMBER";
+  const hasApplied = justApplied || Boolean(myApplications?.some((application) => application.groupId === Number(id) && application.status === "PENDING"));
+  const applicationCheckReady = !isLoggedIn || applicationStatus === "ready";
   const leaderEmail = group.leaderEmail;
+  const meetingFormat = group.meetingFormat;
+  const meetingFormatLabel = meetingFormat
+    ? t.createGroupPage[`format${meetingFormat}`]
+    : copy.meetingFormatFallback;
+  const meetingFormatDescription = meetingFormat
+    ? t.createGroupPage[`format${meetingFormat}Desc`]
+    : null;
+  const MeetingFormatIcon = meetingFormat === "Online" ? Video : meetingFormat === "Offline" ? MapPin : Laptop;
 
   const handleShare = async () => {
     try {
@@ -127,7 +137,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   };
 
   const handleOpenApply = () => {
-    if (isMember || isLeader) return;
+    if (isMember || isLeader || !applicationCheckReady || hasApplied || isFull) return;
     if (!isLoggedIn) {
       openLoginModal(`/groups/${id}`);
       return;
@@ -136,7 +146,8 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
   };
 
   const handleApplySuccess = () => {
-    setHasApplied(true);
+    setJustApplied(true);
+    reloadMyApplications();
   };
 
   return (
@@ -186,7 +197,7 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               </span>
             </Button>
 
-            {!isLeader && !isMember && !isFull && !hasApplied && (
+            {!isLeader && !isMember && !isFull && !hasApplied && applicationCheckReady && (
               <Button
                 variant="primary"
                 size="sm"
@@ -207,11 +218,13 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
         <div className="mb-6 sm:mb-8 space-y-4 sm:space-y-5">
           {/* Badges row with comfortable top spacing */}
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1.5 sm:pt-2">
-            <Badge variant="primary" size="sm" className="sm:text-xs font-semibold">
-              {group.courseCode
-                ? `${group.courseCode} • ${group.course}`
-                : group.course}
-            </Badge>
+            {group.course && (
+              <Badge variant="primary" size="sm" className="sm:text-xs font-semibold">
+                {group.courseCode && group.course !== group.courseCode
+                  ? `${group.courseCode} • ${group.course}`
+                  : group.course}
+              </Badge>
+            )}
 
             <Badge
               variant={isFull ? "closed" : "recruiting"}
@@ -224,11 +237,6 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 ? copy.fullClosed
                 : formatMessage(spotsLeft === 1 ? copy.recruitingOne : copy.recruitingMany, { count: spotsLeft })} protectedValues={[...Object.values({ count: spotsLeft })]} />
             </Badge>
-
-            <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-medium bg-[var(--surface-container-low)] text-[var(--text-secondary)] border border-[var(--border)]">
-              <Laptop className="w-3 h-3 text-[var(--text-muted)] shrink-0" />
-              <span>{group.meetingFormat || <ScrambleText text={copy.meetingFormatFallback} />}</span>
-            </span>
 
             <span className="inline-flex items-center gap-1 px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md text-[11px] sm:text-xs font-mono text-[var(--text-muted)] bg-[var(--surface-container-low)] border border-[var(--border)]">
               <ScrambleText text={formatMessage(copy.academicYear, { year: group.postYear })} protectedValues={[...Object.values({ year: group.postYear })]} />
@@ -247,8 +255,6 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 originalContent={{
                   title: group.title,
                   description: group.longDescription || group.description,
-                  objectives: group.objectives,
-                  meetingSchedule: group.meetingSchedule,
                   rolesQuota: group.rolesQuota?.map((r) => ({
                     role: r.role,
                     description: r.description,
@@ -267,13 +273,6 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               <span className="shrink-0">•</span>
               <span className="font-medium text-[var(--text-secondary)] truncate">
                 {group.department}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Calendar className="w-3.5 h-3.5 text-[var(--text-muted)] shrink-0" />
-              <span>
-                <ScrambleText text={copy.semesterLabel} />: {group.semester || <ScrambleText text={copy.notProvided} />}
               </span>
             </div>
 
@@ -298,44 +297,25 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                   <ScrambleText text={copy.about} />
                 </h2>
               </div>
-
               <div className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed space-y-3 whitespace-pre-line break-words">
                 {translatedDesc || group.longDescription || group.description}
               </div>
-
-              {/* Target Objectives */}
-              {group.objectives && group.objectives.length > 0 && (
-                <div className="pt-3 sm:pt-4 space-y-2.5 sm:space-y-3">
-                  <h3 className="text-xs font-semibold text-[var(--text-primary)] uppercase tracking-wider">
-                    <ScrambleText text={copy.objectives} />
-                  </h3>
-                  <div className="space-y-2 sm:space-y-2.5">
-                    {group.objectives.map((goal, idx) => {
-                      const displayGoal = translatedObjectives?.[idx] || goal;
-                      return (
-                        <div
-                          key={idx}
-                          className="flex items-start gap-2 sm:gap-2.5 text-xs sm:text-sm text-[var(--text-secondary)] min-w-0"
-                        >
-                          <CheckCircle2 className="w-4 h-4 text-[var(--success)] shrink-0 mt-0.5" />
-                          <span className="break-words min-w-0">{displayGoal}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Meeting Schedule Box */}
-              <div className="mt-4 p-3 sm:p-4 rounded-xl bg-[var(--surface-container-low)] border border-[var(--border)] flex items-start gap-2.5 sm:gap-3 min-w-0">
-                <Clock className="w-4 h-4 text-[var(--primary)] shrink-0 mt-0.5" />
-                <div className="space-y-0.5 sm:space-y-1 text-xs min-w-0 flex-1">
-                  <span className="font-semibold text-[var(--text-primary)] block">
-                    <ScrambleText text={copy.meetingSchedule} />
-                  </span>
-                  <span className="text-[var(--text-secondary)] block break-words">
-                    {translatedMeetingSchedule || group.meetingSchedule || <ScrambleText text={copy.notProvided} />}
-                  </span>
+              <div className="flex items-start gap-3 border-t border-[var(--border-muted)] pt-4 sm:pt-5">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--primary-soft)] text-[var(--primary)]">
+                  <MeetingFormatIcon aria-hidden="true" className="h-4 w-4" />
+                </span>
+                <div className="min-w-0 space-y-1">
+                  <p className="text-xs font-medium text-[var(--text-muted)]">
+                    <ScrambleText text={t.createGroupPage.meetingFormatLabel} />
+                  </p>
+                  <p className="text-sm font-semibold text-[var(--text-primary)]">
+                    <ScrambleText text={meetingFormatLabel} />
+                  </p>
+                  {meetingFormatDescription && (
+                    <p className="text-xs leading-relaxed text-[var(--text-secondary)]">
+                      <ScrambleText text={meetingFormatDescription} />
+                    </p>
+                  )}
                 </div>
               </div>
             </Card>
@@ -398,38 +378,23 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
               )}
             </Card>
 
-            {/* Section 3: Tech Stack & Required Skills */}
-            <Card className="p-4 sm:p-6 lg:p-7 space-y-4 min-w-0">
-              <div className="flex items-center gap-2 sm:gap-2.5 pb-2 border-b border-[var(--border-muted)]">
-                <Sparkles className="w-5 h-5 text-[var(--primary)] shrink-0" />
-                <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
-                  <ScrambleText text={copy.skillsTitle} />
-                </h2>
-              </div>
-
-              <div className="space-y-3 min-w-0">
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                  {group.requiredSkills && group.requiredSkills.length > 0 ? (
-                    group.requiredSkills.map((skill) => (
-                      <span
-                        key={skill}
-                        className="inline-flex items-center px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-xs font-mono font-medium bg-[var(--surface-container-low)] text-[var(--primary)] border border-[var(--border)] hover:border-[var(--primary-soft-border)] transition-colors"
-                      >
-                        {skill}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-xs text-[var(--text-muted)]">
-                      <ScrambleText text={copy.skillsFallback} />
+            {group.tags && group.tags.length > 0 && (
+              <Card className="p-4 sm:p-6 lg:p-7 space-y-4 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-2.5 pb-2 border-b border-[var(--border-muted)]">
+                  <Sparkles className="w-5 h-5 text-[var(--primary)] shrink-0" />
+                  <h2 className="text-base sm:text-lg font-bold text-[var(--text-primary)]">
+                    <ScrambleText text={copy.tagsTitle} />
+                  </h2>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {group.tags.map((tag) => (
+                    <span key={tag} className="rounded-lg border border-[var(--border)] bg-[var(--surface-container-low)] px-3 py-1.5 text-xs font-medium text-[var(--primary)] break-all">
+                      #{tag}
                     </span>
-                  )}
+                  ))}
                 </div>
-
-                <div className="p-3 sm:p-3.5 rounded-xl bg-[var(--primary-soft)] border border-[var(--primary-soft-border)] text-xs text-[var(--primary)] leading-relaxed min-w-0 break-words">
-                  <strong><ScrambleText text={copy.noticeTitle} /></strong> <ScrambleText text={copy.noticeBody} />
-                </div>
-              </div>
-            </Card>
+              </Card>
+            )}
           </div>
 
           {/* RIGHT COLUMN: Sticky Sidebar (CTA Card, Leader Card, Members List) */}
@@ -506,6 +471,10 @@ export default function GroupDetailPage({ params }: GroupDetailPageProps) {
                 ) : isFull ? (
                   <Button disabled fullWidth className="h-11 font-semibold">
                     <ScrambleText text={copy.groupFull} />
+                  </Button>
+                ) : !applicationCheckReady ? (
+                  <Button variant="outline" fullWidth disabled={applicationStatus !== "error"} onClick={reloadMyApplications} className="h-11 font-semibold">
+                    <ScrambleText text={applicationStatus === "error" ? t.manage.retry : copy.apply} />
                   </Button>
                 ) : (
                   <Button

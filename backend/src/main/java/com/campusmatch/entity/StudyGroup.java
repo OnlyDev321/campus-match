@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.Formula;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -58,6 +61,14 @@ public class StudyGroup {
     @Column(name = "course_name", length = 100)
     private String courseName;
 
+    @Column(name = "meeting_format", length = 10)
+    private String meetingFormat;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "tags", nullable = false, columnDefinition = "jsonb")
+    @Builder.Default
+    private List<String> tags = new ArrayList<>();
+
     // Chỉ lưu thông tin liên hệ mà leader đã chọn công khai cho nhóm này.
     @Column(name = "contact_email", length = 254)
     private String contactEmail;
@@ -69,9 +80,12 @@ public class StudyGroup {
     @Column(name = "max_members", nullable = false)
     private Integer maxMembers;
 
-    @ElementCollection
-    @CollectionTable(name = "group_role_quotas", joinColumns = @JoinColumn(name = "group_id"))
-    @OrderColumn(name = "position")
+    // Chỗ còn trống tính ở database để ORDER BY áp dụng trước khi phân trang.
+    @Formula("(max_members - (select count(*) from group_members gm where gm.group_id = id))")
+    private Long availableSpots;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "roles_quota", nullable = false, columnDefinition = "jsonb")
     @Builder.Default
     private List<GroupRoleQuota> rolesQuota = new ArrayList<>();
 

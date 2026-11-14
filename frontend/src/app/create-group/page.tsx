@@ -331,6 +331,7 @@ export default function CreateGroupPage() {
           contactEmail: formData.publishEmail ? formData.contactEmail.trim() : undefined,
           contactPhone: formData.publishPhone ? formData.contactPhone.trim() : undefined,
           meetingFormat: formData.meetingFormat,
+          tags: formData.tags,
           rolesQuota:
             cleanedRolesQuota.length > 0 ? cleanedRolesQuota : undefined,
         },
@@ -589,6 +590,7 @@ export default function CreateGroupPage() {
                     <input
                       id="group-tags"
                       type="text"
+                      maxLength={50}
                       value={currentTagInput}
                       onChange={(e) => setCurrentTagInput(e.target.value)}
                       onKeyDown={handleAddTag}
@@ -806,41 +808,11 @@ export default function CreateGroupPage() {
                   </div>
                 </div>
 
-                {/* Visual Seat Representation */}
-                <div className="p-4 rounded-[var(--radius-input)] bg-[var(--surface)] border border-[var(--border-muted)] space-y-3">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-medium text-[var(--text-secondary)]">
-                      {copy.seatAllocation}
-                    </span>
-                    <span className="font-mono text-[var(--text-primary)] font-semibold">
-                      {copy.seatSummary.replace("{count}", String(spotsLeft))}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-2">
-                    {/* Leader Seat */}
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-sm)] bg-[var(--primary-soft)] border border-[var(--primary-soft-border)] text-[var(--primary)] text-xs font-semibold">
-                      <Avatar
-                        size="sm"
-                        name={user?.name || copy.leaderYou}
-                        src={user?.avatarUrl}
-                      />
-                      <span>{copy.leaderYou}</span>
-                    </div>
-
-                    {/* Open Seats */}
-                    {Array.from({ length: spotsLeft }).map((_, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius-sm)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-container-low)] text-[var(--text-muted)] text-xs"
-                      >
-                        <div className="w-5 h-5 rounded-full border border-dashed border-[var(--border-strong)] flex items-center justify-center text-[10px] font-mono">
-                          {index + 2}
-                        </div>
-                        <span>{copy.openSpot}</span>
-                      </div>
-                    ))}
-                  </div>
+                {/* Tóm tắt sĩ số thay cho các ô chỗ trống lặp lại. */}
+                <div className="rounded-[var(--radius-input)] border border-[var(--border-muted)] bg-[var(--surface)] px-4 py-3">
+                  <span className="font-mono text-sm font-semibold text-[var(--text-primary)]">
+                    {copy.seatSummary.replace("{count}", String(spotsLeft))}
+                  </span>
                 </div>
 
                 {/* ROLE QUOTA & TEAM STRUCTURE CONFIGURATION */}

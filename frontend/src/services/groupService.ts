@@ -1,9 +1,6 @@
 import { apiRequest } from "@/lib/api";
 import { useAuthStore } from "@/stores/authStore";
-import type { CreateGroupPayload, GroupCardData, GroupDetailData, GroupDetailResponse, GroupFilterParams, GroupSummaryResponse, MyGroupSummary, SpringPage } from "@/lib/types";
-
-/** Khả năng thao tác quản lý được xác thực bởi backend. */
-export const MANAGE_MUTATIONS_AVAILABLE = true;
+import type { CreateGroupPayload, GroupCardData, GroupDetailData, GroupDetailResponse, GroupFilterParams, GroupSummaryResponse, MyGroupSummary, SpringPage, UpdateGroupPayload } from "@/lib/types";
 
 const toCard = (group: GroupSummaryResponse): GroupCardData => ({
   id: String(group.id),
@@ -29,6 +26,8 @@ const toDetail = (group: GroupDetailResponse): GroupDetailData => {
   ...toCard(group),
   myRole: group.leader.id === userId ? "LEADER" : group.members.some((member) => member.userId === userId) ? "MEMBER" : undefined,
   courseCode: group.courseCode ?? undefined,
+  meetingFormat: group.meetingFormat ?? undefined,
+  tags: group.tags ?? [],
   longDescription: group.description,
   leaderEmail: group.contactEmail ?? undefined,
   contactPhone: group.contactPhone ?? undefined,
@@ -77,11 +76,20 @@ export async function createGroup(payload: CreateGroupPayload): Promise<GroupDet
       description: payload.description,
       courseCode: payload.courseCode,
       courseName: payload.courseName,
+      meetingFormat: payload.meetingFormat,
+      tags: payload.tags,
       maxMembers: payload.maxMembers,
       rolesQuota: payload.rolesQuota,
       contactEmail: payload.contactEmail,
       contactPhone: payload.contactPhone,
     }),
+  });
+}
+
+export async function updateGroup(groupId: number, payload: UpdateGroupPayload): Promise<GroupDetailResponse> {
+  return apiRequest<GroupDetailResponse>(`/groups/${groupId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
   });
 }
 

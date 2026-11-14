@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect, useMemo } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bell,
@@ -17,6 +16,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useNotificationStore } from "@/stores/notificationStore";
+import { useAuthStore } from "@/stores/authStore";
 import { useLanguageStore } from "@/stores/languageStore";
 import type { AppNotification, NotificationType } from "@/lib/types";
 
@@ -98,6 +98,7 @@ export default function NotificationDropdown() {
   const router = useRouter();
   const { t } = useLanguageStore();
   const copy = t.notifications;
+  const token = useAuthStore((state) => state.token);
   const {
     notifications,
     unreadCount,
@@ -115,7 +116,7 @@ export default function NotificationDropdown() {
   // Tải thông báo mới nhất từ Database khi component mount hoặc khi mở dropdown
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+  }, [fetchNotifications, token]);
 
   useEffect(() => {
     if (isOpen) {
@@ -155,8 +156,8 @@ export default function NotificationDropdown() {
     return notifications;
   }, [notifications, activeTab]);
 
-  const handleNotificationClick = (notif: AppNotification) => {
-    markAsRead(notif.id);
+  const handleNotificationClick = async (notif: AppNotification) => {
+    await markAsRead(notif.id);
     setIsOpen(false);
     if (notif.link) {
       router.push(notif.link);

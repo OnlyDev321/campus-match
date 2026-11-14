@@ -54,11 +54,14 @@ class StudentPrivacyResponseTest {
         });
         when(members.findByGroupId(10L)).thenReturn(List.of());
         var request = CreateGroupRequest.builder().title("Study group").description("A study group")
-                .maxMembers(4).contactEmail("leader@example.com").contactPhone("+82 10 1234 5678").build();
+                .maxMembers(4).contactEmail("leader@example.com").contactPhone("+82 10 1234 5678")
+                .meetingFormat("Hybrid").tags(List.of("React", "Spring Boot")).build();
 
         var response = service.createGroup(request, "20260020");
         assertEquals("leader@example.com", response.getContactEmail());
         assertEquals("+82 10 1234 5678", response.getContactPhone());
+        assertEquals("Hybrid", response.getMeetingFormat());
+        assertEquals(List.of("React", "Spring Boot"), response.getTags());
         assertEquals("****0020", response.getLeader().getStudentId());
         assertNull(response.getLeader().getEmail());
     }
@@ -77,7 +80,8 @@ class StudentPrivacyResponseTest {
         var leader = User.builder().id(1L).studentId("20260020").email("20260020@soongsil.ac.kr").build();
         var member = User.builder().id(2L).studentId("20260021").build();
         var group = StudyGroup.builder().id(10L).leader(leader)
-                .contactEmail("leader@example.com").contactPhone("+82 10 1234 5678").build();
+                .contactEmail("leader@example.com").contactPhone("+82 10 1234 5678")
+                .meetingFormat("Online").tags(List.of("Figma")).build();
         when(groups.findById(10L)).thenReturn(Optional.of(group));
         when(members.findByGroupId(10L)).thenReturn(List.of(
                 new GroupMember(group, leader, GroupRole.LEADER), new GroupMember(group, member, GroupRole.MEMBER)));
@@ -87,6 +91,8 @@ class StudentPrivacyResponseTest {
         assertNull(publicResponse.getLeader().getEmail());
         assertEquals("leader@example.com", publicResponse.getContactEmail());
         assertEquals("+82 10 1234 5678", publicResponse.getContactPhone());
+        assertEquals("Online", publicResponse.getMeetingFormat());
+        assertEquals(List.of("Figma"), publicResponse.getTags());
         assertEquals(List.of("****0020", "****0021"), publicResponse.getMembers().stream().map(m -> m.getStudentId()).toList());
 
         SecurityContextHolder.getContext().setAuthentication(

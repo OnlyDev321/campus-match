@@ -2,6 +2,7 @@ package com.campusmatch.dto;
 
 import com.campusmatch.entity.Notification;
 import com.campusmatch.entity.NotificationType;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -23,6 +24,11 @@ public class NotificationResponse {
     private String actorName;
     private boolean isRead;
     private LocalDateTime createdAt;
+
+    @JsonProperty("isRead")
+    public boolean isRead() {
+        return isRead;
+    }
 
     public static NotificationResponse fromEntity(Notification entity) {
         return NotificationResponse.builder()

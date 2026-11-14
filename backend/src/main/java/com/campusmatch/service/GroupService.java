@@ -48,8 +48,14 @@ public class GroupService {
         User leader = userRepository.findByStudentId(studentId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ sinh viên"));
 
-        List<GroupRoleQuota> rolesQuota = request.getRolesQuota() == null ? new ArrayList<>() : request.getRolesQuota().stream()
-                .filter(role -> StringUtils.hasText(role.getRole()) && role.getMax() != null && role.getMax() > 0)
+        List<GroupRoleQuota> requestedRoles = request.getRolesQuota();
+        if (requestedRoles != null && (requestedRoles.size() > 20 || requestedRoles.stream().anyMatch(role ->
+                role == null || !StringUtils.hasText(role.getRole()) || role.getRole().trim().length() > 100 ||
+                        role.getMax() == null || role.getMax() < 1 ||
+                        (role.getDescription() != null && role.getDescription().length() > 500)))) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ tiêu vị trí không hợp lệ");
+        }
+        List<GroupRoleQuota> rolesQuota = requestedRoles == null ? new ArrayList<>() : requestedRoles.stream()
                 .map(role -> GroupRoleQuota.builder()
                         .role(role.getRole().trim())
                         .current(role.getCurrent() == null ? 0 : role.getCurrent())
@@ -79,6 +85,9 @@ public class GroupService {
                 .postYear(LocalDate.now().getYear())
                 .courseCode(StringUtils.hasText(request.getCourseCode()) ? request.getCourseCode().trim() : null)
                 .courseName(StringUtils.hasText(request.getCourseName()) ? request.getCourseName().trim() : null)
+                .meetingFormat(request.getMeetingFormat())
+                .tags(request.getTags() == null ? new ArrayList<>() : request.getTags().stream()
+                        .map(String::trim).distinct().collect(Collectors.toCollection(ArrayList::new)))
                 .contactEmail(contactEmail)
                 .contactPhone(StringUtils.hasText(request.getContactPhone()) ? request.getContactPhone().trim() : null)
                 .maxMembers(request.getMaxMembers())
@@ -101,6 +110,105 @@ public class GroupService {
         log.info("Đã tạo nhóm thành công với ID: {}", savedGroup.getId());
 
         return mapToDetailResponse(savedGroup);
+    }
+
+    /** Cập nhật nhóm do trưởng nhóm sở hữu và tự đồng bộ trạng thái, chỉ tiêu vai trò. */
+    @Transactional
+    public GroupDetailResponse updateGroup(Long groupId, UpdateGroupRequest request, String studentId) {
+        User currentUser = userRepository.findByStudentId(studentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hồ sơ sinh viên"));
+        StudyGroup group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy nhóm"));
+        if (!group.getLeader().getId().equals(currentUser.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Chỉ trưởng nhóm mới có quyền cập nhật nhóm");
+        }
+
+        long memberCount = groupMemberRepository.countByGroupId(groupId);
+        int capacity = request.getMaxMembers();
+        if (capacity < memberCount) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Sĩ số không được nhỏ hơn số thành viên hiện tại");
+        }
+
+        List<GroupRoleQuota> roles = group.getRolesQuota();
+        if (request.getRolesQuota() != null) {
+            List<GroupRoleQuota> requestedRoles = request.getRolesQuota();
+            if (requestedRoles.isEmpty() && !roles.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa toàn bộ vai trò của nhóm");
+            }
+            if (requestedRoles.size() > 20 || requestedRoles.stream().anyMatch(role -> role == null ||
+                    !StringUtils.hasText(role.getRole()) || role.getRole().trim().length() > 100 ||
+                    role.getMax() == null || role.getMax() < 1 ||
+                    (role.getDescription() != null && role.getDescription().length() > 500)) ||
+                    requestedRoles.stream().map(role -> role.getRole().trim()).distinct().count() != requestedRoles.size() ||
+                    requestedRoles.stream().mapToInt(GroupRoleQuota::getMax).sum() != capacity) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ tiêu vai trò không hợp lệ hoặc không khớp sĩ số");
+            }
+            List<GroupRoleQuota> nextRoles = new ArrayList<>();
+            for (int i = 0; i < requestedRoles.size(); i++) {
+                GroupRoleQuota requested = requestedRoles.get(i);
+                int occupied = i < roles.size() ? roles.get(i).getCurrent() : roles.isEmpty() && i == 0 ? (int) memberCount : 0;
+                if (requested.getMax() < occupied) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ tiêu vai trò không được nhỏ hơn số thành viên hiện có");
+                }
+                nextRoles.add(GroupRoleQuota.builder()
+                        .role(requested.getRole().trim())
+                        .description(StringUtils.hasText(requested.getDescription()) ? requested.getDescription().trim() : null)
+                        .current(occupied).max(requested.getMax()).build());
+            }
+            for (int i = requestedRoles.size(); i < roles.size(); i++) {
+                if (roles.get(i).getCurrent() > 0) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể xóa vai trò đã có thành viên");
+                }
+            }
+            group.setRolesQuota(nextRoles);
+        } else if (!roles.isEmpty()) {
+            List<GroupRoleQuota> adjustedRoles = roles.stream()
+                    .map(role -> GroupRoleQuota.builder()
+                            .role(role.getRole())
+                            .description(role.getDescription())
+                            .current(role.getCurrent())
+                            .max(role.getMax())
+                            .build())
+                    .collect(Collectors.toCollection(ArrayList::new));
+            int difference = capacity - adjustedRoles.stream().mapToInt(GroupRoleQuota::getMax).sum();
+            if (difference > 0) {
+                GroupRoleQuota lastRole = adjustedRoles.get(adjustedRoles.size() - 1);
+                lastRole.setMax(lastRole.getMax() + difference);
+            } else if (difference < 0) {
+                int seatsToRemove = -difference;
+                for (int index = adjustedRoles.size() - 1; index >= 0 && seatsToRemove > 0; index--) {
+                    GroupRoleQuota role = adjustedRoles.get(index);
+                    int removable = Math.max(0, role.getMax() - role.getCurrent());
+                    int removed = Math.min(removable, seatsToRemove);
+                    role.setMax(role.getMax() - removed);
+                    seatsToRemove -= removed;
+                }
+                if (seatsToRemove > 0) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không thể giảm sĩ số dưới chỉ tiêu đã có người");
+                }
+            }
+            if (difference != 0) {
+                group.setRolesQuota(adjustedRoles);
+            }
+        }
+
+        group.setTitle(request.getTitle().trim());
+        group.setDescription(request.getDescription().trim());
+        group.setCourseCode(StringUtils.hasText(request.getCourseCode()) ? request.getCourseCode().trim() : null);
+        group.setCourseName(StringUtils.hasText(request.getCourseName()) ? request.getCourseName().trim() : null);
+        group.setMeetingFormat(request.getMeetingFormat());
+        if (request.getTags() != null) {
+            group.setTags(request.getTags().stream().map(String::trim).distinct().toList());
+        }
+        String contactEmail = StringUtils.hasText(request.getContactEmail()) ? request.getContactEmail().trim() : null;
+        if (contactEmail != null && contactEmail.contains(group.getLeader().getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email liên hệ không được chứa mã sinh viên đầy đủ");
+        }
+        group.setContactEmail(contactEmail);
+        group.setContactPhone(StringUtils.hasText(request.getContactPhone()) ? request.getContactPhone().trim() : null);
+        group.setMaxMembers(capacity);
+        group.setStatus(memberCount >= capacity ? GroupStatus.COMPLETED : GroupStatus.RECRUITING);
+        return mapToDetailResponse(groupRepository.save(group));
     }
 
     /**
@@ -270,6 +378,11 @@ public class GroupService {
                     .description(group.getDescription())
                     .courseCode(group.getCourseCode())
                     .courseName(group.getCourseName())
+                    .meetingFormat(group.getMeetingFormat())
+                    .tags(group.getTags())
+                    .contactEmail(group.getContactEmail())
+                    .contactPhone(group.getContactPhone())
+                    .rolesQuota(group.getRolesQuota())
                     .college(group.getCollege())
                     .department(group.getDepartment())
                     .status(group.getStatus())
@@ -299,6 +412,8 @@ public class GroupService {
                 .postYear(group.getPostYear())
                 .courseCode(group.getCourseCode())
                 .courseName(group.getCourseName())
+                .meetingFormat(group.getMeetingFormat())
+                .tags(group.getTags())
                 .contactEmail(group.getContactEmail())
                 .contactPhone(group.getContactPhone())
                 .maxMembers(group.getMaxMembers())

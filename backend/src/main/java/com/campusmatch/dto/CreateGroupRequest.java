@@ -19,13 +19,23 @@ import com.campusmatch.entity.GroupRoleQuota;
 public class CreateGroupRequest {
 
     @NotBlank(message = "Tiêu đề nhóm không được để trống")
+    @Size(max = 150)
     private String title;
 
     @NotBlank(message = "Mô tả nhóm không được để trống")
     private String description;
 
+    @Size(max = 50)
     private String courseCode;
+
+    @Size(max = 100)
     private String courseName;
+
+    @Pattern(regexp = "Online|Offline|Hybrid")
+    private String meetingFormat;
+
+    @Size(max = 5)
+    private List<@NotBlank @Size(max = 50) String> tags;
 
     @Email
     @Size(max = 254)

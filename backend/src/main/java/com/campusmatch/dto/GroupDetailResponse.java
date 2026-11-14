@@ -21,6 +21,8 @@ public class GroupDetailResponse {
     private Integer postYear;
     private String courseCode;
     private String courseName;
+    private String meetingFormat;
+    private List<String> tags;
     private String contactEmail;
     private String contactPhone;
     private Integer maxMembers;

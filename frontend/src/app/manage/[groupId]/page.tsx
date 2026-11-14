@@ -10,7 +10,7 @@ import ManageGroupEditor from "@/components/group/ManageGroupEditor";
 import ApplicationCard from "@/components/application/ApplicationCard";
 import DeleteGroupModal from "@/components/group/DeleteGroupModal";
 import { CardSkeletonList, EmptyState, ErrorState } from "@/components/common/AsyncState";
-import { getMyGroups, deleteGroup, MANAGE_MUTATIONS_AVAILABLE } from "@/services/groupService";
+import { getMyGroups, deleteGroup } from "@/services/groupService";
 import {
   acceptApplication,
   getGroupApplications,
@@ -25,7 +25,6 @@ import type {
   GroupStatusCode,
   ManageGroupData,
   ManageGroupPageProps,
-  ManageApplicationConfirmation,
   ManageGroupContentProps,
 } from "@/lib/types";
 
@@ -75,7 +74,6 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [pendingActions, setPendingActions] = useState<Record<number, ApplicationAction>>({});
   const [actionErrors, setActionErrors] = useState<Record<number, ApiErrorCode>>({});
-  const [confirmation, setConfirmation] = useState<ManageApplicationConfirmation | null>(null);
 
   const handleDeleteConfirm = async () => {
     if (!group) return;
@@ -84,9 +82,8 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
   };
 
   const handleAction = async (applicationId: number, action: ApplicationAction) => {
-    if (!MANAGE_MUTATIONS_AVAILABLE || data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
+    if (data?.group?.myRole !== "LEADER" || Object.keys(pendingActions).length > 0) return;
     if (action === "accept" && (data.group.status !== "RECRUITING" || data.group.memberCount >= data.group.maxMembers)) return;
-    setConfirmation(null);
     setPendingActions((prev) => ({ ...prev, [applicationId]: action }));
     setActionErrors((prev) => omitKey(prev, applicationId));
     try {
@@ -204,7 +201,25 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
               </ul>
             )}
           </Card>
-          <ManageGroupEditor key={group.id} group={group} />
+          <ManageGroupEditor key={group.id} group={group} onSaved={(updated) => {
+            setData((previous) => previous?.group ? {
+              ...previous,
+              group: {
+                ...previous.group,
+                title: updated.title,
+                description: updated.description,
+                maxMembers: updated.maxMembers,
+                status: updated.status,
+                rolesQuota: updated.rolesQuota,
+                courseCode: updated.courseCode,
+                courseName: updated.courseName,
+                meetingFormat: updated.meetingFormat,
+                tags: updated.tags,
+                contactEmail: updated.contactEmail,
+                contactPhone: updated.contactPhone,
+              },
+            } : previous);
+          }} />
 
           {/* Pending applications */}
           <section className="space-y-4">
@@ -229,25 +244,14 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
                     application={application}
                     pendingAction={pendingActions[application.id] ?? null}
                     errorCode={actionErrors[application.id] ?? null}
-                    onAccept={(id) => setConfirmation({ applicationId: id, action: "accept" })}
-                    onReject={(id) => setConfirmation({ applicationId: id, action: "reject" })}
+                    acceptDisabled={group.status !== "RECRUITING" || group.memberCount >= group.maxMembers}
+                    onAccept={(id) => handleAction(id, "accept")}
+                    onReject={(id) => handleAction(id, "reject")}
                   />
                 ))}
               </div>
             )}
           </section>
-          {confirmation && (
-            <Card role="region" aria-labelledby="confirm-action-title" className="space-y-3">
-              <h2 id="confirm-action-title" className="font-semibold"><ScrambleText text={confirmation.action === "accept" ? t.manageDetails.confirmAccept : t.manageDetails.confirmReject} /></h2>
-              <p className="break-words">{data?.applications.find((a) => a.id === confirmation.applicationId)?.applicant.name}</p>
-              <p id="action-blocked" className="text-sm text-[var(--text-secondary)]"><ScrambleText text={t.manageDetails.blocked} /></p>
-              <div className="flex flex-wrap gap-3">
-                <Button autoFocus variant="outline" onClick={() => setConfirmation(null)}><ScrambleText text={t.manageDetails.cancel} /></Button>
-                <Button disabled={!MANAGE_MUTATIONS_AVAILABLE || Object.keys(pendingActions).length > 0 || (confirmation.action === "accept" && (group.status !== "RECRUITING" || group.memberCount >= group.maxMembers))}
-                  aria-describedby="action-blocked" onClick={() => handleAction(confirmation.applicationId, confirmation.action)}><ScrambleText text={t.manageDetails.confirm} /></Button>
-              </div>
-            </Card>
-          )}
 
           {/* Danger Zone: Giải tán / Xóa nhóm học tập */}
           <section className="pt-4 border-t border-[var(--border)]">
@@ -277,13 +281,13 @@ function ManageGroupContent({ groupIdParam }: ManageGroupContentProps) {
               </div>
             </Card>
 
-            <DeleteGroupModal
+            {isDeleteModalOpen && <DeleteGroupModal
               isOpen={isDeleteModalOpen}
               onClose={() => setIsDeleteModalOpen(false)}
               groupId={group.id}
               groupTitle={group.title}
               onDeleteConfirm={handleDeleteConfirm}
-            />
+            />}
           </section>
         </>
       )}

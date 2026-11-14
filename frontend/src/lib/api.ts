@@ -61,8 +61,7 @@ export async function apiRequest<T>(path: string, init: RequestInit = {}): Promi
     throw new ApiError(errorCodeFromStatus(response.status), response.status, body?.message);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return (await response.json()) as T;
+  if (response.status === 204) return undefined as T;
+  const responseText = await response.text();
+  return responseText ? (JSON.parse(responseText) as T) : (undefined as T);
 }
